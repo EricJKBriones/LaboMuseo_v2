@@ -48,8 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $org = 'N/A'; $hc = 1; $mc = 0; $fc = 0;
         if ($type === 'Group') {
             $org = trim($_POST['organization'] ?? '');
-            $mc  = (int)($_POST['male_count'] ?? 0);
-            $fc  = (int)($_POST['female_count'] ?? 0);
+            $mc  = max(0, (int)($_POST['male_count'] ?? 0));
+            $fc  = max(0, (int)($_POST['female_count'] ?? 0));
+
+            // Include the representative in the group total.
+            if ($gender === 'Male') {
+                $mc++;
+            } elseif ($gender === 'Female') {
+                $fc++;
+            }
+
             $hc  = $mc + $fc;
             if (!$org) {
                 $_SESSION['reg_error'] = 'Please enter organization name.';

@@ -13,7 +13,7 @@ $imgBase = __DIR__ . '/../uploads/';
 
 $totalArtifacts    = dbCount("SELECT COUNT(*) FROM exhibits");
 $totalDepts        = dbCount("SELECT COUNT(*) FROM categories");
-$totalVisitors     = dbCount("SELECT COUNT(*) FROM guests WHERE visit_date = ?", [date('Y-m-d')]);
+$totalVisitors     = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests WHERE visit_date = ?", [date('Y-m-d')]);
 $latestNews        = dbOne("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) BETWEEN ? AND ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 1", [$monthStart, $monthEnd]);
 $latestArt         = dbOne("SELECT e.*,c.name as cat_name FROM exhibits e LEFT JOIN categories c ON e.category_id=c.id ORDER BY e.id DESC LIMIT 1");
 $tickerItems       = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) BETWEEN ? AND ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 5", [$monthStart, $monthEnd]);

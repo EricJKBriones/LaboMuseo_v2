@@ -7,7 +7,7 @@
 
 <div class="about-content">
   <div class="about-2col">
-    <div class="acard">
+    <div class="acard mission-card">
       <h3>Mission &amp; History</h3>
       <div class="about-mission-image">
         <img src="uploads/background.jpg" alt="Museo de Labo mission and history" loading="lazy">
@@ -17,13 +17,13 @@
       <p>We believe history should be interactive and inclusive. Through our digital and physical exhibits, even the most fragile artifacts can be studied and appreciated by all.</p>
       <a href="index.php?page=exhibits" class="btn-gold" style="margin-top:8px">Explore the Collection</a>
     </div>
-    <div>
-      <div class="acard" style="margin-bottom:18px">
+    <div class="about-info-col">
+      <div class="acard compact-card" style="margin-bottom:14px">
         <h3>&#128336; Visiting Hours</h3>
         <div class="vi"><div class="vi-icon">&#128197;</div><div><strong>Weekdays</strong><span>Monday &ndash; Friday &middot; 8:00 AM &ndash; 5:00 PM</span></div></div>
         <div class="vi"><div class="vi-icon">&#128683;</div><div><strong>Weekends</strong><span>Closed</span></div></div>
       </div>
-      <div class="acard">
+      <div class="acard compact-card">
         <h3>&#128205; Contact Us</h3>
         <div class="vi"><div class="vi-icon">&#127963;</div><div><strong>Address</strong><span>Labo People's Park, Labo, Camarines Norte</span></div></div>
         <div class="vi"><div class="vi-icon">&#128231;</div><div class="vi-stack"><strong>Email</strong><span>josecarlosblagatuz@gmail.com</span><span>labotourism08@yahoo.com</span></div></div>

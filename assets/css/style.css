@@ -78,20 +78,20 @@ a    { text-decoration:none; color:inherit; }
 .guest-badge { color:#9bb5c8; font-size:.82rem; padding:6px 10px; }
 
 /* ── FOOTER ────────────────────────────────────────────────── */
-.site-footer { background:var(--navy3); color:#8a9db0; border-top:2px solid var(--gold); padding:60px 28px 30px; }
+.site-footer { background:var(--navy3); color:#8a9db0; border-top:2px solid var(--gold); padding:44px 28px 22px; }
 .footer-inner { max-width:1200px; margin:0 auto; }
-.footer-brand { text-align:center; margin-bottom:40px; }
-.footer-logo-name { font-family:'Playfair Display',serif; font-size:1.5rem; color:#fff; }
-.footer-baybayin { font-size:.8rem; color:#c7d8e6; letter-spacing:.5px; margin-top:4px; }
-.footer-divider { width:60px; height:2px; background:var(--gold); margin:14px auto; }
-.footer-cols { display:grid; grid-template-columns:repeat(4,1fr); gap:32px; margin-bottom:40px; }
+.footer-brand { text-align:center; margin-bottom:26px; }
+.footer-logo-name { font-family:'Playfair Display',serif; font-size:1.25rem; color:#fff; }
+.footer-baybayin { font-size:.72rem; color:#c7d8e6; letter-spacing:.4px; margin-top:3px; }
+.footer-divider { width:50px; height:2px; background:var(--gold); margin:10px auto; }
+.footer-cols { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-bottom:26px; }
 .footer-col h4 { color:var(--gold2); font-size:.8rem; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px; }
-.footer-col p  { font-size:.88rem; line-height:1.7; }
+.footer-col p  { font-size:.82rem; line-height:1.55; }
 .footer-links { list-style:none; }
-.footer-links li { margin-bottom:6px; }
-.footer-links a { color:#8a9db0; font-size:.88rem; transition:color .2s; }
+.footer-links li { margin-bottom:4px; }
+.footer-links a { color:#8a9db0; font-size:.82rem; transition:color .2s; }
 .footer-links a:hover { color:var(--gold2); }
-.footer-bottom { text-align:center; padding-top:24px; border-top:1px solid rgba(255,255,255,.07); font-size:.82rem; }
+.footer-bottom { text-align:center; padding-top:16px; border-top:1px solid rgba(255,255,255,.07); font-size:.76rem; }
 
 /* ── SHARED COMPONENTS ─────────────────────────────────────── */
 .wrap { max-width:1280px; margin:0 auto; padding:70px 28px; }
@@ -417,16 +417,22 @@ a    { text-decoration:none; color:inherit; }
 
 /* ── ABOUT PAGE ─────────────────────────────────────────────── */
 .about-content { max-width:1100px; margin:0 auto; padding:70px 28px; }
-.about-2col    { display:grid; grid-template-columns:1fr 1fr; gap:50px; margin-bottom:56px; align-items:start; }
+.about-2col    { display:grid; grid-template-columns:1.45fr .9fr; gap:34px; margin-bottom:56px; align-items:start; }
 .acard { background:#fff; border-radius:12px; padding:30px; box-shadow:var(--shadow); border:1px solid var(--cream); }
 .acard h3 { font-family:'Playfair Display',serif; color:var(--navy); margin-bottom:14px; font-size:1.3rem; }
 .acard p  { color:var(--text2); line-height:1.8; margin-bottom:12px; font-size:.95rem; }
+.mission-card { padding:38px; }
+.mission-card h3 { font-size:1.7rem; margin-bottom:18px; }
+.mission-card p { font-size:1.03rem; line-height:1.95; margin-bottom:14px; }
+.about-info-col { display:flex; flex-direction:column; }
+.compact-card { padding:22px; }
+.compact-card h3 { font-size:1.08rem; margin-bottom:8px; }
 .about-mission-image {
   width:100%;
   border-radius:12px;
   overflow:hidden;
-  margin:0 0 16px;
-  aspect-ratio:16/9;
+  margin:0 0 20px;
+  aspect-ratio:18/9;
   background:linear-gradient(135deg,var(--navy),var(--navy2));
 }
 .about-mission-image img {
@@ -444,6 +450,10 @@ a    { text-decoration:none; color:inherit; }
   .vi-stack strong { margin-bottom:1px; }
   .vi-stack span { display:block; }
   .vi-stack span + span { margin-top:3px; }
+.compact-card .vi { gap:9px; padding:9px 0; }
+.compact-card .vi-icon { width:30px; height:30px; font-size:.86rem; }
+.compact-card .vi strong { font-size:.78rem; }
+.compact-card .vi span { font-size:.76rem; }
 .map-frame { width:100%; height:350px; border-radius:12px; border:none; display:block; box-shadow:var(--shadow); }
 
 /* ── NEWS PAGE ──────────────────────────────────────────────── */
@@ -627,6 +637,9 @@ input[type=number] { -moz-appearance:textfield; }
   .hero-cards      { display:none; }
   .calendar-layout { grid-template-columns:1fr; }
   .about-2col      { grid-template-columns:1fr; }
+  .mission-card    { padding:30px; }
+  .mission-card h3 { font-size:1.45rem; }
+  .mission-card p  { font-size:.98rem; }
   .det-grid        { grid-template-columns:1fr; }
   .det-img-wrap    { position:static; aspect-ratio:16/9; }
   .grid4           { grid-template-columns:repeat(2,1fr); }
@@ -663,9 +676,21 @@ input[type=number] { -moz-appearance:textfield; }
   .news-tab-btns    { width:100%; justify-content:flex-start; flex-wrap:wrap; }
   .hero-stats       { gap:20px; }
   .about-mission-image { aspect-ratio:4/3; }
+  .mission-card { padding:24px; }
+  .mission-card h3 { font-size:1.3rem; }
+  .mission-card p { font-size:.93rem; line-height:1.8; }
   .ticker-inner     { flex-direction:column; min-height:auto; padding:12px 0; }
   .ticker-label     { writing-mode:horizontal-tb; transform:none; padding:8px 16px; font-size:.7rem; }
   .t-dots           { flex-direction:row; padding:8px 16px; }
+  .site-footer      { padding:34px 16px 18px; }
+  .footer-brand     { margin-bottom:18px; }
+  .footer-logo-name { font-size:1.1rem; }
+  .footer-baybayin  { font-size:.66rem; }
+  .footer-cols      { gap:16px; margin-bottom:18px; }
+  .footer-col h4    { margin-bottom:8px; font-size:.74rem; }
+  .footer-col p,
+  .footer-links a   { font-size:.78rem; }
+  .footer-bottom    { padding-top:12px; font-size:.72rem; }
 }
 @media(max-width:480px) {
   .grid4 { grid-template-columns:1fr; }
@@ -679,4 +704,11 @@ input[type=number] { -moz-appearance:textfield; }
   .lcard          { padding:24px 16px; }
   .cal-days       { gap:1px; }
   .cal-day        { font-size:.75rem; }
+  .site-footer    { padding:28px 14px 14px; }
+  .footer-brand   { margin-bottom:14px; }
+  .footer-divider { margin:8px auto; }
+  .footer-cols    { gap:12px; margin-bottom:14px; }
+  .footer-col p,
+  .footer-links a { font-size:.75rem; }
+  .footer-bottom  { padding-top:10px; font-size:.69rem; }
 }

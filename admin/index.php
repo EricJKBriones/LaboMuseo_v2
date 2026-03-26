@@ -4,7 +4,12 @@ require_once '../includes/db.php';
 sessionStart();
 requireAdmin();
 
-$totalVisitors  = dbCount("SELECT COUNT(*) FROM guests");
+$today         = date('Y-m-d');
+$monthStart    = date('Y-m-01');
+$monthEnd      = date('Y-m-t');
+$totalVisitors  = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests");
+$monthVisitors  = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests WHERE visit_date BETWEEN ? AND ?", [$monthStart, $monthEnd]);
+$todayVisitors  = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests WHERE visit_date = ?", [$today]);
 $totalArtifacts = dbCount("SELECT COUNT(*) FROM exhibits");
 $totalDepts     = dbCount("SELECT COUNT(*) FROM categories");
 $totalNews      = dbCount("SELECT COUNT(*) FROM news_events");
@@ -25,7 +30,14 @@ require_once 'admin_header.php';
     </div>
 
     <div class="adm-stats">
-      <div class="astat blue"><div><div class="astat-n"><?= $totalVisitors ?></div><div class="astat-l">Total Visitors</div></div><div class="astat-i">&#128101;</div></div>
+      <div class="astat blue">
+        <div>
+          <div class="astat-n"><?= $totalVisitors ?></div>
+          <div class="astat-l">Total Visitors</div>
+          <div class="astat-sub">This Month: <strong><?= $monthVisitors ?></strong> &bull; Today: <strong><?= $todayVisitors ?></strong></div>
+        </div>
+        <div class="astat-i">&#128101;</div>
+      </div>
       <div class="astat green"><div><div class="astat-n"><?= $totalArtifacts ?></div><div class="astat-l">Artifacts</div></div><div class="astat-i">&#127994;</div></div>
       <div class="astat purple"><div><div class="astat-n"><?= $totalDepts ?></div><div class="astat-l">Departments</div></div><div class="astat-i">&#128193;</div></div>
       <div class="astat orange"><div><div class="astat-n"><?= $totalNews ?></div><div class="astat-l">News &amp; Events</div></div><div class="astat-i">&#128240;</div></div>

@@ -22,6 +22,8 @@
 .astat.orange { border-bottom:4px solid #e67e22; }
 .astat-n { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--navy); line-height:1; }
 .astat-l { font-size:.67rem; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; font-weight:700; margin-top:4px; }
+.astat-sub { margin-top:8px; font-size:.74rem; color:#6f8090; line-height:1.35; }
+.astat-sub strong { color:var(--navy); font-weight:700; }
 .astat-i { font-size:2rem; opacity:.14; }
 .adm-qgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
 .adm-qcard { background:#fff; border-radius:12px; padding:19px 13px; text-align:center; font-weight:600; color:var(--navy); box-shadow:var(--shadow); transition:all .25s; cursor:pointer; border:1px solid var(--cream); font-size:.86rem; font-family:'DM Sans',sans-serif; text-decoration:none; display:block; }
@@ -234,6 +236,10 @@ textarea.ai { resize:vertical; min-height:86px; }
 .result-meta strong { color:var(--navy); }
 .alert-ok  { background:#eef8f3; border-left:4px solid var(--green); color:#155a35; padding:12px 16px; border-radius:8px; margin-bottom:18px; font-size:.9rem; }
 .alert-err { background:#fef0ee; border-left:4px solid var(--red); color:#8b2020; padding:12px 16px; border-radius:8px; margin-bottom:18px; font-size:.9rem; }
+.adm-account-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.adm-account-card { background:#fff; border-radius:12px; box-shadow:var(--shadow); border:1px solid var(--cream); padding:20px; }
+.adm-account-card h3 { font-family:'Playfair Display',serif; color:var(--navy); font-size:1.2rem; margin-bottom:8px; }
+.adm-account-card p { color:var(--text3); font-size:.84rem; margin-bottom:12px; }
 @media(max-width:900px) {
   .adm-layout { flex-direction:column; }
   .adm-sidebar { width:100%; height:auto; position:static; padding:12px; }
@@ -243,6 +249,7 @@ textarea.ai { resize:vertical; min-height:86px; }
   .adm-stats,.adm-qgrid { grid-template-columns:1fr 1fr; }
   .fg2 { grid-template-columns:1fr; }
   .adm-main { padding:16px; }
+  .adm-account-grid { grid-template-columns:1fr; }
 }
 @media(max-width:600px) {
   /* Full width layout */
