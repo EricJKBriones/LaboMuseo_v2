@@ -11,6 +11,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_ollama import ChatOllama
+import ollama
 
 
 class AskRequest(BaseModel):
@@ -55,6 +56,38 @@ def make_prompt(question: str, context: str) -> str:
     )
 
 
+def get_installed_ollama_models() -> List[str]:
+    try:
+        data = ollama.list()
+        models = data.get("models", []) if isinstance(data, dict) else []
+        names = []
+        for model in models:
+            name = model.get("model") or model.get("name")
+            if name:
+                # Normalize "phi3:latest" -> "phi3"
+                names.append(str(name).split(":", 1)[0])
+        return names
+    except Exception:
+        return []
+
+
+def resolve_model_name() -> str:
+    requested = os.getenv("OLLAMA_MODEL", "llama3").strip() or "llama3"
+    installed = get_installed_ollama_models()
+
+    if requested in installed:
+        return requested
+    if "phi3" in installed:
+        return "phi3"
+    if "llama3" in installed:
+        return "llama3"
+    if installed:
+        return installed[0]
+
+    # Keep requested if no models are installed; error will instruct user to pull one.
+    return requested
+
+
 app = FastAPI(title="LaboMuseo Offline AI", version="1.0.0")
 
 app.add_middleware(
@@ -72,13 +105,18 @@ if not PDF_PATH.exists():
 VECTORSTORE = build_vectorstore(PDF_PATH)
 RETRIEVER = VECTORSTORE.as_retriever(search_kwargs={"k": 4})
 
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+OLLAMA_MODEL = resolve_model_name()
 LLM = ChatOllama(model=OLLAMA_MODEL, temperature=0.1)
 
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "model": OLLAMA_MODEL, "pdf": str(PDF_PATH)}
+    return {
+        "ok": True,
+        "model": OLLAMA_MODEL,
+        "installed_models": get_installed_ollama_models(),
+        "pdf": str(PDF_PATH),
+    }
 
 
 @app.post("/ask", response_model=AskResponse)
@@ -100,8 +138,13 @@ def ask(req: AskRequest) -> AskResponse:
     try:
         result = LLM.invoke(prompt)
         answer_text = getattr(result, "content", str(result)).strip()
-    except Exception as ex:
-        raise HTTPException(status_code=500, detail=f"Ollama error: {ex}")
+    except Exception:
+        # Graceful fallback: return a concise extractive answer from retrieved text.
+        first = " ".join(docs[0].page_content.split())[:360] if docs else ""
+        answer_text = (
+            "Local LLM is currently unavailable. Showing the most relevant passage from the document: "
+            + (first or "No passage available.")
+        )
 
     sources = []
     for d in docs[:3]:
