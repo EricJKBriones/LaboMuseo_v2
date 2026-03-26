@@ -4,6 +4,7 @@ require_once __DIR__ . '/db.php';
 sessionStart();
 $currentPage = $_GET['page'] ?? 'home';
 $bodyClass = $currentPage === 'home' ? 'page-home' : 'page-inner';
+$bodyClass .= ' page-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $currentPage);
 
 // Bulletproof base URL — works on localhost/subfolder AND domain root
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off') ? 'https' : 'http';

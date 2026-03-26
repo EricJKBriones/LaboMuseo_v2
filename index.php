@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // ── Page routing ─────────────────────────────────────────────
 $page = $_GET['page'] ?? 'home';
-$allowedPages = ['home','about','news','news_detail','categories','exhibits','detail','login'];
+$allowedPages = ['home','about','news','news_detail','categories','exhibits','detail','pdf_detail','pdf_reader','login'];
 if (!in_array($page, $allowedPages)) $page = 'home';
 
 $pageTitle = SITE_NAME;
@@ -95,6 +95,8 @@ switch($page) {
     case 'categories': $pageTitle = 'Departments — ' . SITE_NAME; break;
     case 'exhibits':   $pageTitle = 'All Artifacts — ' . SITE_NAME; break;
     case 'detail':     $pageTitle = 'Artifact Detail — ' . SITE_NAME; break;
+    case 'pdf_detail': $pageTitle = 'Artifact Document Detail — ' . SITE_NAME; break;
+    case 'pdf_reader': $pageTitle = 'Artifact Reading Mode — ' . SITE_NAME; break;
     case 'login':      $pageTitle = 'Login / Access — ' . SITE_NAME; break;
 }
 
