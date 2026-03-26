@@ -608,6 +608,57 @@ function exportCSV() {
   window.location.href = 'admin/export.php';
 }
 
+/* ── ADMIN SIDEBAR COLLAPSE ───────────────────────────────── */
+function applyAdminSidebarState(collapsed) {
+  if (collapsed) {
+    document.body.classList.add('admin-sidebar-collapsed');
+  } else {
+    document.body.classList.remove('admin-sidebar-collapsed');
+  }
+}
+
+function toggleAdminSidebar() {
+  var collapsed = !document.body.classList.contains('admin-sidebar-collapsed');
+  applyAdminSidebarState(collapsed);
+  try {
+    localStorage.setItem('adminSidebarCollapsed', collapsed ? '1' : '0');
+  } catch (e) {
+    // Ignore storage errors and keep current UI state.
+  }
+}
+
+function initAdminSidebarCollapse() {
+  if (!document.querySelector('.adm-sidebar')) return;
+
+  var collapsed = false;
+  try {
+    collapsed = localStorage.getItem('adminSidebarCollapsed') === '1';
+  } catch (e) {
+    collapsed = false;
+  }
+
+  if (window.innerWidth <= 900) {
+    applyAdminSidebarState(false);
+    return;
+  }
+
+  applyAdminSidebarState(collapsed);
+
+  window.addEventListener('resize', function() {
+    if (window.innerWidth <= 900) {
+      applyAdminSidebarState(false);
+      return;
+    }
+    var keepCollapsed = false;
+    try {
+      keepCollapsed = localStorage.getItem('adminSidebarCollapsed') === '1';
+    } catch (e) {
+      keepCollapsed = false;
+    }
+    applyAdminSidebarState(keepCollapsed);
+  });
+}
+
 /* ── SUBMIT BUTTON CLICK ANIMATION ─────────────────────────── */
 var submitAnimDelayMs = 420;
 var submitAnimTickMark = '<svg width="38" height="30" viewBox="0 0 58 45" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="nonzero" d="M19.11 44.64L.27 25.81l5.66-5.66 13.18 13.18L52.07.38l5.65 5.65"/></svg>';
@@ -707,6 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initTeaserFader();
   initScrollFloatReveal();
   initSubmitButtonAnimations();
+  initAdminSidebarCollapse();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {

@@ -2,14 +2,81 @@
    Museo de Labo — Admin Stylesheet
 ============================================================ */
 .adm-layout { display:flex; min-height:calc(100vh - 68px); }
-.adm-sidebar { width:240px; background:var(--navy); flex-shrink:0; position:sticky; top:68px; height:calc(100vh - 68px); overflow-y:auto; padding:24px 13px; border-right:2px solid rgba(201,146,42,.2); }
-.adm-sidebar h3 { color:var(--gold2); font-size:.67rem; text-transform:uppercase; letter-spacing:2.5px; font-weight:700; margin-bottom:16px; padding-left:10px; }
-.adm-menu { list-style:none; }
+.adm-sidebar { width:240px; background:var(--navy); flex-shrink:0; position:sticky; top:68px; height:calc(100vh - 68px); overflow-y:auto; overflow-x:hidden; padding:24px 13px; border-right:2px solid rgba(201,146,42,.2); transition:width .28s ease, padding .28s ease; }
+.adm-side-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; position:sticky; top:0; z-index:3; background:var(--navy); padding-bottom:6px; }
+.adm-sidebar h3 { color:var(--gold2); font-size:.67rem; text-transform:uppercase; letter-spacing:2.5px; font-weight:700; margin-bottom:0; padding-left:10px; white-space:nowrap; opacity:1; max-width:180px; transition:opacity .18s ease, max-width .22s ease, transform .22s ease; }
+.adm-side-toggle {
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  border:1px solid rgba(201,146,42,.35);
+  background:rgba(201,146,42,.14);
+  color:var(--gold2);
+  font-size:.95rem;
+  line-height:1;
+  cursor:pointer;
+  position:relative;
+  z-index:4;
+}
+.adm-menu { list-style:none; overflow-x:hidden; }
 .adm-menu li { margin-bottom:3px; }
-.adm-menu li a { color:#8aa4b8; text-decoration:none; display:flex; align-items:center; gap:9px; padding:10px 12px; border-radius:7px; transition:all .2s; font-weight:500; font-size:.84rem; border-left:3px solid transparent; }
+.adm-menu li a { color:#8aa4b8; text-decoration:none; display:flex; align-items:center; gap:9px; padding:10px 12px; border-radius:7px; transition:all .2s; font-weight:500; font-size:.84rem; border-left:3px solid transparent; width:100%; box-sizing:border-box; }
+.adm-ico { width:18px; text-align:center; flex-shrink:0; font-size:1rem; }
+.adm-label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; opacity:1; max-width:160px; transition:opacity .18s ease, max-width .22s ease, transform .22s ease; }
 .adm-menu li a:hover { background:rgba(255,255,255,.06); color:#fff; padding-left:16px; border-left-color:var(--gold); }
 .adm-menu li a.active { background:rgba(201,146,42,.15); color:var(--gold2); padding-left:16px; border-left-color:var(--gold); }
 .adm-main { flex:1; background:#f0f2f5; padding:30px; box-sizing:border-box; min-width:0; }
+
+body.admin-sidebar-collapsed .adm-sidebar { width:78px; padding:14px 8px; }
+body.admin-sidebar-collapsed .adm-sidebar h3 {
+  opacity:0;
+  max-width:0;
+  padding-left:0;
+  transform:translateX(-6px);
+  pointer-events:none;
+}
+body.admin-sidebar-collapsed .adm-label {
+  opacity:0;
+  max-width:0;
+  transform:translateX(-6px);
+  pointer-events:none;
+}
+body.admin-sidebar-collapsed .adm-side-head { justify-content:center; margin-bottom:8px; }
+body.admin-sidebar-collapsed .adm-side-toggle { width:34px; height:34px; }
+body.admin-sidebar-collapsed .adm-menu li a {
+  justify-content:center;
+  gap:0;
+  padding:10px 6px;
+  border-left:none;
+  border-radius:8px;
+  min-height:40px;
+  position:relative;
+  transition:background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+body.admin-sidebar-collapsed .adm-menu li a:hover,
+body.admin-sidebar-collapsed .adm-menu li a.active {
+  padding-left:6px;
+  transform:none;
+}
+body.admin-sidebar-collapsed .adm-menu li a.active {
+  background:rgba(201,146,42,.16);
+  box-shadow:inset 0 0 0 1px rgba(201,146,42,.45);
+}
+body.admin-sidebar-collapsed .adm-menu li a.active .adm-ico {
+  color:var(--gold2);
+  filter:drop-shadow(0 0 4px rgba(201,146,42,.35));
+}
+body.admin-sidebar-collapsed .adm-menu li a.active::after {
+  content:'';
+  position:absolute;
+  right:5px;
+  top:50%;
+  width:4px;
+  height:16px;
+  border-radius:99px;
+  background:var(--gold2);
+  transform:translateY(-50%);
+}
 .adm-welcome { background:#fff; border-radius:12px; padding:22px 26px; margin-bottom:24px; border-left:5px solid var(--gold); box-shadow:var(--shadow); }
 .adm-welcome h2 { font-family:'Playfair Display',serif; color:var(--navy); font-size:1.55rem; margin-bottom:3px; }
 .adm-welcome p { color:var(--text3); font-size:.88rem; }
@@ -261,9 +328,18 @@ textarea.ai { resize:vertical; min-height:86px; }
 .adm-account-card { background:#fff; border-radius:12px; box-shadow:var(--shadow); border:1px solid var(--cream); padding:20px; }
 .adm-account-card h3 { font-family:'Playfair Display',serif; color:var(--navy); font-size:1.2rem; margin-bottom:8px; }
 .adm-account-card p { color:var(--text3); font-size:.84rem; margin-bottom:12px; }
+.adm-charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; }
+.adm-chart-card { background:#fff; border-radius:12px; border:1px solid var(--cream); box-shadow:var(--shadow); padding:18px; min-height:280px; }
+.adm-chart-card h3 { font-family:'Playfair Display',serif; color:var(--navy); font-size:1.08rem; margin-bottom:12px; }
+.adm-charts-grid .adm-chart-card:last-child { grid-column:1 / -1; }
+.adm-chart-compact-wrap { max-width:280px; margin:0 auto; }
 @media(max-width:900px) {
   .adm-layout { flex-direction:column; }
   .adm-sidebar { width:100%; height:auto; position:static; padding:12px; }
+  body.admin-sidebar-collapsed .adm-sidebar { width:100%; padding:10px; }
+  body.admin-sidebar-collapsed .adm-sidebar h3 { display:none; }
+  body.admin-sidebar-collapsed .adm-label { display:none; }
+  body.admin-sidebar-collapsed .adm-side-head { justify-content:flex-end; }
   .adm-menu { display:flex; flex-wrap:wrap; gap:6px; }
   .adm-menu li { flex:1 1 43%; }
   .adm-menu li a { text-align:center; justify-content:center; border-left:none; font-size:.8rem; padding:8px 6px; }
@@ -271,6 +347,9 @@ textarea.ai { resize:vertical; min-height:86px; }
   .fg2 { grid-template-columns:1fr; }
   .adm-main { padding:16px; }
   .adm-account-grid { grid-template-columns:1fr; }
+  .adm-charts-grid { grid-template-columns:1fr; }
+  .adm-charts-grid .adm-chart-card:last-child { grid-column:auto; }
+  .adm-chart-compact-wrap { max-width:230px; }
   .astat-metrics { gap:6px; }
 }
 @media(max-width:600px) {
@@ -281,9 +360,14 @@ textarea.ai { resize:vertical; min-height:86px; }
   /* Sidebar compact on mobile */
   .adm-sidebar { padding:10px; }
   .adm-sidebar h3 { display:none; }
+  .adm-side-head { margin-bottom:8px; justify-content:flex-end; }
   .adm-menu { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
   .adm-menu li { flex:none; }
   .adm-menu li a { font-size:.75rem; padding:8px 4px; gap:5px; border-radius:6px; }
+
+  body.admin-sidebar-collapsed .adm-menu { grid-template-columns:repeat(4,1fr); }
+  body.admin-sidebar-collapsed .adm-menu li a { padding:9px 2px; }
+  body.admin-sidebar-collapsed .adm-ico { font-size:1.05rem; }
 
   /* Stats 2 col */
   .adm-stats { grid-template-columns:1fr 1fr; gap:8px; }

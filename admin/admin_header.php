@@ -21,6 +21,17 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . $dir . '/';
 <link rel="stylesheet" href="<?= $base ?>assets/css/admin.css">
 </head>
 <body>
+<script>
+  (function () {
+    try {
+      if (window.innerWidth > 900 && localStorage.getItem('adminSidebarCollapsed') === '1') {
+        document.body.classList.add('admin-sidebar-collapsed');
+      }
+    } catch (e) {
+      // Ignore storage access issues.
+    }
+  })();
+</script>
 
 <header class="site-header">
   <div class="header-inner">
