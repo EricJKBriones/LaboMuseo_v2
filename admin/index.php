@@ -13,6 +13,7 @@ $todayVisitors  = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests WHERE 
 $totalArtifacts = dbCount("SELECT COUNT(*) FROM exhibits");
 $totalDepts     = dbCount("SELECT COUNT(*) FROM categories");
 $totalNews      = dbCount("SELECT COUNT(*) FROM news_events");
+$categories     = dbQuery("SELECT id, name FROM categories ORDER BY name ASC");
 $recentGuests   = dbQuery("SELECT * FROM guests ORDER BY id DESC LIMIT 5");
 $recentNews     = dbQuery("SELECT * FROM news_events ORDER BY id DESC LIMIT 5");
 
@@ -30,11 +31,14 @@ require_once 'admin_header.php';
     </div>
 
     <div class="adm-stats">
-      <div class="astat blue">
-        <div>
+      <div class="astat blue astat-visitor">
+        <div class="astat-main">
           <div class="astat-n"><?= $totalVisitors ?></div>
           <div class="astat-l">Total Visitors</div>
-          <div class="astat-sub">This Month: <strong><?= $monthVisitors ?></strong> &bull; Today: <strong><?= $todayVisitors ?></strong></div>
+          <div class="astat-metrics">
+            <span class="astat-chip">This Month <strong><?= $monthVisitors ?></strong></span>
+            <span class="astat-chip">Today <strong><?= $todayVisitors ?></strong></span>
+          </div>
         </div>
         <div class="astat-i">&#128101;</div>
       </div>
@@ -45,10 +49,74 @@ require_once 'admin_header.php';
 
     <h3 class="adm-sec-title">&#9889; Quick Actions</h3>
     <div class="adm-qgrid">
-      <a href="artifacts.php?action=add" class="adm-qcard"><span>&#10133;</span>Add Artifact</a>
-      <a href="departments.php?action=add" class="adm-qcard"><span>&#128194;</span>Add Department</a>
-      <a href="news.php?action=add" class="adm-qcard"><span>&#128226;</span>Post News</a>
+      <button type="button" class="adm-qcard" onclick="togglePanel('quickAddArtifactForm')"><span>&#10133;</span>Add Artifact</button>
+      <button type="button" class="adm-qcard" onclick="togglePanel('quickAddDeptForm')"><span>&#128194;</span>Add Department</button>
+      <button type="button" class="adm-qcard" onclick="togglePanel('quickAddNewsForm')"><span>&#128226;</span>Post News</button>
       <a href="export.php" class="adm-qcard"><span>&#128229;</span>Export Visitors</a>
+    </div>
+
+    <div class="adm-quick-panels">
+      <div class="adm-form" id="quickAddArtifactForm">
+        <h3>New Artifact</h3>
+        <form method="POST" enctype="multipart/form-data" action="artifacts.php">
+          <input type="hidden" name="action" value="insert">
+          <div class="fg2">
+            <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" required></div>
+            <div>
+              <label class="al">Department</label>
+              <select name="category_id" class="ai">
+                <option value="">-- Select --</option>
+                <?php foreach ($categories as $c): ?>
+                  <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div><label class="al">Year / Period</label><input type="text" name="artifact_year" class="ai" placeholder="e.g., 18th Century"></div>
+            <div><label class="al">Origin</label><input type="text" name="origin" class="ai" placeholder="e.g., Labo"></div>
+            <div class="full"><label class="al">Donated By</label><input type="text" name="donated_by" class="ai"></div>
+            <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+            <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required></textarea></div>
+          </div>
+          <button type="submit" class="btn-save">&#128190; Save Artifact</button>
+          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddArtifactForm')">Cancel</button>
+        </form>
+      </div>
+
+      <div class="adm-form" id="quickAddDeptForm">
+        <h3>New Department</h3>
+        <form method="POST" enctype="multipart/form-data" action="departments.php">
+          <input type="hidden" name="action" value="insert">
+          <div class="fg2">
+            <div><label class="al">Name *</label><input type="text" name="name" class="ai" required></div>
+            <div><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+            <div class="full"><label class="al">Description</label><textarea name="description" class="ai"></textarea></div>
+          </div>
+          <button type="submit" class="btn-save">&#128190; Save Department</button>
+          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddDeptForm')">Cancel</button>
+        </form>
+      </div>
+
+      <div class="adm-form" id="quickAddNewsForm">
+        <h3>New Post</h3>
+        <form method="POST" enctype="multipart/form-data" action="news.php?view=active">
+          <input type="hidden" name="action" value="insert">
+          <div class="fg2">
+            <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" required></div>
+            <div>
+              <label class="al">Type</label>
+              <select name="type" class="ai" onchange="toggleEvDate('quickNewsEventDate',this.value)">
+                <option value="news">Museum News</option>
+                <option value="event">Upcoming Event</option>
+              </select>
+            </div>
+            <div><label class="al">Event Date <small style="color:#aaa">(for events only)</small></label><input type="date" name="event_date" id="quickNewsEventDate" class="ai"></div>
+            <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+            <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required></textarea></div>
+          </div>
+          <button type="submit" class="btn-save">&#128226; Publish</button>
+          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddNewsForm')">Cancel</button>
+        </form>
+      </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">

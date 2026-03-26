@@ -24,11 +24,32 @@
 .astat-l { font-size:.67rem; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; font-weight:700; margin-top:4px; }
 .astat-sub { margin-top:8px; font-size:.74rem; color:#6f8090; line-height:1.35; }
 .astat-sub strong { color:var(--navy); font-weight:700; }
+.astat-visitor { align-items:flex-start; gap:12px; }
+.astat-main { min-width:0; }
+.astat-metrics { display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+.astat-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 9px;
+  border-radius:999px;
+  background:#f4f8fb;
+  border:1px solid #dce6ef;
+  color:#5c7286;
+  font-size:.7rem;
+  font-weight:600;
+}
+.astat-chip strong { color:var(--navy); font-weight:700; font-size:.76rem; }
 .astat-i { font-size:2rem; opacity:.14; }
 .adm-qgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
 .adm-qcard { background:#fff; border-radius:12px; padding:19px 13px; text-align:center; font-weight:600; color:var(--navy); box-shadow:var(--shadow); transition:all .25s; cursor:pointer; border:1px solid var(--cream); font-size:.86rem; font-family:'DM Sans',sans-serif; text-decoration:none; display:block; }
+.adm-qcard { width:100%; appearance:none; -webkit-appearance:none; }
 .adm-qcard:hover { background:var(--navy); color:#fff; transform:translateY(-2px); }
 .adm-qcard span { display:block; font-size:1.6rem; margin-bottom:7px; }
+.adm-qcard.active { background:var(--navy); color:#fff; border-color:#1f3e56; box-shadow:0 12px 24px rgba(21,45,63,.22); }
+.adm-quick-panels { margin:-10px 0 20px; display:grid; gap:12px; }
+.adm-quick-panels .adm-form { margin:0; }
+.adm-quick-panels .adm-form.is-open { margin:0; }
 .adm-sec-title { font-family:'Playfair Display',serif; color:var(--navy); font-size:1.15rem; border-bottom:2px solid var(--gold); display:inline-block; padding-bottom:4px; margin-bottom:14px; }
 .tbl-wrap { background:#fff; border-radius:12px; box-shadow:var(--shadow); overflow-x:auto; margin-bottom:28px; }
 .adm-tbl { width:100%; border-collapse:collapse; min-width:540px; }
@@ -250,6 +271,7 @@ textarea.ai { resize:vertical; min-height:86px; }
   .fg2 { grid-template-columns:1fr; }
   .adm-main { padding:16px; }
   .adm-account-grid { grid-template-columns:1fr; }
+  .astat-metrics { gap:6px; }
 }
 @media(max-width:600px) {
   /* Full width layout */
