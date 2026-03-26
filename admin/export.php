@@ -68,58 +68,74 @@ if ($format === 'csv') {
 }
 
 if ($format === 'xlsx') {
+    $spreadsheetClass = 'PhpOffice\\PhpSpreadsheet\\Spreadsheet';
+    $writerClass = 'PhpOffice\\PhpSpreadsheet\\Writer\\Xlsx';
     $autoload = __DIR__ . '/../vendor/autoload.php';
     if (file_exists($autoload)) {
         require_once $autoload;
     }
 
-    if (class_exists('PhpOffice\\PhpSpreadsheet\\Spreadsheet') && class_exists('PhpOffice\\PhpSpreadsheet\\Writer\\Xlsx')) {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Visitors');
+    if (class_exists($spreadsheetClass) && class_exists($writerClass)) {
+        try {
+            $fillSolid = defined('PhpOffice\\PhpSpreadsheet\\Style\\Fill::FILL_SOLID')
+                ? constant('PhpOffice\\PhpSpreadsheet\\Style\\Fill::FILL_SOLID')
+                : 'solid';
+            $borderThin = defined('PhpOffice\\PhpSpreadsheet\\Style\\Border::BORDER_THIN')
+                ? constant('PhpOffice\\PhpSpreadsheet\\Style\\Border::BORDER_THIN')
+                : 'thin';
+            $alignRight = defined('PhpOffice\\PhpSpreadsheet\\Style\\Alignment::HORIZONTAL_RIGHT')
+                ? constant('PhpOffice\\PhpSpreadsheet\\Style\\Alignment::HORIZONTAL_RIGHT')
+                : 'right';
 
-        $sheet->setCellValue('A1', 'Museo de Labo - Visitor Export');
-        $sheet->mergeCells('A1:N1');
-        $sheet->setCellValue('A2', 'Generated At');
-        $sheet->setCellValue('B2', date('Y-m-d H:i:s'));
-        $sheet->setCellValue('A3', 'Filter Month');
-        $sheet->setCellValue('B3', $month ?: 'All');
-        $sheet->setCellValue('A4', 'Total Records');
-        $sheet->setCellValue('B4', count($rows));
-        $sheet->setCellValue('A5', 'Total Visitors (Pax)');
-        $sheet->setCellValue('B5', $totalPax);
-        $sheet->setCellValue('A6', 'Total Male');
-        $sheet->setCellValue('B6', $totalMale);
-        $sheet->setCellValue('A7', 'Total Female');
-        $sheet->setCellValue('B7', $totalFemale);
+            $spreadsheet = new $spreadsheetClass();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Visitors');
 
-        $sheet->fromArray($columns, null, 'A9');
-        if (!empty($rows)) {
-            $sheet->fromArray($rows, null, 'A10');
+            $sheet->setCellValue('A1', 'Museo de Labo - Visitor Export');
+            $sheet->mergeCells('A1:N1');
+            $sheet->setCellValue('A2', 'Generated At');
+            $sheet->setCellValue('B2', date('Y-m-d H:i:s'));
+            $sheet->setCellValue('A3', 'Filter Month');
+            $sheet->setCellValue('B3', $month ?: 'All');
+            $sheet->setCellValue('A4', 'Total Records');
+            $sheet->setCellValue('B4', count($rows));
+            $sheet->setCellValue('A5', 'Total Visitors (Pax)');
+            $sheet->setCellValue('B5', $totalPax);
+            $sheet->setCellValue('A6', 'Total Male');
+            $sheet->setCellValue('B6', $totalMale);
+            $sheet->setCellValue('A7', 'Total Female');
+            $sheet->setCellValue('B7', $totalFemale);
+
+            $sheet->fromArray($columns, null, 'A9');
+            if (!empty($rows)) {
+                $sheet->fromArray($rows, null, 'A10');
+            }
+
+            $sheet->getStyle('A1:N1')->getFont()->setBold(true)->setSize(14)->getColor()->setRGB('FFFFFF');
+            $sheet->getStyle('A1:N1')->getFill()->setFillType($fillSolid)->getStartColor()->setRGB('1F3E56');
+            $sheet->getStyle('A9:N9')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+            $sheet->getStyle('A9:N9')->getFill()->setFillType($fillSolid)->getStartColor()->setRGB('2F8FCB');
+
+            $lastRow = 9 + count($rows);
+            $sheet->getStyle('A9:N' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle($borderThin);
+            $sheet->getStyle('I10:K' . max(10, $lastRow))->getAlignment()->setHorizontal($alignRight);
+            $sheet->freezePane('A10');
+
+            foreach (range('A', 'N') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            $filename = 'Museo_Visitors_' . ($month ?: date('Y-m-d')) . '.xlsx';
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+
+            $writer = new $writerClass($spreadsheet);
+            $writer->save('php://output');
+            exit;
+        } catch (Throwable $e) {
+            // Graceful fallback to HTML-based XLS export below.
         }
-
-        $sheet->getStyle('A1:N1')->getFont()->setBold(true)->setSize(14)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle('A1:N1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('1F3E56');
-        $sheet->getStyle('A9:N9')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle('A9:N9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2F8FCB');
-
-        $lastRow = 9 + count($rows);
-        $sheet->getStyle('A9:N' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $sheet->getStyle('I10:K' . max(10, $lastRow))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $sheet->freezePane('A10');
-
-        foreach (range('A', 'N') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        $filename = 'Museo_Visitors_' . ($month ?: date('Y-m-d')) . '.xlsx';
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Cache-Control: max-age=0');
-
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $writer->save('php://output');
-        exit;
     }
 }
 

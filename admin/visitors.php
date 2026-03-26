@@ -13,7 +13,22 @@ if (isset($_GET['delete'])) {
 
 $month  = $_GET['month'] ?? '';
 $exportFormat = $_GET['export_format'] ?? 'xlsx';
+$exportMonth = $_GET['export_month'] ?? 'all';
 if (!in_array($exportFormat, ['xlsx', 'csv'], true)) $exportFormat = 'xlsx';
+
+$monthOptionsRaw = dbQuery("SELECT DISTINCT DATE_FORMAT(visit_date, '%Y-%m') AS ym FROM guests WHERE visit_date IS NOT NULL ORDER BY ym DESC");
+$monthOptions = [];
+foreach ($monthOptionsRaw as $m) {
+  $ym = $m['ym'] ?? '';
+  if ($ym !== '') {
+    $monthOptions[] = $ym;
+  }
+}
+
+if ($exportMonth !== 'all' && !in_array($exportMonth, $monthOptions, true)) {
+  $exportMonth = 'all';
+}
+
 $params = [];
 $sql    = "SELECT * FROM guests WHERE 1=1";
 if ($month) { $sql .= " AND DATE_FORMAT(visit_date,'%Y-%m')=?"; $params[] = $month; }
@@ -34,7 +49,7 @@ require_once 'admin_header.php';
 
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px">
       <h3 class="adm-sec-title" style="margin:0">&#128101; Visitor Log</h3>
-      <a href="export.php?format=<?= urlencode($exportFormat) ?><?= $month ? '&month=' . urlencode($month) : '' ?>" class="toggle-btn bg-green" style="text-decoration:none">
+      <a href="export.php?format=<?= urlencode($exportFormat) ?><?= $exportMonth !== 'all' ? '&month=' . urlencode($exportMonth) : '' ?>" class="toggle-btn bg-green" style="text-decoration:none">
         &#128229; Export <?= $exportFormat === 'csv' ? 'CSV' : 'Excel' ?>
       </a>
     </div>
@@ -47,6 +62,17 @@ require_once 'admin_header.php';
       <select id="exportFormat" name="export_format" class="mi">
         <option value="xlsx" <?= $exportFormat==='xlsx'?'selected':'' ?>>Excel (.xlsx)</option>
         <option value="csv" <?= $exportFormat==='csv'?'selected':'' ?>>CSV (.csv)</option>
+      </select>
+
+      <label for="exportMonth">Export Month:</label>
+      <select id="exportMonth" name="export_month" class="mi">
+        <option value="all" <?= $exportMonth==='all'?'selected':'' ?>>All Months</option>
+        <?php foreach ($monthOptions as $opt): ?>
+          <?php $dt = DateTime::createFromFormat('Y-m', $opt); ?>
+          <option value="<?= htmlspecialchars($opt) ?>" <?= $exportMonth===$opt?'selected':'' ?>>
+            <?= htmlspecialchars($dt ? $dt->format('F Y') : $opt) ?>
+          </option>
+        <?php endforeach; ?>
       </select>
 
       <a href="visitors.php" class="btn-clf" style="text-decoration:none;display:inline-flex;align-items:center">Clear</a>
