@@ -52,7 +52,7 @@ require_once 'admin_header.php';
       <button type="button" class="adm-qcard" onclick="togglePanel('quickAddArtifactForm')"><span>&#10133;</span>Add Artifact</button>
       <button type="button" class="adm-qcard" onclick="togglePanel('quickAddDeptForm')"><span>&#128194;</span>Add Department</button>
       <button type="button" class="adm-qcard" onclick="togglePanel('quickAddNewsForm')"><span>&#128226;</span>Post News</button>
-      <a href="export.php" class="adm-qcard"><span>&#128229;</span>Export Visitors</a>
+      <a href="export.php?format=xlsx" class="adm-qcard"><span>&#128229;</span>Export Visitors</a>
     </div>
 
     <div class="adm-quick-panels">
