@@ -34,6 +34,29 @@ if (!file_exists($pdfAbsolute)) {
       src="<?= htmlspecialchars($pdfUrl) ?>#view=FitH"
       title="Ksay-say Layout full reader"
       class="pdf-reader-frame"></iframe>
+
+    <button
+      type="button"
+      class="ai-float-btn"
+      id="aiFloatBtn"
+      onclick="toggleAiSearchPopup()"
+      title="AI Search"
+      aria-label="Open AI search popup">
+      AI
+    </button>
+
+    <div class="ai-search-popup" id="aiSearchPopup" aria-hidden="true">
+      <div class="ai-search-head">
+        <strong>AI Assistant (Offline)</strong>
+        <button type="button" class="ai-close-btn" onclick="closeAiSearchPopup()" aria-label="Close AI search">&times;</button>
+      </div>
+      <p class="ai-search-sub">Ask questions about this PDF using local Ollama + LangChain.</p>
+      <form onsubmit="runAiSearch(event)" class="ai-search-form">
+        <input type="text" id="aiSearchInput" class="ai-search-input" placeholder="Ask about this document..." required>
+        <button type="submit" class="ai-search-go" id="aiSearchGoBtn">Ask</button>
+      </form>
+      <div class="ai-search-result" id="aiSearchResult" aria-live="polite"></div>
+    </div>
   </div>
 </div>
 
@@ -90,12 +113,128 @@ function syncReaderFullscreenButton() {
   btn.textContent = inFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen';
 }
 
+function toggleAiSearchPopup() {
+  var popup = document.getElementById('aiSearchPopup');
+  if (!popup) return;
+
+  var isOpen = popup.classList.contains('is-open');
+  if (isOpen) {
+    closeAiSearchPopup();
+    return;
+  }
+
+  popup.classList.add('is-open');
+  popup.setAttribute('aria-hidden', 'false');
+
+  var input = document.getElementById('aiSearchInput');
+  if (input) input.focus();
+}
+
+function closeAiSearchPopup() {
+  var popup = document.getElementById('aiSearchPopup');
+  if (!popup) return;
+
+  popup.classList.remove('is-open');
+  popup.setAttribute('aria-hidden', 'true');
+}
+
+function runAiSearch(event) {
+  if (event) event.preventDefault();
+  var input = document.getElementById('aiSearchInput');
+  var result = document.getElementById('aiSearchResult');
+  var btn = document.getElementById('aiSearchGoBtn');
+  if (!input) return;
+
+  var query = input.value.trim();
+  if (!query) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Thinking...';
+  }
+  if (result) {
+    result.innerHTML = '<div class="ai-status">Connecting to local AI service...</div>';
+  }
+
+  postAiAsk(query)
+    .then(function(response) {
+      if (!response.ok) {
+        return response.json().then(function(data) {
+          throw new Error((data && data.detail) ? data.detail : 'AI request failed.');
+        }).catch(function() {
+          throw new Error('AI request failed.');
+        });
+      }
+      return response.json();
+    })
+    .then(function(data) {
+      if (!result) return;
+      var answer = (data && data.answer) ? data.answer : 'No answer returned.';
+      var sources = Array.isArray(data && data.sources) ? data.sources : [];
+
+      var srcHtml = '';
+      if (sources.length) {
+        srcHtml = '<div class="ai-sources"><strong>Source snippets:</strong><ul>'
+          + sources.map(function(s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('')
+          + '</ul></div>';
+      }
+
+      result.innerHTML = '<div class="ai-answer">' + escapeHtml(answer) + '</div>' + srcHtml;
+    })
+    .catch(function(error) {
+      if (!result) return;
+      var message = (error && error.message) ? error.message : 'Unknown error';
+      result.innerHTML = '<div class="ai-error">Local AI is not ready.<br>'
+        + '1) Start API: <code>python ai/rag_server.py</code><br>'
+        + '2) Install/start Ollama and run: <code>ollama serve</code><br>'
+        + '3) Pull model: <code>ollama pull llama3</code> (or <code>phi3</code>)<br>'
+        + 'Error: ' + escapeHtml(message) + '</div>';
+    })
+    .finally(function() {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Ask';
+      }
+    });
+}
+
+function postAiAsk(question) {
+  var endpoints = ['http://127.0.0.1:8008/ask', 'http://localhost:8008/ask'];
+
+  function tryIndex(i) {
+    if (i >= endpoints.length) {
+      return Promise.reject(new Error('Failed to fetch'));
+    }
+
+    return fetch(endpoints[i], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: question })
+    }).catch(function() {
+      return tryIndex(i + 1);
+    });
+  }
+
+  return tryIndex(0);
+}
+
+function escapeHtml(value) {
+  if (value == null) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('fullscreenchange', syncReaderFullscreenButton);
 document.addEventListener('DOMContentLoaded', syncReaderFullscreenButton);
 
 document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape') {
     closeReaderExitPopup();
+    closeAiSearchPopup();
   }
 });
 </script>
