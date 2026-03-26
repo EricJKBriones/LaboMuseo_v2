@@ -2,6 +2,9 @@
 // admin/sidebar.php
 $adminPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
+<button type="button" class="adm-mobile-fab" onclick="toggleAdminSidebar()" aria-label="Toggle admin menu">
+  &#9776;
+</button>
 <aside class="adm-sidebar">
   <div class="adm-side-head">
     <h3>Admin Menu</h3>

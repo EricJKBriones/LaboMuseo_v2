@@ -18,6 +18,21 @@
   position:relative;
   z-index:4;
 }
+.adm-mobile-fab {
+  display:none;
+  position:fixed;
+  top:78px;
+  left:12px;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid rgba(201,146,42,.45);
+  background:var(--navy);
+  color:var(--gold2);
+  box-shadow:0 8px 20px rgba(8,24,39,.28);
+  z-index:1250;
+  cursor:pointer;
+}
 .adm-menu { list-style:none; overflow-x:hidden; }
 .adm-menu li { margin-bottom:3px; }
 .adm-menu li a { color:#8aa4b8; text-decoration:none; display:flex; align-items:center; gap:9px; padding:10px 12px; border-radius:7px; transition:all .2s; font-weight:500; font-size:.84rem; border-left:3px solid transparent; width:100%; box-sizing:border-box; }
@@ -26,6 +41,30 @@
 .adm-menu li a:hover { background:rgba(255,255,255,.06); color:#fff; padding-left:16px; border-left-color:var(--gold); }
 .adm-menu li a.active { background:rgba(201,146,42,.15); color:var(--gold2); padding-left:16px; border-left-color:var(--gold); }
 .adm-main { flex:1; background:#f0f2f5; padding:30px; box-sizing:border-box; min-width:0; }
+
+/* Admin page transition and menu click feedback */
+body.admin-page-enter .adm-main {
+  animation:admPageIn .16s cubic-bezier(.22,.61,.36,1);
+}
+body.admin-page-leaving .adm-main {
+  opacity:.84;
+  transform:translateY(2px);
+  transition:opacity .12s ease, transform .12s ease;
+}
+body.admin-page-leaving .adm-sidebar {
+  filter:saturate(.96);
+  transition:filter .12s ease;
+}
+
+@keyframes admPageIn {
+  from { opacity:.82; transform:translateY(4px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.adm-menu li a.active { background:rgba(201,146,42,.15); color:var(--gold2); padding-left:16px; border-left-color:var(--gold); }
+.adm-menu li a.is-clicking {
+  transform:scale(.992);
+  filter:brightness(1.06);
+}
 
 body.admin-sidebar-collapsed .adm-sidebar { width:78px; padding:14px 8px; }
 body.admin-sidebar-collapsed .adm-sidebar h3 {
@@ -334,15 +373,74 @@ textarea.ai { resize:vertical; min-height:86px; }
 .adm-charts-grid .adm-chart-card:last-child { grid-column:1 / -1; }
 .adm-chart-compact-wrap { max-width:280px; margin:0 auto; }
 @media(max-width:900px) {
-  .adm-layout { flex-direction:column; }
-  .adm-sidebar { width:100%; height:auto; position:static; padding:12px; }
-  body.admin-sidebar-collapsed .adm-sidebar { width:100%; padding:10px; }
-  body.admin-sidebar-collapsed .adm-sidebar h3 { display:none; }
-  body.admin-sidebar-collapsed .adm-label { display:none; }
-  body.admin-sidebar-collapsed .adm-side-head { justify-content:flex-end; }
-  .adm-menu { display:flex; flex-wrap:wrap; gap:6px; }
-  .adm-menu li { flex:1 1 43%; }
-  .adm-menu li a { text-align:center; justify-content:center; border-left:none; font-size:.8rem; padding:8px 6px; }
+  .adm-layout { display:block; min-height:calc(100vh - 68px); }
+  .adm-main { width:100%; margin-left:0; }
+  .adm-sidebar {
+    width:250px;
+    height:calc(100vh - 68px);
+    position:fixed;
+    top:68px;
+    left:0;
+    padding:12px;
+    transform:translateX(-104%);
+    transition:transform .24s ease;
+    z-index:1230;
+    box-shadow:8px 0 26px rgba(8,24,39,.32);
+    pointer-events:none;
+  }
+  body.admin-sidebar-open .adm-sidebar {
+    transform:translateX(0) !important;
+    pointer-events:auto;
+  }
+
+  body.admin-sidebar-open::before {
+    content:'';
+    position:fixed;
+    left:0;
+    right:0;
+    top:68px;
+    bottom:0;
+    background:rgba(8,24,39,.42);
+    z-index:1220;
+  }
+
+  .adm-side-toggle { display:none; }
+  .adm-mobile-fab { display:inline-flex; align-items:center; justify-content:center; }
+  body.admin-sidebar-open .adm-mobile-fab { opacity:0; pointer-events:none; }
+
+  /* Disable desktop collapse mode behavior on mobile drawer view */
+  body.admin-sidebar-collapsed .adm-sidebar {
+    width:250px;
+    padding:12px;
+    transform:translateX(-104%);
+  }
+  body.admin-sidebar-collapsed .adm-sidebar h3 {
+    display:block;
+    opacity:1;
+    max-width:180px;
+    padding-left:10px;
+    transform:none;
+    pointer-events:auto;
+  }
+  body.admin-sidebar-collapsed .adm-label {
+    display:inline-block;
+    opacity:1;
+    max-width:160px;
+    transform:none;
+    pointer-events:auto;
+  }
+  body.admin-sidebar-collapsed .adm-side-head { justify-content:space-between; margin-bottom:12px; }
+  body.admin-sidebar-collapsed .adm-menu { display:block; }
+  body.admin-sidebar-collapsed .adm-menu li a {
+    justify-content:flex-start;
+    gap:9px;
+    padding:10px 12px;
+    min-height:unset;
+  }
+
+  .adm-menu { display:block; }
+  .adm-menu li { flex:none; margin-bottom:4px; }
+  .adm-menu li a { text-align:left; justify-content:flex-start; border-left:3px solid transparent; font-size:.82rem; padding:9px 10px; }
   .adm-stats,.adm-qgrid { grid-template-columns:1fr 1fr; }
   .fg2 { grid-template-columns:1fr; }
   .adm-main { padding:16px; }
@@ -354,20 +452,15 @@ textarea.ai { resize:vertical; min-height:86px; }
 }
 @media(max-width:600px) {
   /* Full width layout */
-  .adm-layout { flex-direction:column; width:100%; overflow-x:hidden; }
+  .adm-layout { width:100%; overflow-x:hidden; }
   .adm-main { padding:12px; width:100%; box-sizing:border-box; }
 
   /* Sidebar compact on mobile */
-  .adm-sidebar { padding:10px; }
-  .adm-sidebar h3 { display:none; }
-  .adm-side-head { margin-bottom:8px; justify-content:flex-end; }
-  .adm-menu { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
-  .adm-menu li { flex:none; }
-  .adm-menu li a { font-size:.75rem; padding:8px 4px; gap:5px; border-radius:6px; }
-
-  body.admin-sidebar-collapsed .adm-menu { grid-template-columns:repeat(4,1fr); }
-  body.admin-sidebar-collapsed .adm-menu li a { padding:9px 2px; }
-  body.admin-sidebar-collapsed .adm-ico { font-size:1.05rem; }
+  .adm-sidebar { width:232px; padding:10px; }
+  .adm-mobile-fab { top:76px; left:10px; width:34px; height:34px; }
+  .adm-side-head { margin-bottom:8px; justify-content:space-between; }
+  .adm-menu { display:block; }
+  .adm-menu li a { font-size:.78rem; padding:8px 9px; gap:7px; border-radius:6px; }
 
   /* Stats 2 col */
   .adm-stats { grid-template-columns:1fr 1fr; gap:8px; }

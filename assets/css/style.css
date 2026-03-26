@@ -37,7 +37,10 @@ a    { text-decoration:none; color:inherit; }
   position:sticky; top:0; z-index:1000;
   box-shadow:0 2px 20px rgba(0,0,0,.4);
   border-bottom:2px solid var(--gold);
+  transform:translateY(0);
+  transition:transform .24s cubic-bezier(.22,.61,.36,1), box-shadow .24s ease;
 }
+body.header-hidden .site-header { transform:translateY(-100%); }
 .header-inner {
   max-width:1300px; margin:0 auto; padding:0 28px;
   height:68px; display:flex; align-items:center; justify-content:space-between;
@@ -76,6 +79,57 @@ a    { text-decoration:none; color:inherit; }
 .nav-logout  { color:#e74c3c !important; font-weight:600 !important; }
 .nav-dashboard { color:#5dade2 !important; font-weight:600 !important; }
 .guest-badge { color:#9bb5c8; font-size:.82rem; padding:6px 10px; }
+
+/* Desktop header size transition: larger on Home, normal on inner pages */
+@media (min-width: 993px) {
+  .site-header,
+  .header-inner,
+  .logo-seal,
+  .logo-name,
+  .logo-sub,
+  .nav-lnk {
+    transition:all .28s cubic-bezier(.22,.61,.36,1);
+  }
+
+  body.page-home .header-inner { height:92px; }
+  body.page-home .logo-seal { width:56px; height:56px; }
+  body.page-home .logo-name { font-size:1.42rem; }
+  body.page-home .logo-sub { font-size:.69rem; letter-spacing:2.35px; }
+  body.page-home .nav-lnk { padding:10px 14px; font-size:.9rem; }
+
+  body.page-home.page-leaving .header-inner { height:68px; }
+  body.page-home.page-leaving .logo-seal { width:44px; height:44px; }
+  body.page-home.page-leaving .logo-name { font-size:1.2rem; }
+  body.page-home.page-leaving .logo-sub { font-size:.6rem; letter-spacing:2px; }
+  body.page-home.page-leaving .nav-lnk { padding:7px 12px; }
+
+  body.page-home.page-entering .header-inner { animation:homeHeaderGrow .3s cubic-bezier(.22,.61,.36,1); }
+  body.page-home.page-entering .logo-seal { animation:homeLogoGrow .3s cubic-bezier(.22,.61,.36,1); }
+  body.page-home.page-entering .logo-name { animation:homeNameGrow .3s cubic-bezier(.22,.61,.36,1); }
+  body.page-home.page-entering .logo-sub { animation:homeSubGrow .3s cubic-bezier(.22,.61,.36,1); }
+  body.page-home.page-entering .nav-lnk { animation:homeNavGrow .3s cubic-bezier(.22,.61,.36,1); }
+
+  @keyframes homeHeaderGrow {
+    from { height:68px; }
+    to { height:92px; }
+  }
+  @keyframes homeLogoGrow {
+    from { width:44px; height:44px; }
+    to { width:56px; height:56px; }
+  }
+  @keyframes homeNameGrow {
+    from { font-size:1.2rem; }
+    to { font-size:1.42rem; }
+  }
+  @keyframes homeSubGrow {
+    from { font-size:.6rem; letter-spacing:2px; }
+    to { font-size:.69rem; letter-spacing:2.35px; }
+  }
+  @keyframes homeNavGrow {
+    from { padding:7px 12px; font-size:.85rem; }
+    to { padding:10px 14px; font-size:.9rem; }
+  }
+}
 
 /* ── FOOTER ────────────────────────────────────────────────── */
 .site-footer { background:var(--navy3); color:#8a9db0; border-top:2px solid var(--gold); padding:44px 28px 22px; }
