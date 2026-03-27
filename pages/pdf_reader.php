@@ -42,20 +42,30 @@ if (!file_exists($pdfAbsolute)) {
       onclick="toggleAiSearchPopup()"
       title="AI Search"
       aria-label="Open AI search popup">
-      AI
+      Ask AI
     </button>
 
     <div class="ai-search-popup" id="aiSearchPopup" aria-hidden="true">
       <div class="ai-search-head">
-        <strong>AI Assistant (Offline)</strong>
+        <div class="ai-head-meta">
+          <span class="ai-head-kicker">Local Assistant</span>
+          <strong>Ask this PDF</strong>
+        </div>
         <button type="button" class="ai-close-btn" onclick="closeAiSearchPopup()" aria-label="Close AI search">&times;</button>
       </div>
-      <p class="ai-search-sub">Ask questions about this PDF using local Ollama + LangChain.</p>
+      <p class="ai-search-sub">Powered by local Ollama + LangChain. Nothing is sent to cloud services.</p>
+      <div class="ai-suggest-row">
+        <button type="button" class="ai-suggest-btn" onclick="setAiPrompt('Give me a 5 bullet summary of this PDF.')">Quick summary</button>
+        <button type="button" class="ai-suggest-btn" onclick="setAiPrompt('What are the key names, places, and dates in this document?')">Key details</button>
+        <button type="button" class="ai-suggest-btn" onclick="setAiPrompt('Explain this document in simple Filipino.')">Simple explain</button>
+      </div>
       <form onsubmit="runAiSearch(event)" class="ai-search-form">
         <input type="text" id="aiSearchInput" class="ai-search-input" placeholder="Ask about this document..." required>
         <button type="submit" class="ai-search-go" id="aiSearchGoBtn">Ask</button>
       </form>
-      <div class="ai-search-result" id="aiSearchResult" aria-live="polite"></div>
+      <div class="ai-search-result" id="aiSearchResult" aria-live="polite">
+        <div class="ai-empty">Try a question above to start reading insights from this PDF.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -115,6 +125,7 @@ function syncReaderFullscreenButton() {
 
 function toggleAiSearchPopup() {
   var popup = document.getElementById('aiSearchPopup');
+  var btn = document.getElementById('aiFloatBtn');
   if (!popup) return;
 
   var isOpen = popup.classList.contains('is-open');
@@ -125,6 +136,7 @@ function toggleAiSearchPopup() {
 
   popup.classList.add('is-open');
   popup.setAttribute('aria-hidden', 'false');
+  if (btn) btn.classList.add('is-active');
 
   var input = document.getElementById('aiSearchInput');
   if (input) input.focus();
@@ -132,10 +144,19 @@ function toggleAiSearchPopup() {
 
 function closeAiSearchPopup() {
   var popup = document.getElementById('aiSearchPopup');
+  var btn = document.getElementById('aiFloatBtn');
   if (!popup) return;
 
   popup.classList.remove('is-open');
   popup.setAttribute('aria-hidden', 'true');
+  if (btn) btn.classList.remove('is-active');
+}
+
+function setAiPrompt(text) {
+  var input = document.getElementById('aiSearchInput');
+  if (!input) return;
+  input.value = text;
+  input.focus();
 }
 
 function runAiSearch(event) {
@@ -153,7 +174,7 @@ function runAiSearch(event) {
     btn.textContent = 'Thinking...';
   }
   if (result) {
-    result.innerHTML = '<div class="ai-status">Connecting to local AI service...</div>';
+    result.innerHTML = '<div class="ai-status"><span class="ai-status-dot"></span>Connecting to local AI service...</div>';
   }
 
   postAiAsk(query)
@@ -236,5 +257,15 @@ document.addEventListener('keydown', function(event) {
     closeReaderExitPopup();
     closeAiSearchPopup();
   }
+});
+
+document.addEventListener('click', function(event) {
+  var popup = document.getElementById('aiSearchPopup');
+  var btn = document.getElementById('aiFloatBtn');
+  if (!popup || !btn) return;
+  if (!popup.classList.contains('is-open')) return;
+
+  if (popup.contains(event.target) || btn.contains(event.target)) return;
+  closeAiSearchPopup();
 });
 </script>
