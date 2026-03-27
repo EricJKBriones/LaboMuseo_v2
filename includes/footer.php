@@ -31,7 +31,9 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRI
           <li><a href="<?= $base ?>index.php?page=home">Home</a></li>
           <li><a href="<?= $base ?>index.php?page=about">About</a></li>
           <li><a href="<?= $base ?>index.php?page=news">News &amp; Events</a></li>
-          <li><a href="<?= $base ?>index.php?page=login">Sign Guestbook</a></li>
+          <?php if (!isAdmin() && !isGuest()): ?>
+            <li><a href="<?= $base ?>index.php?page=login">Sign Guestbook</a></li>
+          <?php endif; ?>
         </ul>
       </div>
     </div>

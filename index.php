@@ -48,8 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $org = 'N/A'; $hc = 1; $mc = 0; $fc = 0;
         if ($type === 'Group') {
             $org = trim($_POST['organization'] ?? '');
-            $mc  = (int)($_POST['male_count'] ?? 0);
-            $fc  = (int)($_POST['female_count'] ?? 0);
+            $mc  = max(0, (int)($_POST['male_count'] ?? 0));
+            $fc  = max(0, (int)($_POST['female_count'] ?? 0));
+
+            // Include the representative in the group total.
+            if ($gender === 'Male') {
+                $mc++;
+            } elseif ($gender === 'Female') {
+                $fc++;
+            }
+
             $hc  = $mc + $fc;
             if (!$org) {
                 $_SESSION['reg_error'] = 'Please enter organization name.';
@@ -76,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // ── Page routing ─────────────────────────────────────────────
 $page = $_GET['page'] ?? 'home';
-$allowedPages = ['home','about','news','news_detail','categories','exhibits','detail','login'];
+$allowedPages = ['home','about','news','news_detail','categories','exhibits','detail','pdf_detail','pdf_reader','login'];
 if (!in_array($page, $allowedPages)) $page = 'home';
 
 $pageTitle = SITE_NAME;
@@ -87,6 +95,8 @@ switch($page) {
     case 'categories': $pageTitle = 'Departments — ' . SITE_NAME; break;
     case 'exhibits':   $pageTitle = 'All Artifacts — ' . SITE_NAME; break;
     case 'detail':     $pageTitle = 'Artifact Detail — ' . SITE_NAME; break;
+    case 'pdf_detail': $pageTitle = 'Artifact Document Detail — ' . SITE_NAME; break;
+    case 'pdf_reader': $pageTitle = 'Artifact Reading Mode — ' . SITE_NAME; break;
     case 'login':      $pageTitle = 'Login / Access — ' . SITE_NAME; break;
 }
 

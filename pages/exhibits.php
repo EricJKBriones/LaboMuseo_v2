@@ -41,6 +41,35 @@ $categories = dbQuery("SELECT * FROM categories ORDER BY name ASC");
 $origins = dbQuery("SELECT DISTINCT origin FROM exhibits WHERE origin IS NOT NULL AND TRIM(origin)<>'' ORDER BY origin ASC");
 $years   = dbQuery("SELECT DISTINCT artifact_year FROM exhibits WHERE artifact_year IS NOT NULL AND TRIM(artifact_year)<>'' ORDER BY artifact_year DESC");
 $currentCat = $catFilter ? dbOne("SELECT * FROM categories WHERE id=?", [$catFilter]) : null;
+
+$pdfArtifact = [
+  'title' => 'Ksay-say Layout (Final 6-8-23)',
+  'description' => 'Museum publication in PDF format. Click to view document details, first-page preview, and open full reading mode.',
+  'origin' => 'Labo',
+  'artifact_year' => '2023',
+  'cat_name' => 'Document Archive'
+];
+$pdfCoverFile = 'PDF cover.png';
+$pdfCoverPath = 'uploads/' . $pdfCoverFile;
+$pdfCoverUrl = 'uploads/' . rawurlencode($pdfCoverFile);
+$pdfCoverExists = file_exists(__DIR__ . '/../' . $pdfCoverPath);
+
+$showPdfArtifact = true;
+if ($catFilter) {
+  $showPdfArtifact = false;
+}
+if ($showPdfArtifact && $originFilter !== '' && strcasecmp($originFilter, $pdfArtifact['origin']) !== 0) {
+  $showPdfArtifact = false;
+}
+if ($showPdfArtifact && $yearFilter !== '' && $yearFilter !== $pdfArtifact['artifact_year']) {
+  $showPdfArtifact = false;
+}
+if ($showPdfArtifact && $search !== '') {
+  $pdfHaystack = strtolower($pdfArtifact['title'] . ' ' . $pdfArtifact['description'] . ' ' . $pdfArtifact['origin']);
+  if (strpos($pdfHaystack, strtolower($search)) === false) {
+    $showPdfArtifact = false;
+  }
+}
 ?>
 
 <div class="page-hero">
@@ -98,10 +127,32 @@ $currentCat = $catFilter ? dbOne("SELECT * FROM categories WHERE id=?", [$catFil
     <?php endforeach; ?>
   </div>
 
-  <?php if (empty($exhibits)): ?>
+  <?php if (empty($exhibits) && !$showPdfArtifact): ?>
     <div class="empty-state"><div class="ei">&#127994;</div><h3>No artifacts found</h3><p>Try adjusting your search or filter.</p></div>
   <?php else: ?>
   <div class="grid4">
+    <?php if ($showPdfArtifact): ?>
+    <a href="index.php?page=pdf_detail" class="ex-card ex-card-pdf" style="text-decoration:none">
+      <div class="ex-img ex-img-pdf">
+        <div class="pdf-icon-badge">PDF</div>
+        <?php if ($pdfCoverExists): ?>
+          <img src="<?= htmlspecialchars($pdfCoverUrl) ?>" alt="<?= htmlspecialchars($pdfArtifact['title']) ?> cover">
+        <?php else: ?>
+          <div class="ex-img-ph">&#128196;</div>
+        <?php endif; ?>
+      </div>
+      <div class="ex-body">
+        <div class="ex-title"><?= htmlspecialchars($pdfArtifact['title']) ?></div>
+        <div class="ex-meta">
+          <strong>Period:</strong> <?= htmlspecialchars($pdfArtifact['artifact_year']) ?><br>
+          <strong>Origin:</strong> <?= htmlspecialchars($pdfArtifact['origin']) ?><br>
+          <strong>Type:</strong> Document Archive
+        </div>
+        <span class="ex-dept"><?= htmlspecialchars($pdfArtifact['cat_name']) ?></span>
+      </div>
+    </a>
+    <?php endif; ?>
+
     <?php foreach ($exhibits as $ex): ?>
     <a href="index.php?page=detail&id=<?= $ex['id'] ?>" class="ex-card" style="text-decoration:none">
       <div class="ex-img">
