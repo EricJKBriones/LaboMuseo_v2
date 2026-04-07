@@ -42,6 +42,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRI
     </div>
   </div>
 </footer>
+<div id="sileoToastHost" class="sileo-toast-host" aria-live="polite" aria-atomic="true"></div>
 <script src="<?= $base ?>assets/js/main.js"></script>
 </body>
 </html>

@@ -8,6 +8,339 @@ function toggleMenu() {
   document.getElementById('hamburgerBtn').classList.toggle('open');
 }
 
+/* ── SILEO TOAST BAR ───────────────────────────────────────── */
+var sileoToastHost = null;
+var sileoToastDefaults = {
+  position: 'top-right'
+};
+
+function normalizeToastSpec(input, fallbackVariant) {
+  if (typeof input === 'string') {
+    return {
+      message: input,
+      title: '',
+      variant: fallbackVariant || 'info',
+      actions: []
+    };
+  }
+
+  var spec = input || {};
+  var actions = [];
+  if (Array.isArray(spec.actions)) {
+    actions = spec.actions.slice();
+  } else if (spec.action) {
+    actions = [spec.action];
+  }
+
+  return {
+    message: spec.message || spec.description || spec.text || '',
+    title: spec.title || '',
+    variant: spec.variant || spec.type || fallbackVariant || 'info',
+    position: spec.position || sileoToastDefaults.position,
+    duration: typeof spec.duration === 'number' ? spec.duration : undefined,
+    actions: actions,
+    persistent: Boolean(spec.persistent),
+    icon: spec.icon || '',
+    loading: Boolean(spec.loading)
+  };
+}
+
+function setSileoToastPosition(position) {
+  var host = getSileoToastHost();
+  var allowed = {
+    'top-left': true,
+    'top-center': true,
+    'top-right': true,
+    'bottom-left': true,
+    'bottom-center': true,
+    'bottom-right': true
+  };
+  var resolved = allowed[position] ? position : sileoToastDefaults.position;
+
+  host.dataset.position = resolved;
+  host.className = 'sileo-toast-host sileo-toast-host--' + resolved;
+  return host;
+}
+
+function getSileoToastHost() {
+  if (sileoToastHost && document.body.contains(sileoToastHost)) {
+    return sileoToastHost;
+  }
+
+  sileoToastHost = document.getElementById('sileoToastHost');
+  if (!sileoToastHost) {
+    sileoToastHost = document.createElement('div');
+    sileoToastHost.id = 'sileoToastHost';
+    sileoToastHost.setAttribute('aria-live', 'polite');
+    sileoToastHost.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(sileoToastHost);
+  }
+
+  setSileoToastPosition(sileoToastHost.dataset.position || sileoToastDefaults.position);
+
+  return sileoToastHost;
+}
+
+function dismissSileoToast(toast) {
+  if (!toast || toast.dataset.leaving === '1') return;
+  toast.dataset.leaving = '1';
+  toast.classList.add('is-leaving');
+
+  window.setTimeout(function() {
+    if (toast && toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+  }, 240);
+}
+
+function showSileoToastBar(input, variant, timeout) {
+  if (!document.body) return null;
+
+  var spec = normalizeToastSpec(input, variant);
+  if (!spec.message && !spec.title) return null;
+
+  var host = getSileoToastHost();
+  var toast = document.createElement('div');
+  var level = spec.variant || 'info';
+  var title = spec.title || (level === 'error' ? 'Error' : level === 'success' ? 'Success' : level === 'warning' ? 'Warning' : level === 'loading' ? 'Loading' : 'Notice');
+  var icon = spec.icon || (level === 'error' ? '!' : level === 'success' ? '✓' : level === 'warning' ? '!' : level === 'loading' ? '⋯' : 'i');
+  var duration = typeof timeout === 'number' ? timeout : (typeof spec.duration === 'number' ? spec.duration : (level === 'loading' || spec.persistent ? 0 : 5000));
+
+  toast.className = 'sileo-toastbar sileo-toastbar--' + level;
+  toast.setAttribute('role', level === 'error' ? 'alert' : 'status');
+  toast.dataset.variant = level;
+  if (spec.position) {
+    setSileoToastPosition(spec.position);
+  }
+
+  var iconEl = document.createElement('span');
+  iconEl.className = 'sileo-toastbar__icon';
+  iconEl.setAttribute('aria-hidden', 'true');
+  iconEl.textContent = icon;
+
+  var bodyEl = document.createElement('div');
+  bodyEl.className = 'sileo-toastbar__body';
+
+  var titleEl = document.createElement('span');
+  titleEl.className = 'sileo-toastbar__title';
+  titleEl.textContent = title;
+
+  var msgEl = document.createElement('div');
+  msgEl.className = 'sileo-toastbar__msg';
+  msgEl.textContent = String(spec.message).replace(/\s+/g, ' ').trim();
+  if (!msgEl.textContent) {
+    msgEl.style.display = 'none';
+  }
+
+  bodyEl.appendChild(titleEl);
+  bodyEl.appendChild(msgEl);
+
+  var actionBtns = [];
+  if (spec.actions && spec.actions.length) {
+    var actionsWrap = document.createElement('div');
+    actionsWrap.className = 'sileo-toastbar__actions';
+
+    spec.actions.forEach(function(actionSpec) {
+      if (!actionSpec || !actionSpec.label) return;
+      var actionBtn = document.createElement('button');
+      actionBtn.type = 'button';
+      actionBtn.className = 'sileo-toastbar__action';
+      actionBtn.textContent = actionSpec.label;
+      actionsWrap.appendChild(actionBtn);
+      actionBtns.push({ button: actionBtn, spec: actionSpec });
+    });
+
+    if (actionsWrap.childNodes.length) {
+      bodyEl.appendChild(actionsWrap);
+    }
+  }
+
+  var closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'sileo-toastbar__close';
+  closeBtn.setAttribute('aria-label', 'Dismiss notification');
+  closeBtn.textContent = '×';
+
+  toast.appendChild(iconEl);
+  toast.appendChild(bodyEl);
+  toast.appendChild(closeBtn);
+
+  var timerBar = null;
+  if (duration > 0) {
+    timerBar = document.createElement('div');
+    timerBar.className = 'sileo-toastbar__timer';
+    timerBar.style.setProperty('--toast-duration', duration + 'ms');
+    toast.appendChild(timerBar);
+  }
+
+  host.appendChild(toast);
+
+  var timer = null;
+  if (duration > 0) {
+    timer = window.setTimeout(function() {
+      dismissSileoToast(toast);
+    }, duration);
+  }
+
+  closeBtn.addEventListener('click', function() {
+    if (timer) window.clearTimeout(timer);
+    dismissSileoToast(toast);
+  });
+
+  actionBtns.forEach(function(entry) {
+    entry.button.addEventListener('click', function() {
+      if (entry.spec && typeof entry.spec.onClick === 'function') {
+        entry.spec.onClick(toast);
+      }
+      if (entry.spec && entry.spec.href) {
+        window.location.href = entry.spec.href;
+      }
+      if (!entry.spec || entry.spec.dismiss !== false) {
+        if (timer) window.clearTimeout(timer);
+        dismissSileoToast(toast);
+      }
+    });
+  });
+
+  toast.addEventListener('mouseenter', function() {
+    if (timer) window.clearTimeout(timer);
+  });
+
+  toast.addEventListener('mouseleave', function() {
+    if (toast.dataset.leaving === '1') return;
+    if (!duration) return;
+    timer = window.setTimeout(function() {
+      dismissSileoToast(toast);
+    }, 1200);
+  });
+
+  toast.dismiss = function() {
+    if (timer) window.clearTimeout(timer);
+    dismissSileoToast(toast);
+  };
+
+  toast.update = function(nextInput) {
+    var nextSpec = normalizeToastSpec(nextInput, level);
+    if (nextSpec.position) {
+      setSileoToastPosition(nextSpec.position);
+    }
+    if (nextSpec.variant) {
+      toast.className = 'sileo-toastbar sileo-toastbar--' + nextSpec.variant;
+      toast.dataset.variant = nextSpec.variant;
+    }
+    if (nextSpec.title) {
+      titleEl.textContent = nextSpec.title;
+    }
+    if (typeof nextSpec.message === 'string') {
+      msgEl.textContent = nextSpec.message.replace(/\s+/g, ' ').trim();
+      msgEl.style.display = msgEl.textContent ? '' : 'none';
+    }
+  };
+
+  return toast;
+}
+
+function showSileoActionToast(payload) {
+  var spec = normalizeToastSpec(payload, 'info');
+  if (typeof spec.duration !== 'number') {
+    spec.duration = 5000;
+  }
+  return showSileoToastBar(spec, 'info');
+}
+
+function showSileoPromiseToast(promiseOrFactory, payload) {
+  var spec = normalizeToastSpec(payload, 'loading');
+  spec.variant = 'loading';
+  spec.persistent = true;
+  spec.title = spec.title || 'Loading';
+  var toast = showSileoToastBar(spec, 'loading');
+  var promise = typeof promiseOrFactory === 'function' ? promiseOrFactory() : promiseOrFactory;
+
+  return Promise.resolve(promise).then(function(result) {
+    if (toast && toast.update) {
+      toast.update({
+        variant: 'success',
+        title: spec.successTitle || 'Success',
+        message: spec.successMessage || 'Completed successfully.'
+      });
+      window.setTimeout(function() {
+        if (toast && toast.dismiss) toast.dismiss();
+      }, 1400);
+    }
+    return result;
+  }).catch(function(error) {
+    var errorMessage = spec.errorMessage || (error && error.message) || 'Something went wrong.';
+    if (toast && toast.update) {
+      toast.update({
+        variant: 'error',
+        title: spec.errorTitle || 'Error',
+        message: errorMessage
+      });
+    }
+    throw error;
+  });
+}
+
+function initSileoToastBars() {
+  var alerts = document.querySelectorAll('.alert-ok, .alert-err, .msg-box.msg-err');
+  if (!alerts.length) return;
+
+  alerts.forEach(function(alertEl) {
+    if (!alertEl || alertEl.dataset.toastShown === '1') return;
+    var text = '';
+    var actions = [];
+
+    if (alertEl.querySelector('a, button')) {
+      var clone = alertEl.cloneNode(true);
+      clone.querySelectorAll('a, button').forEach(function(node) {
+        node.parentNode.removeChild(node);
+      });
+      text = (clone.textContent || '').replace(/\s+/g, ' ').trim();
+
+      alertEl.querySelectorAll('a').forEach(function(anchor) {
+        var label = (anchor.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!label || !anchor.getAttribute('href')) return;
+        actions.push({ label: label, href: anchor.getAttribute('href') });
+      });
+    } else {
+      text = (alertEl.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    if (!text) return;
+
+    alertEl.dataset.toastShown = '1';
+    alertEl.classList.add('is-toast-hidden');
+
+    var level = (alertEl.classList.contains('alert-err') || alertEl.classList.contains('msg-err')) ? 'error' : 'success';
+    showSileoToastBar({
+      message: text,
+      variant: level,
+      actions: actions,
+      persistent: actions.length > 0
+    }, level, level === 'error' ? 5200 : 4200);
+  });
+}
+
+window.showSileoToastBar = showSileoToastBar;
+window.showToastBar = showSileoToastBar;
+window.sileo = {
+  success: function(payload) { return showSileoToastBar(payload, 'success'); },
+  error: function(payload) { return showSileoToastBar(payload, 'error'); },
+  warning: function(payload) { return showSileoToastBar(payload, 'warning'); },
+  info: function(payload) { return showSileoToastBar(payload, 'info'); },
+  loading: function(payload) { return showSileoToastBar(normalizeToastSpec(payload, 'loading'), 'loading'); },
+  action: function(payload) { return showSileoActionToast(payload); },
+  promise: function(promiseOrFactory, payload) { return showSileoPromiseToast(promiseOrFactory, payload); },
+  setPosition: function(position) { return setSileoToastPosition(position); },
+  toast: function(payload) { return showSileoToastBar(payload, payload && payload.variant ? payload.variant : 'info'); }
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSileoToastBars);
+} else {
+  initSileoToastBars();
+}
+
 /* ── NEWS TABS ───────────────────────────────────────────────── */
 
 // News page tabs
@@ -218,10 +551,21 @@ function teaserClick(isLoggedIn, loginUrl) {
     // already handled by link
     return;
   }
-  // Show inline prompt or redirect
-  if (confirm('You need to sign the Digital Guestbook to view artifact details.\n\nWould you like to sign now?')) {
-    window.location.href = loginUrl;
+  if (window.sileo && typeof window.sileo.action === 'function') {
+    window.sileo.action({
+      title: 'Guestbook Required',
+      message: 'You need to sign the Digital Guestbook to unlock latest acquisitions.',
+      variant: 'warning',
+      duration: 5000,
+      actions: [
+        { label: 'Sign Guestbook', href: loginUrl },
+        { label: 'Not Now', dismiss: true }
+      ]
+    });
+    return;
   }
+
+  window.location.href = loginUrl;
 }
 
 /* ── HOME: LATEST ACQUISITIONS SCROLLER ───────────────────── */
@@ -231,6 +575,18 @@ var teaserStepPx = 0;
 function initTeaserFader() {
   teaserScrollEl = document.getElementById('teaserScrollport');
   if (!teaserScrollEl) return;
+
+  if (teaserScrollEl.dataset.loggedIn === '0' && !teaserScrollEl.dataset.toastShown) {
+    teaserScrollEl.dataset.toastShown = '1';
+    if (window.sileo && typeof window.sileo.info === 'function') {
+      window.sileo.info({
+        title: 'Latest Acquisitions',
+        message: 'Sign the Digital Guestbook to unlock full artifact details in Latest Acquisitions.',
+        duration: 5200,
+        position: 'top-right'
+      });
+    }
+  }
 
   setTeaserStep();
   updateTeaserFaderMeta();

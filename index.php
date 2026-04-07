@@ -104,7 +104,7 @@ require_once 'includes/header.php';
 ?>
 
 <?php if (!empty($_SESSION['reg_success'])): ?>
-<div style="background:#eef8f3;border-bottom:3px solid #1e7e4f;padding:14px 28px;text-align:center;font-weight:600;color:#155a35;">
+<div class="alert-ok" style="background:#eef8f3;border-bottom:3px solid #1e7e4f;padding:14px 28px;text-align:center;font-weight:600;color:#155a35;">
   &#10003; <?= htmlspecialchars($_SESSION['reg_success']) ?>
 </div>
 <?php unset($_SESSION['reg_success']); endif; ?>

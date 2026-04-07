@@ -6,6 +6,8 @@ if (isLoggedIn()) {
 }
 $loginError = $_SESSION['login_error'] ?? '';
 $regError   = $_SESSION['reg_error'] ?? '';
+$showAdminPanel = !empty($loginError);
+$showGuestPanel = !$showAdminPanel;
 unset($_SESSION['login_error'], $_SESSION['reg_error']);
 ?>
 
@@ -17,7 +19,7 @@ unset($_SESSION['login_error'], $_SESSION['reg_error']);
     <?php endif; ?>
 
     <!-- Admin Panel (hidden by default) -->
-    <div id="adminPanel" style="display:none">
+    <div id="adminPanel" style="display:<?= $showAdminPanel ? 'block' : 'none' ?>">
       <div class="lcard blue-top">
         <div class="lcard-head">
           <div class="icon">&#9881;</div>
@@ -28,14 +30,14 @@ unset($_SESSION['login_error'], $_SESSION['reg_error']);
           <input type="hidden" name="action" value="admin_login">
           <div class="fg"><label>Username</label><input type="text" name="username" class="fc" required autocomplete="username"></div>
           <div class="fg"><label>Password</label><input type="password" name="password" class="fc" required autocomplete="current-password"></div>
-          <button type="submit" class="lbtn blue">Login to Dashboard</button>
+          <button type="submit" class="lbtn blue" data-no-submit-anim="1">Login to Dashboard</button>
         </form>
       </div>
       <div class="l-link-row"><a href="#" onclick="showGuestPanel();return false;">&#8592; Back to Guestbook</a></div>
     </div>
 
     <!-- Guest Panel -->
-    <div id="guestPanel">
+    <div id="guestPanel" style="display:<?= $showGuestPanel ? 'block' : 'none' ?>">
       <div class="lcard">
         <div class="lcard-head">
           <div class="icon">&#128220;</div>

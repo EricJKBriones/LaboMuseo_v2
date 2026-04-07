@@ -6,6 +6,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
 <footer style="background:var(--navy3);color:#8a9db0;text-align:center;padding:20px;border-top:2px solid var(--gold);font-size:.82rem;margin-top:auto">
   <strong style="color:var(--gold2)"><?= SITE_NAME ?></strong> &mdash; Admin Panel &bull; &copy; <?= date('Y') ?>
 </footer>
+<div id="sileoToastHost" class="sileo-toast-host" aria-live="polite" aria-atomic="true"></div>
 <script>
 window.__admSubmitTimers = window.__admSubmitTimers || new WeakMap();
 function adminDebounceSubmit(form, delay) {

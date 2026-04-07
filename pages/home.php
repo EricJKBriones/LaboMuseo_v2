@@ -200,11 +200,11 @@ function homeTab(tab, btn) {
       <?php if (empty($teaserArtifacts)): ?>
         <div class="teaser-empty">No recent acquisitions yet.</div>
       <?php else: ?>
-        <div class="teaser-scrollport" id="teaserScrollport">
+        <div class="teaser-scrollport" id="teaserScrollport" data-logged-in="<?= $loggedIn ? '1' : '0' ?>" data-login-url="index.php?page=login">
           <?php foreach ($teaserArtifacts as $art):
             $artHasImg = $art['image_path'] && file_exists($imgBase.$art['image_path']);
           ?>
-            <?php if ($loggedIn): ?><a href="index.php?page=detail&id=<?= (int)$art['id'] ?>" class="teaser-card" style="text-decoration:none"><?php else: ?><div class="teaser-card" onclick="teaserClick(false,'index.php?page=login')"><?php endif; ?>
+            <?php if ($loggedIn): ?><a href="index.php?page=detail&id=<?= (int)$art['id'] ?>" class="teaser-card" style="text-decoration:none"><?php else: ?><div class="teaser-card" onclick="teaserClick(false,document.getElementById('teaserScrollport').dataset.loginUrl)"><?php endif; ?>
               <div class="teaser-img">
                 <?php if ($artHasImg): ?><img src="uploads/<?= htmlspecialchars($art['image_path']) ?>" alt="<?= htmlspecialchars($art['title']) ?>" <?= !$loggedIn?'style="filter:brightness(.4) blur(2px)"':'' ?>><?php else: ?><div style="width:100%;height:100%;background:#243447;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:rgba(255,255,255,.2)">&#127994;</div><?php endif; ?>
                 <?php if (!$loggedIn): ?><div class="teaser-blur"><div class="teaser-blur-icon">&#128274;</div></div><?php endif; ?>
@@ -215,7 +215,7 @@ function homeTab(tab, btn) {
                   <div class="teaser-meta"><?= $art['cat_name']?'&#128193; '.htmlspecialchars($art['cat_name']).' &bull; ':'' ?><?= htmlspecialchars($art['origin']??'Labo') ?></div>
                 <?php else: ?>
                   <div class="teaser-meta" style="color:#4a6a8a;font-style:italic">Details hidden &mdash; sign guestbook</div>
-                  <a href="index.php?page=login" class="teaser-cta" onclick="event.stopPropagation()">Sign Guestbook to Unlock</a>
+                  <a href="#" class="teaser-cta" onclick="event.preventDefault();event.stopPropagation();teaserClick(false,document.getElementById('teaserScrollport').dataset.loginUrl)">Sign Guestbook to Unlock</a>
                 <?php endif; ?>
               </div>
             <?php if ($loggedIn): ?></a><?php else: ?></div><?php endif; ?>
