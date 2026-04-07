@@ -24,10 +24,13 @@
   --purple: #6a3e9a;
   --shadow: 0 4px 24px rgba(27,42,59,.10);
   --shadow2:0 12px 48px rgba(27,42,59,.18);
+  --font-ui: 'DM Sans', 'Noto Sans', 'Liberation Sans', 'DejaVu Sans', 'Noto Color Emoji', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+  --font-display: 'Playfair Display', 'Noto Serif', 'Georgia', 'Times New Roman', serif;
+  --font-baybayin: 'Noto Sans Tagalog', 'Noto Serif Tagalog', 'Noto Sans', 'DejaVu Sans', 'Segoe UI Symbol', sans-serif;
 }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { scroll-behavior:smooth; }
-body { font-family:'DM Sans',sans-serif; background:var(--ivory); color:var(--text); line-height:1.6; }
+body { font-family:var(--font-ui); background:var(--ivory); color:var(--text); line-height:1.6; }
 img  { max-width:100%; display:block; }
 a    { text-decoration:none; color:inherit; }
 
@@ -55,8 +58,8 @@ body.header-hidden .site-header { transform:translateY(-100%); }
 .logo-seal img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
 .logo-ph { display:flex; align-items:center; justify-content:center; color:var(--gold); }
 .logo-ph svg { width:20px; height:20px; }
-.logo-baybayin { color:#d9e6f0; font-size:.72rem; letter-spacing:.4px; display:block; line-height:1.2; margin-top:2px; }
-.logo-name { color:#fff; font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; display:block; line-height:1.1; }
+.logo-baybayin { color:#d9e6f0; font-size:.72rem; letter-spacing:.4px; display:block; line-height:1.2; margin-top:2px; font-family:var(--font-baybayin); }
+.logo-name { color:#fff; font-family:var(--font-display); font-size:1.2rem; font-weight:700; display:block; line-height:1.1; }
 .logo-sub  { color:var(--gold2); font-size:.6rem; letter-spacing:2px; text-transform:uppercase; display:block; }
 
 .hamburger { display:none; flex-direction:column; cursor:pointer; gap:5px; padding:4px; background:none; border:none; }
@@ -135,8 +138,8 @@ body.header-hidden .site-header { transform:translateY(-100%); }
 .site-footer { background:var(--navy3); color:#8a9db0; border-top:2px solid var(--gold); padding:44px 28px 22px; }
 .footer-inner { max-width:1200px; margin:0 auto; }
 .footer-brand { text-align:center; margin-bottom:26px; }
-.footer-logo-name { font-family:'Playfair Display',serif; font-size:1.25rem; color:#fff; }
-.footer-baybayin { font-size:.72rem; color:#c7d8e6; letter-spacing:.4px; margin-top:3px; }
+.footer-logo-name { font-family:var(--font-display); font-size:1.25rem; color:#fff; }
+.footer-baybayin { font-size:.72rem; color:#c7d8e6; letter-spacing:.4px; margin-top:3px; font-family:var(--font-baybayin); }
 .footer-divider { width:50px; height:2px; background:var(--gold); margin:10px auto; }
 .footer-cols { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-bottom:26px; }
 .footer-col h4 { color:var(--gold2); font-size:.8rem; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px; }
@@ -158,7 +161,7 @@ body.header-hidden .site-header { transform:translateY(-100%); }
 }
 .sec-label::before { content:''; width:24px; height:1.5px; background:var(--gold); }
 .sec-title {
-  font-family:'Playfair Display',serif;
+  font-family:var(--font-display);
   font-size:2.4rem; font-weight:700; color:var(--navy); line-height:1.15; margin-bottom:10px;
 }
 .sec-sub { color:var(--text2); font-size:1rem; line-height:1.7; max-width:580px; }

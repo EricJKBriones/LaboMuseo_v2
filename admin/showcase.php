@@ -5,9 +5,9 @@ sessionStart();
 requireAdmin();
 
 $displayMode = isset($_GET['display']) && $_GET['display'] === '1';
-$tourismLogoPath = '../uploads/tourism-logo.png';
+$tourismLogoPath = __DIR__ . '/../uploads/tourism-logo.png';
 $tourismLogoUrl = '../uploads/tourism-logo.png';
-$mainLogoPath = '../uploads/logo.png';
+$mainLogoPath = __DIR__ . '/../uploads/logo.png';
 $mainLogoUrl = '../uploads/logo.png';
 
 $artifacts = dbQuery(
@@ -52,7 +52,7 @@ require_once 'admin_header.php';
         <div class="showcase-stage" id="showcaseStage" aria-live="polite">
           <?php foreach ($artifacts as $idx => $item): ?>
             <?php
-              $imgPath = !empty($item['image_path']) ? '../uploads/' . $item['image_path'] : '';
+              $imgPath = !empty($item['image_path']) ? __DIR__ . '/../uploads/' . $item['image_path'] : '';
               $hasImg = $imgPath && file_exists($imgPath);
             ?>
             <article class="showcase-slide<?= $idx === 0 ? ' is-active' : '' ?>" data-index="<?= $idx ?>">
@@ -100,7 +100,6 @@ require_once 'admin_header.php';
           <button type="button" class="showcase-arrow next" id="showcaseNext" aria-label="Next artifact">&#10095;</button>
 
           <div class="showcase-top-actions">
-            <button type="button" class="showcase-chip" id="showcasePlayPauseBtn">Pause</button>
             <button type="button" class="showcase-chip" id="showcaseFullscreenBtn" onclick="enterShowcaseFullscreen()">Fullscreen</button>
           </div>
         </div>
@@ -129,7 +128,6 @@ require_once 'admin_header.php';
   var slides = Array.prototype.slice.call(document.querySelectorAll('.showcase-slide'));
   var prevBtn = document.getElementById('showcasePrev');
   var nextBtn = document.getElementById('showcaseNext');
-  var pauseBtn = document.getElementById('showcasePlayPauseBtn');
   var fullscreenBtn = document.getElementById('showcaseFullscreenBtn');
   var controls = document.querySelector('.showcase-top-actions');
   var branding = document.getElementById('showcaseBranding');
@@ -139,7 +137,6 @@ require_once 'admin_header.php';
 
   var current = 0;
   var timer = null;
-  var running = true;
   var controlsTimer = null;
   var isInFullscreen = false;
   var clockTimer = null;
@@ -245,11 +242,6 @@ require_once 'admin_header.php';
     timer = setInterval(goNext, 5000);
   }
 
-  function syncPlayPause() {
-    if (!pauseBtn) return;
-    pauseBtn.textContent = running ? 'Pause' : 'Play';
-  }
-
   function syncFullscreenButton() {
     if (!fullscreenBtn || !stageWrap) return;
     isInFullscreen = document.fullscreenElement === stageWrap;
@@ -281,18 +273,6 @@ require_once 'admin_header.php';
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
       goNext();
-    });
-  }
-
-  if (pauseBtn) {
-    pauseBtn.addEventListener('click', function() {
-      running = !running;
-      syncPlayPause();
-      if (running) {
-        startAuto();
-      } else {
-        stopAuto();
-      }
     });
   }
 
@@ -333,7 +313,6 @@ require_once 'admin_header.php';
   setupImageBackgrounds();
   updateDateTime();
   clockTimer = setInterval(updateDateTime, 1000);
-  syncPlayPause();
   syncFullscreenButton();
 
   if (isDisplayMode) {
