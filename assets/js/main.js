@@ -416,12 +416,257 @@ function toggleGroupFields() {
 function togglePanel(id) {
   var el = document.getElementById(id);
   if (!el) return;
+  var willOpen = !el.classList.contains('is-open');
   el.classList.toggle('is-open');
+
+  if (typeof gsap !== 'undefined') {
+    gsap.killTweensOf(el);
+    if (willOpen) {
+      gsap.fromTo(el,
+        { y: -16, opacity: 0.65, scale: 0.995 },
+        { duration: 0.42, y: 0, opacity: 1, scale: 1, ease: 'power3.out', clearProps: 'transform,opacity' }
+      );
+    } else {
+      gsap.fromTo(el,
+        { y: 0, opacity: 1, scale: 1 },
+        { duration: 0.22, y: -8, opacity: 0.88, scale: 0.996, ease: 'power2.in' }
+      );
+    }
+  } else {
+    el.classList.remove('panel-surge-in', 'panel-surge-out');
+    el.classList.add(willOpen ? 'panel-surge-in' : 'panel-surge-out');
+  }
   
   // Find and toggle the button that controls this panel
   var buttons = document.querySelectorAll('[onclick="togglePanel(\'' + id + '\')"]');
   buttons.forEach(function(btn) {
     btn.classList.toggle('active');
+  });
+}
+
+var adminWaveAnimating = false;
+var adminWaveStorageKey = 'admWavePendingOut';
+var adminNavInProgress = false;
+
+function runAdminWaveIn(onCovered, onComplete) {
+  var layer = document.getElementById('admTransitionLayer');
+  var path = document.getElementById('admTransitionPath');
+  if (adminWaveAnimating) {
+    return;
+  }
+
+  if (!layer || !path) {
+    if (typeof onCovered === 'function') onCovered();
+    if (typeof onComplete === 'function') onComplete();
+    return;
+  }
+
+  adminWaveAnimating = true;
+  layer.classList.add('is-active');
+
+  if (typeof gsap !== 'undefined') {
+    gsap.killTweensOf(path);
+    var tl = gsap.timeline({
+      onComplete: function() {
+        adminWaveAnimating = false;
+        if (typeof onComplete === 'function') onComplete();
+      }
+    });
+
+    tl.set(path, { attr: { d: 'M 0 100 V 100 Q 50 100 100 100 V 100 z' } })
+      .to(path, {
+        duration: 0.34,
+        ease: 'power4.in',
+        attr: { d: 'M 0 100 V 50 Q 50 0 100 50 V 100 z' }
+      }, 0)
+      .to(path, {
+        duration: 0.24,
+        ease: 'power2.inOut',
+        attr: { d: 'M 0 100 V 0 Q 50 0 100 0 V 100 z' },
+        onComplete: function() {
+          if (typeof onCovered === 'function') onCovered();
+        }
+      });
+    return;
+  }
+
+  path.setAttribute('d', 'M 0 100 V 0 Q 50 0 100 0 V 100 z');
+  if (typeof onCovered === 'function') onCovered();
+  adminWaveAnimating = false;
+  if (typeof onComplete === 'function') onComplete();
+}
+
+function runAdminWaveOut() {
+  var layer = document.getElementById('admTransitionLayer');
+  var path = document.getElementById('admTransitionPath');
+  if (!layer || !path || adminWaveAnimating) return;
+
+  adminWaveAnimating = true;
+  layer.classList.add('is-active');
+
+  if (typeof gsap !== 'undefined') {
+    gsap.killTweensOf(path);
+    gsap.timeline({
+      onComplete: function() {
+        layer.classList.remove('is-active');
+        adminWaveAnimating = false;
+      }
+    })
+      .set(path, { attr: { d: 'M 0 0 V 100 Q 50 100 100 100 V 0 z' } })
+      .to(path, {
+        duration: 0.24,
+        ease: 'power2.in',
+        attr: { d: 'M 0 0 V 50 Q 50 0 100 50 V 0 z' }
+      })
+      .to(path, {
+        duration: 0.34,
+        ease: 'power4.out',
+        attr: { d: 'M 0 0 V 0 Q 50 0 100 0 V 0 z' }
+      });
+    return;
+  }
+
+  path.setAttribute('d', 'M 0 0 V 0 Q 50 0 100 0 V 0 z');
+  layer.classList.remove('is-active');
+  adminWaveAnimating = false;
+}
+
+function consumeAdminWaveOutFlag() {
+  try {
+    if (sessionStorage.getItem(adminWaveStorageKey) === '1') {
+      sessionStorage.removeItem(adminWaveStorageKey);
+      runAdminWaveOut();
+    }
+  } catch (e) {
+    // Ignore storage errors.
+  }
+}
+
+function isAdminTransitionAvailable() {
+  return !!document.getElementById('admTransitionLayer');
+}
+
+function navigateAdminWithWave(url) {
+  if (!url) return;
+
+  // Prevent race conditions from multiple handlers/rapid clicks.
+  if (adminNavInProgress) return;
+
+  try {
+    var current = new URL(window.location.href);
+    var target = new URL(url, window.location.href);
+    if (current.href === target.href) return;
+  } catch (e) {
+    // Ignore parse errors and continue navigation attempt.
+  }
+
+  adminNavInProgress = true;
+  window.__adminNavigationInProgress = true;
+
+  if (!isAdminTransitionAvailable()) {
+    window.location.href = url;
+    return;
+  }
+
+  runAdminWaveIn(function() {
+    try {
+      sessionStorage.setItem(adminWaveStorageKey, '1');
+    } catch (err) {
+      // Ignore storage errors.
+    }
+    requestAnimationFrame(function() {
+      window.location.href = url;
+    });
+  });
+}
+
+function initAdminGlobalNavAnimation() {
+  if (!isAdminTransitionAvailable()) return;
+
+  document.addEventListener('click', function(e) {
+    if (adminNavInProgress) {
+      e.preventDefault();
+      return;
+    }
+
+    if (e.defaultPrevented) return;
+    if (e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    if (link.dataset.noWave === '1') return;
+    if (link.hasAttribute('download')) return;
+
+    var target = (link.getAttribute('target') || '').toLowerCase();
+    if (target && target !== '_self') return;
+
+    var rawHref = link.getAttribute('href') || '';
+    if (!rawHref || rawHref.charAt(0) === '#') return;
+    if (rawHref.indexOf('javascript:') === 0) return;
+
+    var resolved;
+    try {
+      resolved = new URL(rawHref, window.location.href);
+    } catch (err) {
+      return;
+    }
+
+    if (resolved.origin !== window.location.origin) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    document.body.classList.add('admin-page-leaving');
+    if (link.closest('.adm-sidebar')) {
+      link.classList.add('is-clicking');
+    }
+    navigateAdminWithWave(resolved.toString());
+  }, true);
+}
+
+function buildGetFormUrl(form) {
+  var action = form.getAttribute('action') || window.location.pathname;
+  var url = new URL(action, window.location.href);
+  var formData = new FormData(form);
+  formData.forEach(function(value, key) {
+    var val = String(value == null ? '' : value).trim();
+    if (val !== '') {
+      url.searchParams.append(key, val);
+    }
+  });
+  return url.toString();
+}
+
+function initAdminSubmitNormalization() {
+  if (!isAdminTransitionAvailable()) return;
+
+  // Some toggle buttons in admin pages omit type and default to submit.
+  document.querySelectorAll('button[onclick*="togglePanel("]').forEach(function(btn) {
+    if (!btn.getAttribute('type')) {
+      btn.setAttribute('type', 'button');
+    }
+  });
+
+  // Inline onchange="this.form.submit()" bypasses the transition pipeline.
+  document.querySelectorAll('select[onchange*="this.form.submit()"]').forEach(function(sel) {
+    sel.removeAttribute('onchange');
+    sel.addEventListener('change', function() {
+      if (window.__adminNavigationInProgress) return;
+      var form = sel.form;
+      if (!form) return;
+
+      var method = (form.getAttribute('method') || 'GET').toUpperCase();
+      if (method === 'GET') {
+        navigateAdminWithWave(buildGetFormUrl(form));
+        return;
+      }
+
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        HTMLFormElement.prototype.submit.call(form);
+      }
+    });
   });
 }
 
@@ -460,13 +705,13 @@ function applyMonthFilter() {
   } else {
     url.searchParams.delete('month');
   }
-  window.location.href = url.toString();
+  navigateAdminWithWave(url.toString());
 }
 
 function clearMonthFilter() {
   var url = new URL(window.location.href);
   url.searchParams.delete('month');
-  window.location.href = url.toString();
+  navigateAdminWithWave(url.toString());
 }
 
 /* ── ADMIN: DEBOUNCED FORM SUBMIT ──────────────────────────── */
@@ -505,21 +750,13 @@ function initAutoSubmitFilters() {
     }
 
     function submitWithLoading() {
+      if (window.__adminNavigationInProgress) return;
       form.classList.add('is-loading');
 
       // For GET filters, build URL explicitly so empty fields are dropped reliably.
       var method = (form.getAttribute('method') || 'GET').toUpperCase();
       if (method === 'GET') {
-        var action = form.getAttribute('action') || window.location.pathname;
-        var url = new URL(action, window.location.href);
-        var formData = new FormData(form);
-        formData.forEach(function(value, key) {
-          var val = String(value == null ? '' : value).trim();
-          if (val !== '') {
-            url.searchParams.append(key, val);
-          }
-        });
-        window.location.href = url.toString();
+        navigateAdminWithWave(buildGetFormUrl(form));
         return;
       }
 
@@ -534,17 +771,9 @@ function initAutoSubmitFilters() {
     }
 
     function submitGetFormNow() {
+      if (window.__adminNavigationInProgress) return;
       form.classList.add('is-loading');
-      var action = form.getAttribute('action') || window.location.pathname;
-      var url = new URL(action, window.location.href);
-      var formData = new FormData(form);
-      formData.forEach(function(value, key) {
-        var val = String(value == null ? '' : value).trim();
-        if (val !== '') {
-          url.searchParams.append(key, val);
-        }
-      });
-      window.location.href = url.toString();
+      navigateAdminWithWave(buildGetFormUrl(form));
     }
 
     // Ensure plain form.submit()/submit button/inline onchange submit all use the same GET fetch path.
@@ -605,7 +834,7 @@ function escHTML(s) {
 
 /* ── EXPORT CSV (admin) ─────────────────────────────────────── */
 function exportCSV() {
-  window.location.href = 'admin/export.php';
+  navigateAdminWithWave('admin/export.php');
 }
 
 /* ── ADMIN SIDEBAR COLLAPSE ───────────────────────────────── */
@@ -674,35 +903,14 @@ function initAdminSidebarCollapse() {
 }
 
 function initAdminMenuNavAnimation() {
+  consumeAdminWaveOutFlag();
+
   if (!document.querySelector('.adm-sidebar')) return;
 
   document.body.classList.add('admin-page-enter');
   setTimeout(function() {
     if (document.body) document.body.classList.remove('admin-page-enter');
   }, 210);
-
-  var links = document.querySelectorAll('.adm-sidebar .adm-menu a[href]');
-  links.forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      // Preserve default browser behavior for new tab/window or special clicks.
-      if (e.defaultPrevented) return;
-      if (e.button !== 0) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-      var href = link.getAttribute('href') || '';
-      if (!href || href.charAt(0) === '#') return;
-
-      e.preventDefault();
-      link.classList.add('is-clicking');
-      document.body.classList.add('admin-page-leaving');
-
-      requestAnimationFrame(function() {
-        setTimeout(function() {
-          window.location.href = href;
-        }, 110);
-      });
-    });
-  });
 }
 
 function initPublicHeaderNavTransition() {
@@ -884,6 +1092,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initTeaserFader();
   initScrollFloatReveal();
   initSubmitButtonAnimations();
+  initAdminGlobalNavAnimation();
+  initAdminSubmitNormalization();
   initAdminSidebarCollapse();
   initAdminMenuNavAnimation();
   initPublicHeaderNavTransition();

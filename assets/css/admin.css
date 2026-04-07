@@ -42,6 +42,25 @@
 .adm-menu li a.active { background:rgba(201,146,42,.15); color:var(--gold2); padding-left:16px; border-left-color:var(--gold); }
 .adm-main { flex:1; background:#f0f2f5; padding:30px; box-sizing:border-box; min-width:0; }
 
+.adm-transition-layer {
+  position:fixed;
+  inset:0;
+  z-index:1900;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .18s ease;
+}
+.adm-transition-layer.is-active {
+  opacity:1;
+}
+.adm-transition-svg {
+  width:100%;
+  height:100%;
+}
+.adm-transition-svg path {
+  fill:#081827;
+}
+
 /* Admin page transition and menu click feedback */
 body.admin-page-enter .adm-main {
   animation:admPageIn .16s cubic-bezier(.22,.61,.36,1);
@@ -326,6 +345,12 @@ body.admin-sidebar-collapsed .adm-menu li a.active::after {
   margin:0;
   transition:max-height .35s ease, opacity .25s ease, transform .25s ease, padding .35s ease, margin .35s ease, visibility 0s linear .35s;
 }
+.adm-form.panel-surge-in {
+  animation:admPanelSurgeIn .42s cubic-bezier(.22,.61,.36,1);
+}
+.adm-form.panel-surge-out {
+  animation:admPanelSurgeOut .32s ease;
+}
 .adm-form.is-open {
   max-height:1200px;
   opacity:1;
@@ -335,6 +360,16 @@ body.admin-sidebar-collapsed .adm-menu li a.active::after {
   padding:22px;
   margin:0 0 22px;
   transition:max-height .35s ease, opacity .25s ease, transform .25s ease, padding .35s ease, margin .35s ease, visibility 0s linear 0s;
+}
+
+@keyframes admPanelSurgeIn {
+  0% { transform:translateY(-4px) scale(.995); filter:brightness(.98); }
+  55% { transform:translateY(0) scale(1.005); filter:brightness(1.02); }
+  100% { transform:translateY(0) scale(1); filter:brightness(1); }
+}
+@keyframes admPanelSurgeOut {
+  0% { transform:translateY(0) scale(1); opacity:1; }
+  100% { transform:translateY(-4px) scale(.995); opacity:.88; }
 }
 .adm-form#editNewsForm { border-left:4px solid var(--gold); }
 .adm-form#editArtForm { border-left:4px solid var(--gold); }

@@ -20,6 +20,7 @@ function adminDebounceSubmit(form, delay) {
   timers.set(form, t);
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="<?= $base ?>assets/js/main.js"></script>
 </body>
 </html>

@@ -33,6 +33,12 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . $dir . '/';
   })();
 </script>
 
+<div class="adm-transition-layer" id="admTransitionLayer" aria-hidden="true">
+  <svg class="adm-transition-svg" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+    <path id="admTransitionPath" d="M 0 100 V 100 Q 50 100 100 100 V 100 z"></path>
+  </svg>
+</div>
+
 <header class="site-header">
   <div class="header-inner">
     <a href="<?= $base ?>index.php?page=home" class="logo-area">
