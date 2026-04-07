@@ -966,3 +966,132 @@ body.showcase-display-mode .showcase-datetime {
   .showcase-logo-text { font-size:1rem; }
   .showcase-logo-baybayin { font-size:.7rem; margin-top:2px; }
 }
+
+@media(max-width:700px) {
+  .showcase-stage-wrap {
+    min-height:78vh;
+    border-radius:12px;
+  }
+  .showcase-slide {
+    padding:clamp(8px, 2vw, 14px);
+  }
+  .showcase-card {
+    border-radius:14px;
+  }
+  .showcase-branding {
+    top:10px;
+    left:10px;
+    padding:7px 9px;
+  }
+  .showcase-datetime {
+    top:10px;
+    right:10px;
+    left:auto;
+    transform:none;
+    max-width:52vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .showcase-top-actions {
+    top:auto;
+    right:10px;
+    bottom:10px;
+    gap:6px;
+  }
+  .showcase-chip {
+    padding:7px 10px;
+    font-size:.72rem;
+  }
+  .showcase-arrow {
+    width:36px;
+    height:36px;
+    font-size:1.35rem;
+  }
+  .showcase-arrow.prev { left:8px; }
+  .showcase-arrow.next { right:8px; }
+  .showcase-info {
+    left:10px;
+    right:10px;
+    bottom:10px;
+  }
+  .showcase-info h3 {
+    font-size:clamp(1rem, 4.8vw, 1.35rem);
+  }
+  .showcase-info p {
+    gap:6px;
+    margin-top:6px;
+  }
+  .showcase-info span {
+    padding:5px 9px;
+    font-size:.74rem;
+  }
+  .showcase-qr-blank-card {
+    width:92px;
+    padding:7px;
+  }
+  .showcase-qr-blank-label {
+    font-size:.62rem;
+    margin-top:5px;
+  }
+}
+
+@media(max-width:480px) {
+  .showcase-main,
+  .showcase-page {
+    padding:6px;
+  }
+  .showcase-stage-wrap {
+    min-height:82vh;
+    border-radius:10px;
+  }
+  .showcase-logo-row {
+    gap:7px;
+  }
+  .showcase-logo-mark {
+    width:30px;
+    height:30px;
+  }
+  .showcase-logo-text {
+    font-size:.85rem;
+  }
+  .showcase-logo-baybayin {
+    font-size:.62rem;
+  }
+  .showcase-datetime {
+    font-size:.64rem;
+    padding:5px 8px;
+    max-width:56vw;
+  }
+  .showcase-top-actions {
+    right:8px;
+    bottom:8px;
+  }
+  .showcase-chip {
+    padding:6px 8px;
+    font-size:.68rem;
+  }
+  .showcase-info {
+    left:8px;
+    right:8px;
+    bottom:8px;
+  }
+  .showcase-info span {
+    width:100%;
+    border-radius:8px;
+  }
+  .showcase-qr-float {
+    display:none;
+  }
+}
+
+@media (hover:none) and (pointer:coarse) {
+  .showcase-stage {
+    cursor:auto;
+  }
+  .showcase-top-actions,
+  .showcase-arrow {
+    opacity:1;
+    pointer-events:auto;
+    transform:none;
+  }
+}
