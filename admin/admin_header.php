@@ -59,6 +59,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . $dir . '/';
     <nav>
       <ul class="nav-links" id="navLinks">
         <li><a href="<?= $base ?>index.php?page=home" class="nav-lnk" style="color:#9bb8cc">&#127968; View Site</a></li>
+        <li><a href="<?= $base ?>admin/showcase.php" class="nav-lnk" style="color:#d9c18a">&#127909; Showcase</a></li>
         <li><a href="<?= $base ?>index.php?action=logout" class="nav-lnk nav-logout">Logout</a></li>
       </ul>
     </nav>

@@ -19,6 +19,7 @@ $adminPage = basename($_SERVER['PHP_SELF'], '.php');
     <li><a href="artifacts.php"   class="<?= $adminPage==='artifacts'   ?'active':'' ?>"><span class="adm-ico">&#128444;</span><span class="adm-label">Artifacts</span></a></li>
     <li><a href="departments.php" class="<?= $adminPage==='departments' ?'active':'' ?>"><span class="adm-ico">&#128193;</span><span class="adm-label">Departments</span></a></li>
     <li><a href="news.php"        class="<?= $adminPage==='news'        ?'active':'' ?>"><span class="adm-ico">&#128240;</span><span class="adm-label">News &amp; Events</span></a></li>
+    <li><a href="showcase.php"    class="<?= $adminPage==='showcase'    ?'active':'' ?>"><span class="adm-ico">&#127909;</span><span class="adm-label">Showcase</span></a></li>
     <li><a href="account.php"     class="<?= $adminPage==='account'     ?'active':'' ?>"><span class="adm-ico">&#128274;</span><span class="adm-label">Account Settings</span></a></li>
   </ul>
 </aside>
