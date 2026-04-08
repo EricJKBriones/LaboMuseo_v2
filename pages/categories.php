@@ -1,14 +1,10 @@
 <?php
 // pages/categories.php
 if (!isLoggedIn()) {
-    ?>
-    <div class="locked-view">
-      <div class="lock-icon">&#128274;</div>
-      <h3>Sign In to Browse Departments</h3>
-      <p>The digital catalog is available exclusively to registered visitors. Sign our Digital Guestbook to gain full access to all departments and artifacts.</p>
-      <a href="index.php?page=login" class="btn-gold" style="margin-top:16px">Sign Digital Guestbook &#10022;</a>
-    </div>
-    <?php
+    renderGuestbookLockView(
+      'Sign In to Browse Departments',
+      'The digital catalog is available exclusively to registered visitors. Sign our Digital Guestbook to gain full access to all departments and artifacts.'
+    );
     return;
 }
 

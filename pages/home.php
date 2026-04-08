@@ -92,11 +92,11 @@ function newsCard(array $n, string $imgBase, string $now): string {
         <div class="hcard-meta">&#128197; <?= date('F j, Y',strtotime($upcomingEvents[0]['event_date'])) ?> &rarr;</div>
       </a>
       <?php elseif ($latestArt): ?>
-      <div class="hcard">
+      <a href="index.php?page=<?= $loggedIn ? 'detail&id=' . (int)$latestArt['id'] : 'login' ?>" class="hcard hcard-link" style="text-decoration:none;display:block">
         <div class="hcard-badge">Latest Artifact</div>
         <div class="hcard-title"><?= htmlspecialchars(mb_substr($latestArt['title'],0,60)) ?></div>
-        <div class="hcard-meta">Origin: <?= htmlspecialchars($latestArt['origin']??'Labo') ?></div>
-      </div>
+        <div class="hcard-meta">Origin: <?= htmlspecialchars($latestArt['origin']??'Labo') ?> &rarr;</div>
+      </a>
       <?php endif; ?>
     </div>
   </div>

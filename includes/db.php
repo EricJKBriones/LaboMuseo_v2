@@ -16,6 +16,7 @@ define('SITE_NAME', 'Museo de Labo');
 define('SITE_SUBTITLE', 'Camarines Norte');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_URL', 'uploads/');
+define('PROJECT_CREDITS_HTML', 'Vincent T. Malague&ntilde;o, Eric John Kenneth P. Briones, and Jonel C. Ramos');
 
 function getDB(): PDO {
     static $pdo = null;
@@ -76,6 +77,21 @@ function requireAdmin(): void {
         header('Location: ../index.php?page=login');
         exit;
     }
+}
+
+function renderGuestbookLockView(string $heading, string $message, string $buttonLabel = 'Sign Digital Guestbook'): void {
+    echo '<div class="locked-view">';
+    echo '<div class="lock-icon">&#128274;</div>';
+    echo '<h3>' . htmlspecialchars($heading) . '</h3>';
+    echo '<p>' . htmlspecialchars($message) . '</p>';
+    echo '<a href="index.php?page=login" class="btn-gold" style="margin-top:16px">' . htmlspecialchars($buttonLabel) . ' &#10022;</a>';
+    echo '</div>';
+}
+
+function projectCreditsHtml(): string {
+    return defined('PROJECT_CREDITS_HTML')
+        ? PROJECT_CREDITS_HTML
+        : 'Vincent T. Malague&ntilde;o, Eric John Kenneth P. Briones, and Jonel C. Ramos';
 }
 
 // ── DB helpers ───────────────────────────────────────────────

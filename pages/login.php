@@ -30,7 +30,7 @@ unset($_SESSION['login_error'], $_SESSION['reg_error']);
           <input type="hidden" name="action" value="admin_login">
           <div class="fg"><label>Username</label><input type="text" name="username" class="fc" required autocomplete="username"></div>
           <div class="fg"><label>Password</label><input type="password" name="password" class="fc" required autocomplete="current-password"></div>
-          <button type="submit" class="lbtn blue" data-no-submit-anim="1">Login to Dashboard</button>
+          <button type="submit" class="lbtn blue">Login to Dashboard</button>
         </form>
       </div>
       <div class="l-link-row"><a href="#" onclick="showGuestPanel();return false;">&#8592; Back to Guestbook</a></div>
