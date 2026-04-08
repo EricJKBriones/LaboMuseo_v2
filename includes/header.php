@@ -57,8 +57,13 @@ $logoUrl  = $base . 'uploads/logo.png';
         <li><a href="<?= $base ?>index.php?page=home"       class="nav-lnk <?= $currentPage==='home'       ? 'active-page':'' ?>">Home</a></li>
         <li><a href="<?= $base ?>index.php?page=about"      class="nav-lnk <?= $currentPage==='about'      ? 'active-page':'' ?>">About</a></li>
         <li><a href="<?= $base ?>index.php?page=news"       class="nav-lnk <?= $currentPage==='news'       ? 'active-page':'' ?>">News &amp; Events</a></li>
-        <li><a href="<?= $base ?>index.php?page=categories" class="nav-lnk <?= $currentPage==='categories' ? 'active-page':'' ?>">Departments</a></li>
-        <li><a href="<?= $base ?>index.php?page=exhibits"   class="nav-lnk <?= $currentPage==='exhibits'   ? 'active-page':'' ?>">All Artifacts</a></li>
+        <?php if (isAdmin() || isGuest()): ?>
+          <li><a href="<?= $base ?>index.php?page=categories" class="nav-lnk <?= $currentPage==='categories' ? 'active-page':'' ?>">Departments</a></li>
+          <li><a href="<?= $base ?>index.php?page=exhibits"   class="nav-lnk <?= $currentPage==='exhibits'   ? 'active-page':'' ?>">All Artifacts</a></li>
+        <?php else: ?>
+          <li><a href="#" class="nav-lnk" aria-label="Sign the Digital Guestbook to access departments" onclick="return promptGuestbookAccess('Departments')">Departments</a></li>
+          <li><a href="#" class="nav-lnk" aria-label="Sign the Digital Guestbook to access all artifacts" onclick="return promptGuestbookAccess('All Artifacts')">All Artifacts</a></li>
+        <?php endif; ?>
         <li><span class="nav-sep">|</span></li>
         <?php if (isAdmin()): ?>
           <li><a href="<?= $base ?>admin/index.php" class="nav-lnk nav-dashboard">&#9881; Dashboard</a></li>

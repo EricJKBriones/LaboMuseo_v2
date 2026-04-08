@@ -127,20 +127,26 @@ require_once 'admin_header.php';
 
     <?php if (isset($_GET['msg'])): ?>
       <?php
+        $msgCode = (string)($_GET['msg'] ?? '');
         $msgs = [
           'added' => 'Artifact added successfully.',
           'added_posted' => 'Artifact added and auto-posted to Museum News.',
           'updated' => 'Artifact updated successfully.',
-          'deleted' => 'Artifact deleted successfully.'
+          'deleted' => 'Artifact deleted successfully.',
+          'export_none' => 'Select at least one artifact before exporting selected items.'
         ];
+        $msgClass = $msgCode === 'export_none' ? 'alert-err' : 'alert-ok';
       ?>
-      <div class="alert-ok">&#10003; <?= htmlspecialchars($msgs[$_GET['msg']] ?? 'Action completed successfully.') ?></div>
+      <div class="<?= $msgClass ?>">&#10003; <?= htmlspecialchars($msgs[$msgCode] ?? 'Action completed successfully.') ?></div>
     <?php endif; ?>
     <?php if ($msg): ?><div class="alert-err">&#9888; <?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <h3 class="adm-sec-title" style="margin:0">&#128444; Manage Artifacts</h3>
-      <button class="toggle-btn bg-green" onclick="togglePanel('addArtForm')">&#10133; Add New Artifact</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn-exp" id="artifactExportToggleBtn" aria-expanded="false">&#128229; Export Artifacts</button>
+        <button class="toggle-btn bg-green" onclick="togglePanel('addArtForm')">&#10133; Add New Artifact</button>
+      </div>
     </div>
 
     <form method="GET" action="artifacts.php" class="mbar">
@@ -172,6 +178,28 @@ require_once 'admin_header.php';
     <div class="result-meta">
       Showing <strong><?= $resultCount ?></strong> artifact<?= $resultCount!==1?'s':'' ?><?= $isFiltered ? ' (filtered)' : '' ?>
     </div>
+
+    <form method="POST" action="export_artifacts.php" class="mbar artifact-export-bar" id="artifactExportForm">
+      <label for="artifactExportFormat">Export Format:</label>
+      <select id="artifactExportFormat" name="format" class="mi">
+        <option value="pdf">PDF (Print-ready)</option>
+        <option value="xlsx">Excel (.xlsx)</option>
+        <option value="csv">CSV (.csv)</option>
+      </select>
+
+      <label for="artifactExportScope">Scope:</label>
+      <select id="artifactExportScope" name="scope" class="mi">
+        <option value="selected">Selected Artifacts</option>
+        <option value="all">All Filtered Artifacts</option>
+      </select>
+
+      <input type="hidden" name="q" value="<?= htmlspecialchars($search) ?>">
+      <input type="hidden" name="dept" value="<?= (int)$deptId ?>">
+      <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+
+      <button type="submit" class="btn-exp" id="artifactExportBtn">&#128229; Export Artifacts</button>
+      <span id="artifactSelectedCount" class="artifact-selected-count">0 selected</span>
+    </form>
 
     <!-- ADD FORM -->
     <div class="adm-form" id="addArtForm">
@@ -241,15 +269,23 @@ require_once 'admin_header.php';
     <?php endif; ?>
 
     <!-- TABLE -->
+    <form method="POST" action="export_artifacts.php" id="artifactTableExportForm">
+      <input type="hidden" name="format" id="artifactTableExportFormat" value="pdf">
+      <input type="hidden" name="scope" id="artifactTableExportScope" value="selected">
+      <input type="hidden" name="single_layout" id="artifactSingleLayout" value="0">
+      <input type="hidden" name="q" value="<?= htmlspecialchars($search) ?>">
+      <input type="hidden" name="dept" value="<?= (int)$deptId ?>">
+      <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+
     <div class="tbl-wrap">
       <table class="adm-tbl">
-        <thead><tr><th>ID</th><th>Image</th><th>Title</th><th>Department</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
+        <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Department</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
         <tbody>
           <?php if (empty($exhibits)): ?>
             <tr><td colspan="7" style="text-align:center;padding:20px;color:#888">No artifacts found.</td></tr>
           <?php else: foreach ($exhibits as $ex): ?>
             <tr>
-              <td><?= $ex['id'] ?></td>
+              <td class="art-select-cell"><input type="checkbox" class="artifact-row-check" name="artifact_ids[]" value="<?= (int)$ex['id'] ?>" aria-label="Select artifact <?= (int)$ex['id'] ?>"></td>
               <td>
                 <?php if ($ex['image_path'] && file_exists('../uploads/'.$ex['image_path'])): ?>
                   <img src="../uploads/<?= htmlspecialchars($ex['image_path']) ?>" class="tbl-img">
@@ -262,7 +298,7 @@ require_once 'admin_header.php';
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['artifact_year'] ?? '—') ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['origin'] ?? '—') ?></td>
               <td>
-                <a href="artifacts.php?edit=<?= $ex['id'] ?>" class="btn-edit">&#9999; Edit</a>
+                <a href="artifacts.php?edit=<?= $ex['id'] ?>" class="btn-edit btn-icon" title="Edit artifact" aria-label="Edit artifact">&#9999;</a>
                 <a href="artifacts.php?delete=<?= $ex['id'] ?>" class="btn-del" onclick="return confirm('Delete this artifact?')">&#128465;</a>
               </td>
             </tr>
@@ -270,6 +306,7 @@ require_once 'admin_header.php';
         </tbody>
       </table>
     </div>
+    </form>
   </main>
 </div>
 
@@ -280,6 +317,136 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.focus();
     searchInput.selectionStart = searchInput.selectionEnd = searchInput.value.length;
   }
+
+  var selectAll = document.getElementById('selectAllArtifacts');
+  var rowChecks = document.querySelectorAll('.artifact-row-check');
+  var exportBarForm = document.getElementById('artifactExportForm');
+  var exportToggleBtn = document.getElementById('artifactExportToggleBtn');
+  var tableExportForm = document.getElementById('artifactTableExportForm');
+  var exportFormat = document.getElementById('artifactExportFormat');
+  var exportScope = document.getElementById('artifactExportScope');
+  var countLabel = document.getElementById('artifactSelectedCount');
+  var isExportMode = false;
+
+  function selectedCount() {
+    var count = 0;
+    rowChecks.forEach(function(cb) {
+      if (cb.checked) count += 1;
+    });
+    return count;
+  }
+
+  function syncCountLabel() {
+    if (!countLabel) return;
+    countLabel.textContent = selectedCount() + ' selected';
+  }
+
+  function syncSelectAllState() {
+    if (!selectAll) return;
+    if (!rowChecks.length) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+      return;
+    }
+
+    var count = selectedCount();
+    selectAll.checked = count > 0 && count === rowChecks.length;
+    selectAll.indeterminate = count > 0 && count < rowChecks.length;
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      rowChecks.forEach(function(cb) {
+        cb.checked = selectAll.checked;
+      });
+      syncSelectAllState();
+      syncCountLabel();
+    });
+  }
+
+  rowChecks.forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      syncSelectAllState();
+      syncCountLabel();
+    });
+  });
+
+  function setExportMode(nextState) {
+    isExportMode = !!nextState;
+    if (document.body) {
+      document.body.classList.toggle('artifact-export-mode', isExportMode);
+    }
+
+    if (exportBarForm) {
+      exportBarForm.classList.toggle('is-open', isExportMode);
+      exportBarForm.setAttribute('aria-hidden', isExportMode ? 'false' : 'true');
+    }
+
+    if (exportToggleBtn) {
+      exportToggleBtn.setAttribute('aria-expanded', isExportMode ? 'true' : 'false');
+      exportToggleBtn.innerHTML = isExportMode ? '&#10005; Close Export' : '&#128229; Export Artifacts';
+    }
+
+    if (!isExportMode) {
+      if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        selectAll.disabled = true;
+      }
+      rowChecks.forEach(function(cb) {
+        cb.checked = false;
+        cb.disabled = true;
+      });
+      syncCountLabel();
+    } else {
+      if (selectAll) selectAll.disabled = false;
+      rowChecks.forEach(function(cb) {
+        cb.disabled = false;
+      });
+    }
+  }
+
+  if (exportToggleBtn) {
+    exportToggleBtn.addEventListener('click', function() {
+      setExportMode(!isExportMode);
+    });
+  }
+
+  if (exportBarForm && tableExportForm && exportFormat && exportScope) {
+    exportBarForm.addEventListener('submit', function(e) {
+      if (!isExportMode) {
+        e.preventDefault();
+        return;
+      }
+
+      var scope = exportScope.value;
+      var count = selectedCount();
+
+      if (scope === 'selected' && count === 0) {
+        e.preventDefault();
+        if (window.sileo && typeof window.sileo.warning === 'function') {
+          window.sileo.warning({
+            title: 'No Selection',
+            message: 'Please select at least one artifact to export.'
+          });
+        } else {
+          alert('Please select at least one artifact to export.');
+        }
+        return;
+      }
+
+      document.getElementById('artifactTableExportFormat').value = exportFormat.value;
+      document.getElementById('artifactTableExportScope').value = scope;
+      document.getElementById('artifactSingleLayout').value = (scope === 'selected' && count === 1) ? '1' : '0';
+
+      e.preventDefault();
+      tableExportForm.submit();
+    });
+  }
+
+  syncSelectAllState();
+  syncCountLabel();
+  setExportMode(false);
 });
 </script>
 

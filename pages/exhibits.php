@@ -1,14 +1,10 @@
 <?php
 // pages/exhibits.php
 if (!isLoggedIn()) {
-    ?>
-    <div class="locked-view">
-      <div class="lock-icon">&#128274;</div>
-      <h3>Sign In to View All Artifacts</h3>
-      <p>The full artifact catalog is available exclusively to registered visitors. Sign our Digital Guestbook for complete access.</p>
-      <a href="index.php?page=login" class="btn-gold" style="margin-top:16px">Sign Digital Guestbook &#10022;</a>
-    </div>
-    <?php
+    renderGuestbookLockView(
+      'Sign In to View All Artifacts',
+      'The full artifact catalog is available exclusively to registered visitors. Sign our Digital Guestbook for complete access.'
+    );
     return;
 }
 

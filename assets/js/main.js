@@ -13,6 +13,8 @@ var sileoToastHost = null;
 var sileoToastDefaults = {
   position: 'top-right'
 };
+var sileoToastMaxVisible = 4;
+var GUESTBOOK_TOAST_TITLE = 'Guestbook Required';
 
 function normalizeToastSpec(input, fallbackVariant) {
   if (typeof input === 'string') {
@@ -93,6 +95,22 @@ function dismissSileoToast(toast) {
   }, 240);
 }
 
+function dismissSileoToastNow(toast) {
+  if (!toast || !toast.parentNode) return;
+  toast.dataset.leaving = '1';
+  toast.parentNode.removeChild(toast);
+}
+
+function enforceSileoToastLimit(host) {
+  if (!host) return;
+
+  var activeToasts = host.querySelectorAll('.sileo-toastbar:not([data-leaving="1"])');
+  while (activeToasts.length >= sileoToastMaxVisible) {
+    dismissSileoToastNow(activeToasts[0]);
+    activeToasts = host.querySelectorAll('.sileo-toastbar:not([data-leaving="1"])');
+  }
+}
+
 function showSileoToastBar(input, variant, timeout) {
   if (!document.body) return null;
 
@@ -104,7 +122,7 @@ function showSileoToastBar(input, variant, timeout) {
   var level = spec.variant || 'info';
   var title = spec.title || (level === 'error' ? 'Error' : level === 'success' ? 'Success' : level === 'warning' ? 'Warning' : level === 'loading' ? 'Loading' : 'Notice');
   var icon = spec.icon || (level === 'error' ? '!' : level === 'success' ? '✓' : level === 'warning' ? '!' : level === 'loading' ? '⋯' : 'i');
-  var duration = typeof timeout === 'number' ? timeout : (typeof spec.duration === 'number' ? spec.duration : (level === 'loading' || spec.persistent ? 0 : 5000));
+  var duration = typeof timeout === 'number' ? timeout : (typeof spec.duration === 'number' ? spec.duration : (level === 'loading' || spec.persistent ? 0 : 3200));
 
   toast.className = 'sileo-toastbar sileo-toastbar--' + level;
   toast.setAttribute('role', level === 'error' ? 'alert' : 'status');
@@ -173,6 +191,7 @@ function showSileoToastBar(input, variant, timeout) {
     toast.appendChild(timerBar);
   }
 
+  enforceSileoToastLimit(host);
   host.appendChild(toast);
 
   var timer = null;
@@ -211,7 +230,7 @@ function showSileoToastBar(input, variant, timeout) {
     if (!duration) return;
     timer = window.setTimeout(function() {
       dismissSileoToast(toast);
-    }, 1200);
+    }, 650);
   });
 
   toast.dismiss = function() {
@@ -243,9 +262,28 @@ function showSileoToastBar(input, variant, timeout) {
 function showSileoActionToast(payload) {
   var spec = normalizeToastSpec(payload, 'info');
   if (typeof spec.duration !== 'number') {
-    spec.duration = 5000;
+    spec.duration = 3200;
   }
   return showSileoToastBar(spec, 'info');
+}
+
+function promptGuestbookAccess(sectionLabel) {
+  if (typeof window.showSileoToastBar === 'function') {
+    window.showSileoToastBar({
+      title: GUESTBOOK_TOAST_TITLE,
+      message: 'You need to sign the Digital Guestbook to unlock latest acquisitions.',
+      variant: 'warning',
+      duration: 4200,
+      position: 'top-right',
+      actions: [
+        { label: 'Sign Guestbook', href: 'index.php?page=login' },
+        { label: 'Not Now', dismiss: true }
+      ]
+    }, 'warning');
+  } else {
+    window.alert('You need to sign the Digital Guestbook to unlock latest acquisitions.');
+  }
+  return false;
 }
 
 function showSileoPromiseToast(promiseOrFactory, payload) {
@@ -317,7 +355,7 @@ function initSileoToastBars() {
       variant: level,
       actions: actions,
       persistent: actions.length > 0
-    }, level, level === 'error' ? 5200 : 4200);
+    }, level, level === 'error' ? 3600 : 3000);
   });
 }
 
@@ -334,6 +372,7 @@ window.sileo = {
   setPosition: function(position) { return setSileoToastPosition(position); },
   toast: function(payload) { return showSileoToastBar(payload, payload && payload.variant ? payload.variant : 'info'); }
 };
+window.promptGuestbookAccess = promptGuestbookAccess;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initSileoToastBars);
@@ -553,7 +592,7 @@ function teaserClick(isLoggedIn, loginUrl) {
   }
   if (window.sileo && typeof window.sileo.action === 'function') {
     window.sileo.action({
-      title: 'Guestbook Required',
+      title: GUESTBOOK_TOAST_TITLE,
       message: 'You need to sign the Digital Guestbook to unlock latest acquisitions.',
       variant: 'warning',
       duration: 5000,
@@ -1173,6 +1212,16 @@ function initSubmitButtonAnimations() {
 
     btn.addEventListener('click', function() {
       if (btn.disabled) return;
+
+      // Always give instant click feedback, even on fast form submissions.
+      btn.classList.remove('is-submit-clicked');
+      void btn.offsetWidth;
+      btn.classList.add('is-submit-clicked');
+      setTimeout(function() {
+        if (document.body.contains(btn)) {
+          btn.classList.remove('is-submit-clicked');
+        }
+      }, 380);
 
       var form = btn.form;
       if (form && typeof form.checkValidity === 'function' && !form.checkValidity()) {
