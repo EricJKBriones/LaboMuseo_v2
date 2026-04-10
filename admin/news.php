@@ -120,7 +120,7 @@ require_once 'admin_header.php';
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
       <h3 class="adm-sec-title" style="margin:0">&#128240; Manage News &amp; Events</h3>
       <?php if ($view === 'active'): ?>
-        <button class="toggle-btn bg-orange" onclick="togglePanel('addNewsForm')">&#10133; Post News</button>
+        <button class="toggle-btn bg-orange" data-icon-name="post_news" onclick="togglePanel('addNewsForm')">&#10133; Post News</button>
       <?php endif; ?>
     </div>
 
@@ -153,7 +153,7 @@ require_once 'admin_header.php';
           <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
           <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required></textarea></div>
         </div>
-        <button type="submit" class="btn-save">&#128226; Publish</button>
+        <button type="submit" class="btn-save" data-icon-name="post_news">&#128226; Publish</button>
         <button type="button" class="btn-cancel-f" onclick="togglePanel('addNewsForm')">Cancel</button>
       </form>
     </div>
@@ -233,7 +233,7 @@ require_once 'admin_header.php';
       <table class="adm-tbl">
         <thead>
           <tr>
-            <th>ID</th><th>Img</th><th>Type</th><th>Title</th><th>Posted</th><th>Event Date</th>
+            <th>Img</th><th>Type</th><th>Title</th><th>Posted</th><th>Event Date</th>
             <?php if ($view === 'active'): ?>
               <th>Actions</th>
             <?php else: ?>
@@ -243,12 +243,11 @@ require_once 'admin_header.php';
         </thead>
         <tbody>
           <?php if (empty($allNews)): ?>
-            <tr><td colspan="7" style="text-align:center;padding:28px;color:#888">
+            <tr><td colspan="6" style="text-align:center;padding:28px;color:#888">
               <?= $search ? 'No results for "'.htmlspecialchars($search).'"' : ($view==='archive' ? 'Archive is empty.' : 'No posts yet.') ?>
             </td></tr>
           <?php else: foreach ($allNews as $n): ?>
             <tr>
-              <td><?= $n['id'] ?></td>
               <td>
                 <?php if ($n['image_path'] && file_exists('../uploads/'.$n['image_path'])): ?>
                   <img src="../uploads/<?= htmlspecialchars($n['image_path']) ?>" class="tbl-img">
@@ -265,7 +264,7 @@ require_once 'admin_header.php';
               <td style="white-space:nowrap">
                 <?php if ($view === 'active'): ?>
                   <a href="news.php?edit=<?= $n['id'] ?>&view=active" class="btn-edit">&#9999; Edit</a>
-                  <a href="news.php?archive=<?= $n['id'] ?>" class="btn-del" style="background:#e67e22"
+                  <a href="news.php?archive=<?= $n['id'] ?>" class="btn-del btn-archive" data-icon-name="folder" style="background:#e67e22"
                      onclick="return confirm('Move this post to Archive?')" title="Move to Archive">&#128193; Archive</a>
                   <a href="news.php?delete=<?= $n['id'] ?>&view=active" class="btn-del"
                      onclick="return confirm('Permanently delete this post?')" title="Delete permanently">&#128465;</a>

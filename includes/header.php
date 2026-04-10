@@ -67,10 +67,18 @@ $logoUrl  = $base . 'uploads/logo.png';
         <li><span class="nav-sep">|</span></li>
         <?php if (isAdmin()): ?>
           <li><a href="<?= $base ?>admin/index.php" class="nav-lnk nav-dashboard">&#9881; Dashboard</a></li>
-          <li><a href="<?= $base ?>index.php?action=logout" class="nav-lnk nav-logout">Logout</a></li>
+          <li>
+            <a href="<?= $base ?>index.php?action=logout" class="nav-lnk nav-logout" aria-label="Log Out" title="Log Out">
+              <img class="icon-swap" src="<?= $base ?>assets/Icon/log-out.png" data-png="<?= $base ?>assets/Icon/log-out.png" data-gif="<?= $base ?>assets/Icon/log-out.gif" alt="" aria-hidden="true">
+            </a>
+          </li>
         <?php elseif (isGuest()): ?>
           <li><span class="guest-badge">&#128075; <?= htmlspecialchars(guestName()) ?></span></li>
-          <li><a href="<?= $base ?>index.php?action=logout" class="nav-lnk nav-logout">Leave</a></li>
+          <li>
+            <a href="<?= $base ?>index.php?action=logout" class="nav-lnk nav-logout nav-logout-icon-only" aria-label="Log Out" title="Log Out">
+              <img class="icon-swap" src="<?= $base ?>assets/Icon/log-out.png" data-png="<?= $base ?>assets/Icon/log-out.png" data-gif="<?= $base ?>assets/Icon/log-out.gif" alt="" aria-hidden="true">
+            </a>
+          </li>
         <?php else: ?>
           <li><a href="<?= $base ?>index.php?page=login" class="nav-lnk nav-login <?= $currentPage==='login' ? 'active-page':'' ?>">Login / Access</a></li>
         <?php endif; ?>

@@ -25,6 +25,7 @@ if (empty($artifacts)) {
 }
 
 $pageTitle = 'Showcase Display - ' . SITE_NAME;
+$bodyClass = trim(($bodyClass ?? '') . ' showcase-quick-fade');
 require_once 'admin_header.php';
 ?>
 
@@ -100,7 +101,7 @@ require_once 'admin_header.php';
           <button type="button" class="showcase-arrow next" id="showcaseNext" aria-label="Next artifact">&#10095;</button>
 
           <div class="showcase-top-actions">
-            <button type="button" class="showcase-chip" id="showcaseFullscreenBtn" onclick="enterShowcaseFullscreen()">Fullscreen</button>
+            <button type="button" class="showcase-chip" id="showcaseFullscreenBtn" data-icon-name="full_screen" aria-label="Fullscreen" title="Fullscreen" onclick="enterShowcaseFullscreen()"></button>
           </div>
         </div>
 
@@ -245,7 +246,9 @@ require_once 'admin_header.php';
   function syncFullscreenButton() {
     if (!fullscreenBtn || !stageWrap) return;
     isInFullscreen = document.fullscreenElement === stageWrap;
-    fullscreenBtn.textContent = isInFullscreen ? 'Exit Fullscreen' : 'Fullscreen';
+    fullscreenBtn.setAttribute('aria-label', isInFullscreen ? 'Exit Fullscreen' : 'Fullscreen');
+    fullscreenBtn.setAttribute('title', isInFullscreen ? 'Exit Fullscreen' : 'Fullscreen');
+    fullscreenBtn.dataset.iconName = 'full_screen';
   }
 
   function showControls() {

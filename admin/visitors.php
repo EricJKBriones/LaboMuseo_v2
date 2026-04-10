@@ -236,7 +236,7 @@ require_once 'admin_header.php';
               <td style="font-size:.82rem"><?= htmlspecialchars($g['purpose']) ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($g['contact_no']) ?></td>
               <td>
-                <a href="visitors.php?edit=<?= (int)$g['id'] ?>" class="btn-edit" title="Edit visitor" aria-label="Edit visitor">&#9999;</a>
+                <a href="visitors.php?edit=<?= (int)$g['id'] ?>" class="btn-edit" title="Edit visitor" aria-label="Edit visitor">&#9999; Edit</a>
                 <a href="visitors.php?delete=<?= $g['id'] ?>" class="btn-del"
                    onclick="return confirm('Delete this visitor record?')">&#128465;</a>
               </td>

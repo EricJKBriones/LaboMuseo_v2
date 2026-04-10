@@ -80,6 +80,29 @@ body.header-hidden .site-header { transform:translateY(-100%); }
 .nav-login   { color:var(--gold2) !important; border-color:rgba(201,146,42,.5) !important; }
 .nav-login:hover { background:rgba(201,146,42,.12) !important; }
 .nav-logout  { color:#e74c3c !important; font-weight:600 !important; }
+.nav-logout .icon-swap {
+  width:16px;
+  height:16px;
+  object-fit:contain;
+  flex-shrink:0;
+}
+.nav-logout:not(.nav-logout-icon-only) {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.nav-logout-icon-only {
+  padding:6px 8px;
+  min-width:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.nav-logout-icon-only .icon-swap {
+  width:18px;
+  height:18px;
+  object-fit:contain;
+}
 .nav-dashboard { color:#5dade2 !important; font-weight:600 !important; }
 .guest-badge { color:#9bb5c8; font-size:.82rem; padding:6px 10px; }
 
@@ -149,6 +172,53 @@ body.header-hidden .site-header { transform:translateY(-100%); }
 .footer-links a { color:#8a9db0; font-size:.82rem; transition:color .2s; }
 .footer-links a:hover { color:var(--gold2); }
 .footer-bottom { text-align:center; padding-top:16px; border-top:1px solid rgba(255,255,255,.07); font-size:.76rem; }
+
+/* ── PAGE LOADING OVERLAY ─────────────────────────────────── */
+.page-loading-overlay {
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(9,15,22,.2);
+  backdrop-filter:blur(2px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .18s ease, visibility 0s linear .18s;
+  z-index:5000;
+}
+.page-loading-overlay.is-visible {
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity .18s ease;
+}
+.page-loading-overlay.is-hidden {
+  opacity:0;
+  visibility:hidden;
+}
+.page-loading-card {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  padding:18px 22px;
+  border-radius:16px;
+  background:rgba(27,42,59,.92);
+  box-shadow:0 18px 48px rgba(0,0,0,.25);
+}
+.page-loading-icon {
+  width:54px;
+  height:54px;
+  object-fit:contain;
+}
+.page-loading-text {
+  color:#fff;
+  font-size:.92rem;
+  letter-spacing:1px;
+  font-weight:600;
+}
 
 /* ── SHARED COMPONENTS ─────────────────────────────────────── */
 .wrap { max-width:1280px; margin:0 auto; padding:70px 28px; }
