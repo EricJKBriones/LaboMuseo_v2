@@ -103,7 +103,10 @@ if ($showPdfArtifact && $search !== '') {
       <option value="year_desc" <?= $sort==='year_desc'?'selected':'' ?>>Year/Period Desc</option>
       <option value="year_asc" <?= $sort==='year_asc'?'selected':'' ?>>Year/Period Asc</option>
     </select>
-    <button type="submit" class="btn-srch">Search</button>
+    <button type="submit" class="btn-srch" aria-label="Search artifacts">
+      <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
+      <span>Search</span>
+    </button>
     <?php if ($search || $catFilter || $originFilter!=='' || $yearFilter!=='' || $sort!=='newest'): ?><a href="index.php?page=exhibits" class="btn-clr">Clear</a><?php endif; ?>
   </form>
 

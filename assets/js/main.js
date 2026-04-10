@@ -1613,6 +1613,73 @@ function initPublicHeaderNavTransition() {
   });
 }
 
+function initArtifactMorphTransition() {
+  if (!document.body.classList.contains('page-exhibits')) return;
+
+  var cards = document.querySelectorAll('.ex-card[href]');
+  if (!cards.length) return;
+
+  cards.forEach(function(card) {
+    if (card.dataset.morphBound === '1') return;
+    card.dataset.morphBound = '1';
+
+    card.addEventListener('click', function(e) {
+      if (e.defaultPrevented) return;
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      var href = card.getAttribute('href') || '';
+      if (!href || href.charAt(0) === '#') return;
+
+      e.preventDefault();
+
+      document.querySelectorAll('.ex-card.is-morphing, .ex-card.is-dimming').forEach(function(el) {
+        el.classList.remove('is-morphing', 'is-dimming');
+      });
+
+      cards.forEach(function(other) {
+        if (other !== card) other.classList.add('is-dimming');
+      });
+
+      card.classList.add('is-morphing');
+
+      try {
+        sessionStorage.setItem('artifactDetailMorphIn', '1');
+      } catch (err) {
+        // Ignore storage errors.
+      }
+
+      setTimeout(function() {
+        navigateAfterFullscreenExit(href);
+      }, 240);
+    });
+  });
+}
+
+function initArtifactDetailMorphEntry() {
+  if (!document.body.classList.contains('page-detail')) return;
+
+  var shouldAnimate = false;
+  try {
+    shouldAnimate = sessionStorage.getItem('artifactDetailMorphIn') === '1';
+    if (shouldAnimate) sessionStorage.removeItem('artifactDetailMorphIn');
+  } catch (err) {
+    shouldAnimate = false;
+  }
+
+  if (!shouldAnimate) return;
+
+  document.body.classList.add('artifact-detail-enter');
+  requestAnimationFrame(function() {
+    document.body.classList.add('artifact-detail-enter-active');
+  });
+
+  setTimeout(function() {
+    document.body.classList.remove('artifact-detail-enter');
+    document.body.classList.remove('artifact-detail-enter-active');
+  }, 760);
+}
+
 function initHeaderScrollVisibility() {
   var header = document.querySelector('.site-header');
   if (!header) return;
@@ -1782,6 +1849,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   initLogoutToastActions();
   initPublicHeaderNavTransition();
+  initArtifactMorphTransition();
+  initArtifactDetailMorphEntry();
   initHeaderScrollVisibility();
   initPageLoadingOverlay();
   initAdminFloatingQuickActions();
