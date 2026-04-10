@@ -5,7 +5,14 @@ sessionStart();
 requireAdmin();
 
 // Detect base URL — works on localhost/subfolder AND domain root
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off') ? 'https' : 'http';
+$forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+if ($forwardedProto !== '') {
+  $protocol = strtolower(trim(explode(',', $forwardedProto)[0]));
+} elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
+  $protocol = $_SERVER['REQUEST_SCHEME'];
+} else {
+  $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+}
 $dir  = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
 $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . $dir . '/';
 ?>
