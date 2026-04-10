@@ -128,6 +128,9 @@ body.admin-quick-open { overflow:hidden; }
   place-items:center;
   padding:18px 18px 26px;
   z-index:1;
+  overflow:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
 .adm-quick-menu-head {
   display:flex;
@@ -810,10 +813,20 @@ body.artifact-export-mode .art-select-cell input {
   .adm-quick-fab { width:42px; height:42px; }
   .adm-quick-fab img { width:30px; height:30px; }
   .adm-quick-menu { min-width:186px; width:min(224px, calc(100vw - 20px)); }
-  .adm-quick-form-shell { padding:16px 10px; }
+  .adm-quick-form-shell {
+    align-items:flex-start;
+    justify-items:center;
+    padding:calc(10px + env(safe-area-inset-top, 0px)) 10px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
   .adm-quick-item { padding:9px 10px; font-size:.8rem; }
   .adm-quick-item img { width:20px; height:20px; }
-  .adm-quick-form-panel { width:calc(100vw - 20px); max-height:calc(100vh - 94px); }
+  .adm-quick-form-panel {
+    width:calc(100vw - 20px);
+    max-height:calc(100dvh - 32px);
+    margin-top:0;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
   .adm-side-head { margin-bottom:8px; justify-content:space-between; }
   .adm-menu { display:block; }
   .adm-menu li a { font-size:.78rem; padding:8px 9px; gap:7px; border-radius:6px; }

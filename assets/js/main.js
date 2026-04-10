@@ -1206,6 +1206,8 @@ function bindHoverSwapIcon(img) {
   if (hoverTarget === img) {
     img.addEventListener('mouseenter', showGif);
     img.addEventListener('mouseleave', showPng);
+    img.addEventListener('pointerenter', showGif);
+    img.addEventListener('pointerleave', showPng);
     img.addEventListener('focus', showGif);
     img.addEventListener('blur', showPng);
     return;
@@ -1214,6 +1216,13 @@ function bindHoverSwapIcon(img) {
   if (hoverTarget.dataset[hoverBindKey] !== '1') {
     hoverTarget.dataset[hoverBindKey] = '1';
     hoverTarget.addEventListener('mouseenter', function() {
+      hoverTarget.querySelectorAll('img.icon-swap, img.auto-btn-icon').forEach(function(icon) {
+        var iconGif = icon.getAttribute('data-gif');
+        if (iconGif) icon.setAttribute('src', iconGif);
+        icon.style.transform = 'scale(1.2)';
+      });
+    });
+    hoverTarget.addEventListener('pointerenter', function() {
       hoverTarget.querySelectorAll('img.icon-swap, img.auto-btn-icon').forEach(function(icon) {
         var iconGif = icon.getAttribute('data-gif');
         if (iconGif) icon.setAttribute('src', iconGif);
@@ -1232,6 +1241,13 @@ function bindHoverSwapIcon(img) {
   if (hoverTarget.dataset[restoreBindKey] !== '1') {
     hoverTarget.dataset[restoreBindKey] = '1';
     hoverTarget.addEventListener('mouseleave', function() {
+      hoverTarget.querySelectorAll('img.icon-swap, img.auto-btn-icon').forEach(function(icon) {
+        var iconPng = icon.getAttribute('data-png');
+        if (iconPng) icon.setAttribute('src', iconPng);
+        icon.style.transform = '';
+      });
+    });
+    hoverTarget.addEventListener('pointerleave', function() {
       hoverTarget.querySelectorAll('img.icon-swap, img.auto-btn-icon').forEach(function(icon) {
         var iconPng = icon.getAttribute('data-png');
         if (iconPng) icon.setAttribute('src', iconPng);
