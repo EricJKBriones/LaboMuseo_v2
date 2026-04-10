@@ -43,6 +43,12 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRI
   </div>
 </footer>
 <div id="sileoToastHost" class="sileo-toast-host" aria-live="polite" aria-atomic="true"></div>
+<div id="pageLoadingOverlay" class="page-loading-overlay" aria-hidden="true">
+  <div class="page-loading-card">
+    <img src="<?= $base ?>assets/Icon/loading.gif" alt="Loading" class="page-loading-icon">
+    <div class="page-loading-text">Loading...</div>
+  </div>
+</div>
 <script src="<?= $base ?>assets/js/main.js"></script>
 </body>
 </html>

@@ -181,13 +181,12 @@ require_once 'admin_header.php';
     <!-- TABLE -->
     <div class="tbl-wrap">
       <table class="adm-tbl">
-        <thead><tr><th>ID</th><th>Image</th><th>Name</th><th>Description</th><th>Artifacts</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Image</th><th>Name</th><th>Description</th><th>Artifacts</th><th>Actions</th></tr></thead>
         <tbody>
           <?php if (empty($cats)): ?>
-            <tr><td colspan="6" style="text-align:center;padding:20px;color:#888">No departments found.</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:20px;color:#888">No departments found.</td></tr>
           <?php else: foreach ($cats as $c): ?>
             <tr>
-              <td><?= $c['id'] ?></td>
               <td>
                 <?php if ($c['image_path'] && file_exists('../uploads/'.$c['image_path'])): ?>
                   <img src="../uploads/<?= htmlspecialchars($c['image_path']) ?>" class="tbl-img">
