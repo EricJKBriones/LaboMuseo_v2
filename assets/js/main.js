@@ -1015,6 +1015,22 @@ function escHTML(s) {
     .replace(/"/g,'&quot;');
 }
 
+function navigateAfterFullscreenExit(href) {
+  if (!href) return;
+
+  var activeFs = document.fullscreenElement;
+  if (activeFs && document.exitFullscreen) {
+    Promise.resolve(document.exitFullscreen()).catch(function() {
+      // Ignore fullscreen exit errors and continue navigation.
+    }).finally(function() {
+      window.location.href = href;
+    });
+    return;
+  }
+
+  window.location.href = href;
+}
+
 /* ── EXPORT CSV (admin) ─────────────────────────────────────── */
 function exportCSV() {
   window.location.href = 'admin/export.php';
@@ -1030,6 +1046,8 @@ function applyAdminSidebarState(collapsed) {
 }
 
 function toggleAdminSidebar() {
+  if (!document.body) return;
+
   if (window.innerWidth <= 900) {
     document.body.classList.toggle('admin-sidebar-open');
     return;
@@ -1046,6 +1064,15 @@ function toggleAdminSidebar() {
 
 function initAdminSidebarCollapse() {
   if (!document.querySelector('.adm-sidebar')) return;
+
+  document.querySelectorAll('.adm-side-toggle, .adm-mobile-fab').forEach(function(btn) {
+    if (btn.dataset.sidebarToggleBound === '1') return;
+    btn.dataset.sidebarToggleBound = '1';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      toggleAdminSidebar();
+    });
+  });
 
   var collapsed = false;
   try {
@@ -1110,7 +1137,7 @@ function initAdminMenuNavAnimation() {
 
       requestAnimationFrame(function() {
         setTimeout(function() {
-          window.location.href = href;
+          navigateAfterFullscreenExit(href);
         }, 110);
       });
     });
@@ -1552,7 +1579,7 @@ function initPublicHeaderNavTransition() {
       }
 
       setTimeout(function() {
-        window.location.href = href;
+        navigateAfterFullscreenExit(href);
       }, 170);
     });
   });

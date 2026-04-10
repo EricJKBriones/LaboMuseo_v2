@@ -1004,6 +1004,8 @@ body.artifact-export-mode .art-select-cell input {
   border-radius:24px;
   background:#070c12;
   border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 24px 52px rgba(3,10,15,.38);
+}
 .showcase-chip#showcaseFullscreenBtn {
   width:44px;
   height:44px;
@@ -1016,8 +1018,6 @@ body.artifact-export-mode .art-select-cell input {
 .showcase-chip#showcaseFullscreenBtn .auto-btn-icon {
   width:20px;
   height:20px;
-}
-  box-shadow:0 24px 52px rgba(3,10,15,.38);
 }
 .showcase-branding {
   position:absolute;

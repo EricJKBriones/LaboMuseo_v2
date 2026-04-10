@@ -2,13 +2,13 @@
 // admin/sidebar.php
 $adminPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
-<button type="button" class="adm-mobile-fab" onclick="toggleAdminSidebar()" aria-label="Toggle admin menu">
+<button type="button" class="adm-mobile-fab" aria-label="Toggle admin menu">
   &#9776;
 </button>
 <aside class="adm-sidebar">
   <div class="adm-side-head">
     <h3>Admin Menu</h3>
-    <button type="button" class="adm-side-toggle" onclick="toggleAdminSidebar()" title="Collapse menu" aria-label="Toggle admin menu">
+    <button type="button" class="adm-side-toggle" title="Collapse menu" aria-label="Toggle admin menu">
       &#9776;
     </button>
   </div>
