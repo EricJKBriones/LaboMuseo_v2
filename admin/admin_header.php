@@ -4,17 +4,9 @@ require_once '../includes/db.php';
 sessionStart();
 requireAdmin();
 
-// Detect base URL — works on localhost/subfolder AND domain root
-$forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
-if ($forwardedProto !== '') {
-  $protocol = strtolower(trim(explode(',', $forwardedProto)[0]));
-} elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
-  $protocol = $_SERVER['REQUEST_SCHEME'];
-} else {
-  $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-}
+// Path-based base URL to avoid protocol/host mismatch behind reverse proxies.
 $dir  = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
-$base = $protocol . '://' . $_SERVER['HTTP_HOST'] . $dir . '/';
+$base = ($dir === '' ? '/' : $dir . '/');
 ?>
 <!DOCTYPE html>
 <html lang="en">

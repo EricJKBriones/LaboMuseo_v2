@@ -1726,6 +1726,42 @@ function initHeaderScrollVisibility() {
   }, { passive: true });
 }
 
+function initIconPathCaseFallback() {
+  document.querySelectorAll('img[src], img[data-png], img[data-gif]').forEach(function(img) {
+    if (img.dataset.iconCaseFallbackBound === '1') return;
+    img.dataset.iconCaseFallbackBound = '1';
+
+    img.addEventListener('error', function() {
+      var currentSrc = img.getAttribute('src') || '';
+      var fixedSrc = currentSrc;
+
+      if (fixedSrc.indexOf('/assets/Icon/') !== -1) {
+        fixedSrc = fixedSrc.replace('/assets/Icon/', '/assets/icon/');
+      } else if (fixedSrc.indexOf('/assets/icon/') !== -1) {
+        fixedSrc = fixedSrc.replace('/assets/icon/', '/assets/Icon/');
+      } else {
+        return;
+      }
+
+      if (fixedSrc === currentSrc) return;
+      img.setAttribute('src', fixedSrc);
+
+      var dataPng = img.getAttribute('data-png') || '';
+      var dataGif = img.getAttribute('data-gif') || '';
+      if (dataPng.indexOf('/assets/Icon/') !== -1) {
+        img.setAttribute('data-png', dataPng.replace('/assets/Icon/', '/assets/icon/'));
+      } else if (dataPng.indexOf('/assets/icon/') !== -1) {
+        img.setAttribute('data-png', dataPng.replace('/assets/icon/', '/assets/Icon/'));
+      }
+      if (dataGif.indexOf('/assets/Icon/') !== -1) {
+        img.setAttribute('data-gif', dataGif.replace('/assets/Icon/', '/assets/icon/'));
+      } else if (dataGif.indexOf('/assets/icon/') !== -1) {
+        img.setAttribute('data-gif', dataGif.replace('/assets/icon/', '/assets/Icon/'));
+      }
+    });
+  });
+}
+
 /* ── SUBMIT BUTTON CLICK ANIMATION ─────────────────────────── */
 var submitAnimDelayMs = 420;
 var submitAnimTickMark = '<svg width="38" height="30" viewBox="0 0 58 45" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="nonzero" d="M19.11 44.64L.27 25.81l5.66-5.66 13.18 13.18L52.07.38l5.65 5.65"/></svg>';
@@ -1867,6 +1903,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initPublicHeaderNavTransition();
   initArtifactMorphTransition();
   initArtifactDetailMorphEntry();
+  initIconPathCaseFallback();
   initHeaderScrollVisibility();
   initPageLoadingOverlay();
   initAdminFloatingQuickActions();

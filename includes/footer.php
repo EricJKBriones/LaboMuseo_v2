@@ -1,14 +1,7 @@
 <?php
 // includes/footer.php
-$forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
-if ($forwardedProto !== '') {
-  $protocol = strtolower(trim(explode(',', $forwardedProto)[0]));
-} elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
-  $protocol = $_SERVER['REQUEST_SCHEME'];
-} else {
-  $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-}
-$base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') . '/';
+$dir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+$base = ($dir === '' ? '/' : $dir . '/');
 ?>
 <footer class="site-footer">
   <div class="footer-inner">
