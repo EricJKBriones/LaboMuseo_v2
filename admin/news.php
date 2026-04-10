@@ -153,7 +153,7 @@ require_once 'admin_header.php';
           <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
           <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required></textarea></div>
         </div>
-        <button type="submit" class="btn-save" data-icon-name="post_news">&#128226; Publish</button>
+        <button type="submit" class="btn-save" data-icon-name="post_news">Publish</button>
         <button type="button" class="btn-cancel-f" onclick="togglePanel('addNewsForm')">Cancel</button>
       </form>
     </div>
@@ -183,7 +183,7 @@ require_once 'admin_header.php';
           <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path'] ?? '') ?>"></div>
           <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required><?= htmlspecialchars($editRow['content']) ?></textarea></div>
         </div>
-        <button type="submit" class="btn-save">&#128190; Update</button>
+        <button type="submit" class="btn-save">Update</button>
         <a href="news.php?view=<?= $view ?>" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
       </form>
     </div>

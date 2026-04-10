@@ -199,7 +199,7 @@ require_once 'admin_header.php';
             </div>
           </div>
 
-          <button type="submit" class="btn-save">&#128190; Save Changes</button>
+          <button type="submit" class="btn-save">Save Changes</button>
           <a href="visitors.php" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
         </form>
       </div>

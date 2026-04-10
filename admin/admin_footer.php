@@ -64,7 +64,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
           <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save">&#128190; Save Artifact</button>
+          <button type="submit" class="btn-save">Save Artifact</button>
           <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddArtifactForm')">Cancel</button>
         </div>
       </form>
@@ -83,7 +83,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
           <div class="full"><label class="al">Description</label><textarea name="description" class="ai"></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save">&#128190; Save Department</button>
+          <button type="submit" class="btn-save">Save Department</button>
           <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddDeptForm')">Cancel</button>
         </div>
       </form>
@@ -110,7 +110,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
           <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save" data-icon-name="post_news">&#128226; Publish</button>
+          <button type="submit" class="btn-save" data-icon-name="post_news">Publish</button>
           <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddNewsForm')">Cancel</button>
         </div>
       </form>
