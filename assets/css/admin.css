@@ -125,10 +125,12 @@ body.admin-quick-open { overflow:hidden; }
   position:absolute;
   inset:0;
   display:grid;
-  place-items:center;
-  padding:18px 18px 26px;
+  justify-items:center;
+  align-items:flex-start;
+  padding:clamp(26px, 7vh, 64px) 18px 26px;
   z-index:1;
-  overflow:hidden;
+  overflow-y:auto;
+  overflow-x:hidden;
 }
 .adm-quick-menu-head {
   display:flex;
@@ -184,13 +186,16 @@ body.admin-quick-open { overflow:hidden; }
   width:min(640px, calc(100vw - 36px));
 }
 .adm-quick-form-panel {
+  position:absolute;
+  left:50%;
+  top:0;
   width:min(620px, calc(100vw - 36px));
   max-height:clamp(200px, 75vh, 82vh);
   overflow:auto;
   background:linear-gradient(180deg, rgba(255,255,255,.99), rgba(250,246,238,.98));
   border:1px solid rgba(201,146,42,.18);
   box-shadow:0 26px 58px rgba(8,24,39,.26);
-  transform:translateY(18px) scale(.98);
+  transform:translate(-50%, 18px) scale(.98);
   margin:0;
   padding:0;
   z-index:3948;
@@ -200,7 +205,7 @@ body.admin-quick-open { overflow:hidden; }
   max-height:clamp(250px, 80vh, 85vh);
   margin:0;
   padding:18px 18px 16px;
-  transform:translateY(0) scale(1);
+  transform:translate(-50%, 0) scale(1);
 }
 .adm-quick-form-overlay .adm-quick-form-panel {
   right:auto;
@@ -595,6 +600,21 @@ body.admin-sidebar-collapsed .adm-menu li a.active::after {
   margin:0 0 22px;
   transition:max-height .35s ease, opacity .25s ease, transform .25s ease, padding .35s ease, margin .35s ease, visibility 0s linear 0s;
 }
+.adm-quick-form-panel {
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translate(-50%, 18px) scale(.98);
+  overflow:auto;
+  max-height:clamp(200px, 75vh, 82vh);
+  -webkit-overflow-scrolling:touch;
+}
+.adm-quick-form-panel.is-open {
+  transform:translate(-50%, 0) scale(1);
+  max-height:clamp(250px, 80vh, 85vh);
+  margin:0;
+  padding:18px 18px 16px;
+}
 .adm-form#editNewsForm { border-left:4px solid var(--gold); }
 .adm-form#editArtForm { border-left:4px solid var(--gold); }
 .adm-form#editDeptForm { border-left:4px solid var(--gold); }
@@ -812,21 +832,26 @@ body.artifact-export-mode .art-select-cell input {
   .adm-quick-fab img { width:30px; height:30px; }
   .adm-quick-menu { min-width:186px; width:min(224px, calc(100vw - 20px)); }
   .adm-quick-form-shell {
-    align-items:center;
-    padding:calc(10px + env(safe-area-inset-top, 0px)) 10px calc(14px + env(safe-area-inset-bottom, 0px));
+    align-items:flex-start;
+    padding:calc(clamp(14px, 5svh, 40px) + env(safe-area-inset-top, 0px)) 10px calc(14px + env(safe-area-inset-bottom, 0px));
   }
   .adm-quick-item { padding:9px 10px; font-size:.8rem; }
   .adm-quick-item img { width:20px; height:20px; }
   .adm-quick-form-panel {
     width:calc(100vw - 20px);
-    max-height:clamp(180px, 70dvh, 75dvh);
+    left:50%;
+    top:0;
+    max-height:min(76dvh, 560px);
+    max-height:min(76svh, 560px);
     margin-top:0;
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
     overflow:auto;
   }
   .adm-quick-form-panel.is-open {
-    max-height:clamp(220px, 75dvh, 80dvh);
+    max-height:min(76dvh, 560px);
+    max-height:min(76svh, 560px);
+    margin:0;
     padding:16px 14px 14px;
   }
   .adm-side-head { margin-bottom:8px; justify-content:space-between; }

@@ -1463,9 +1463,13 @@ function initAdminFloatingQuickActions() {
       if (!target.classList.contains('is-open')) {
         togglePanel(panelId);
       }
+      target.scrollTop = 0;
+      var shell = overlay.querySelector('.adm-quick-form-shell');
+      if (shell) shell.scrollTop = 0;
       syncAdminQuickOverlayState();
       var firstField = target.querySelector('input, select, textarea, button');
-      if (firstField && typeof firstField.focus === 'function') {
+      var shouldAutoFocus = window.matchMedia && window.matchMedia('(min-width: 901px)').matches;
+      if (shouldAutoFocus && firstField && typeof firstField.focus === 'function') {
         window.setTimeout(function() {
           firstField.focus();
         }, 160);
@@ -1488,8 +1492,9 @@ function initAdminFloatingQuickActions() {
     openAdminQuickMenu();
   });
 
-  backdrop.addEventListener('click', function() {
-    closeAdminQuickDock();
+  backdrop.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
   });
 
   menu.querySelectorAll('[data-quick-target]').forEach(function(button) {
