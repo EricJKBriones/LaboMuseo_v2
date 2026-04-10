@@ -1427,15 +1427,82 @@ input[type=number] { -moz-appearance:textfield; }
   .about-strip-grid { grid-template-columns:1fr !important; gap:30px !important; }
 }
 @media(max-width:768px) {
-  .header-inner { padding:0 14px; }
-  .hamburger    { display:flex; }
-  .nav-links {
-    display:none; position:absolute; top:68px; left:0; right:0;
-    background:var(--navy); flex-direction:column; padding:16px; gap:6px;
-    box-shadow:0 8px 24px rgba(0,0,0,.4); z-index:999;
+  .header-inner {
+    padding:0 14px;
+    position:relative;
+    justify-content:center;
   }
-  .nav-links.open   { display:flex; }
-  .nav-lnk          { text-align:center; padding:10px; }
+  .hamburger {
+    display:flex;
+    position:fixed;
+    top:10px;
+    left:10px;
+    z-index:1102;
+    padding:7px;
+    border-radius:10px;
+    border:1px solid rgba(201,146,42,.42);
+    background:rgba(15,28,40,.94);
+    box-shadow:0 10px 24px rgba(0,0,0,.28);
+  }
+  .nav-links {
+    display:flex;
+    position:absolute;
+    top:68px;
+    left:8px;
+    right:8px;
+    background:transparent;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    padding:0;
+    gap:8px;
+    border:none;
+    box-shadow:none;
+    z-index:1101;
+    opacity:0;
+    transform:translateY(-8px) scale(.98);
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+  }
+  .nav-links.open {
+    opacity:1;
+    transform:translateY(0) scale(1);
+    visibility:visible;
+    pointer-events:auto;
+    transition:opacity .2s ease, transform .2s ease, visibility 0s linear 0s;
+  }
+  .nav-sep {
+    display:none;
+  }
+  .nav-links li {
+    width:auto;
+    max-width:100%;
+  }
+  .nav-lnk {
+    display:inline-flex;
+    width:auto;
+    max-width:100%;
+    text-align:left;
+    padding:8px 11px;
+    font-size:.8rem;
+    background:rgba(36,52,71,.95);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:10px;
+    box-shadow:0 6px 16px rgba(0,0,0,.22);
+  }
+  .guest-badge {
+    display:inline-flex;
+    align-items:center;
+    padding:8px 11px;
+    border-radius:10px;
+    background:rgba(24,36,50,.96);
+    border:1px solid rgba(155,181,200,.38);
+    color:#e5eef5;
+    box-shadow:0 6px 16px rgba(0,0,0,.2);
+    font-size:.78rem;
+    line-height:1.2;
+  }
   .hero             { min-height:auto; padding:60px 0 50px; }
   .hero-title       { font-size:2.4rem; }
   .hero-cards       { gap:12px; width:100%; }

@@ -8,6 +8,34 @@ function toggleMenu() {
   document.getElementById('hamburgerBtn').classList.toggle('open');
 }
 
+function closeMobileMenu() {
+  var nav = document.getElementById('navLinks');
+  var btn = document.getElementById('hamburgerBtn');
+  if (!nav || !btn) return;
+  nav.classList.remove('open');
+  btn.classList.remove('open');
+}
+
+function initMobileMenuAutoCollapse() {
+  var nav = document.getElementById('navLinks');
+  var btn = document.getElementById('hamburgerBtn');
+  if (!nav || !btn) return;
+
+  document.addEventListener('click', function(e) {
+    if (window.innerWidth > 768) return;
+    if (!nav.classList.contains('open')) return;
+    if (e.target.closest('#hamburgerBtn')) return;
+    if (e.target.closest('#navLinks')) return;
+    closeMobileMenu();
+  });
+
+  window.addEventListener('scroll', function() {
+    if (window.innerWidth > 768) return;
+    if (!nav.classList.contains('open')) return;
+    closeMobileMenu();
+  }, { passive: true });
+}
+
 /* ── SILEO TOAST BAR ───────────────────────────────────────── */
 var sileoToastHost = null;
 var sileoToastDefaults = {
@@ -1740,6 +1768,7 @@ function bindSubmitAnimationOnForm(form) {
 
 /* ── INIT ───────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
+  initMobileMenuAutoCollapse();
   initCalendar();
   initAutoSubmitFilters();
   initTeaserFader();
