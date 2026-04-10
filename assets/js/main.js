@@ -1073,11 +1073,39 @@ function applyAdminSidebarState(collapsed) {
   }
 }
 
+function closeAdminSidebarMobile(immediate) {
+  if (!document.body || window.innerWidth > 900) return;
+  if (!document.body.classList.contains('admin-sidebar-open')) return;
+
+  if (immediate) {
+    document.body.classList.remove('admin-sidebar-closing');
+    document.body.classList.remove('admin-sidebar-open');
+    syncAdminSidebarFabState();
+    return;
+  }
+
+  document.body.classList.add('admin-sidebar-closing');
+  document.body.classList.remove('admin-sidebar-open');
+  syncAdminSidebarFabState();
+
+  window.setTimeout(function() {
+    if (!document.body) return;
+    document.body.classList.remove('admin-sidebar-closing');
+  }, 380);
+}
+
 function toggleAdminSidebar() {
   if (!document.body) return;
 
   if (window.innerWidth <= 900) {
-    document.body.classList.toggle('admin-sidebar-open');
+    if (document.body.classList.contains('admin-sidebar-open')) {
+      closeAdminSidebarMobile(false);
+    } else {
+      document.body.classList.remove('admin-sidebar-closing');
+      document.body.classList.add('admin-sidebar-open');
+      syncAdminSidebarFabState();
+    }
+    syncAdminSidebarFabState();
     return;
   }
 
@@ -1088,6 +1116,13 @@ function toggleAdminSidebar() {
   } catch (e) {
     // Ignore storage errors and keep current UI state.
   }
+}
+
+function syncAdminSidebarFabState() {
+  var isOpen = document.body && document.body.classList.contains('admin-sidebar-open');
+  document.querySelectorAll('.adm-mobile-fab').forEach(function(btn) {
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
 }
 
 function initAdminSidebarCollapse() {
@@ -1110,16 +1145,19 @@ function initAdminSidebarCollapse() {
   }
 
   if (window.innerWidth <= 900) {
-    document.body.classList.remove('admin-sidebar-open');
+    closeAdminSidebarMobile(true);
     applyAdminSidebarState(false);
+    syncAdminSidebarFabState();
   } else {
     applyAdminSidebarState(collapsed);
+    syncAdminSidebarFabState();
   }
 
   window.addEventListener('resize', function() {
     if (window.innerWidth <= 900) {
-      document.body.classList.remove('admin-sidebar-open');
+      closeAdminSidebarMobile(true);
       applyAdminSidebarState(false);
+      syncAdminSidebarFabState();
       return;
     }
     var keepCollapsed = false;
@@ -1129,6 +1167,7 @@ function initAdminSidebarCollapse() {
       keepCollapsed = false;
     }
     applyAdminSidebarState(keepCollapsed);
+    syncAdminSidebarFabState();
   });
 
   document.addEventListener('click', function(e) {
@@ -1136,7 +1175,7 @@ function initAdminSidebarCollapse() {
     if (!document.body.classList.contains('admin-sidebar-open')) return;
     if (e.target.closest('.adm-sidebar')) return;
     if (e.target.closest('.adm-mobile-fab')) return;
-    document.body.classList.remove('admin-sidebar-open');
+    closeAdminSidebarMobile(false);
   });
 }
 
@@ -1419,6 +1458,21 @@ function initAdminFloatingQuickActions() {
     var anyFormOpen = !!overlay.querySelector('.adm-form.is-open');
     var menuOpen = dock.classList.contains('is-menu-open') && !anyFormOpen;
     var isVisible = menuOpen || anyFormOpen;
+    var activeEl = document.activeElement;
+
+    // Prevent aria-hidden warnings by removing focus from the quick menu
+    // before it is hidden from assistive technologies.
+    if (!menuOpen && activeEl && menu.contains(activeEl) && typeof activeEl.blur === 'function') {
+      activeEl.blur();
+    }
+    if (!anyFormOpen && activeEl && overlay.contains(activeEl)) {
+      if (typeof activeEl.blur === 'function') {
+        activeEl.blur();
+      }
+      if (fab && typeof fab.focus === 'function') {
+        fab.focus({ preventScroll: true });
+      }
+    }
 
     dock.classList.toggle('is-open', isVisible);
     overlay.classList.toggle('is-open', anyFormOpen);
@@ -1427,7 +1481,17 @@ function initAdminFloatingQuickActions() {
 
     fab.setAttribute('aria-expanded', menuOpen ? 'true' : 'false');
     overlay.setAttribute('aria-hidden', anyFormOpen ? 'false' : 'true');
+    if (anyFormOpen) {
+      overlay.removeAttribute('inert');
+    } else {
+      overlay.setAttribute('inert', '');
+    }
     menu.setAttribute('aria-hidden', menuOpen ? 'false' : 'true');
+    if (menuOpen) {
+      menu.removeAttribute('inert');
+    } else {
+      menu.setAttribute('inert', '');
+    }
 
     if (anyFormOpen) {
       dock.classList.remove('is-menu-open');
