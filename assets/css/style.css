@@ -775,7 +775,6 @@ body.header-hidden .site-header { transform:translateY(-100%); }
 .cal-day.selected::after { background:#fff !important; }
 .cal-day.today.selected { background:var(--gold) !important; }
 
-.cal-events-panel { }
 .cal-events-title { font-family:'Playfair Display',serif; color:var(--navy); font-size:1.3rem; margin-bottom:20px; }
 .cal-event-item { background:#fff; border-radius:10px; padding:16px 18px; border-left:4px solid var(--gold); box-shadow:var(--shadow); margin-bottom:12px; cursor:pointer; transition:transform .2s; }
 .cal-event-item:hover { transform:translateX(4px); }
@@ -1403,7 +1402,7 @@ body.page-pdf_reader .pdf-reader-frame-wrap {
 .msg-ok  { background:#eef8f3; border-left:4px solid var(--green); color:#155a35; }
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
-input[type=number] { -moz-appearance:textfield; }
+input[type=number] { appearance:textfield; -moz-appearance:textfield; }
 
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
 @media(max-width:1200px) {
