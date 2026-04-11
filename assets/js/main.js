@@ -181,7 +181,7 @@ function showSileoToastBar(input, variant, timeout) {
   var level = spec.variant || 'info';
   var title = spec.title || (level === 'error' ? 'Error' : level === 'success' ? 'Success' : level === 'warning' ? 'Warning' : level === 'loading' ? 'Loading' : 'Notice');
   var icon = spec.icon || (level === 'error' ? '!' : level === 'success' ? '✓' : level === 'warning' ? '!' : level === 'loading' ? '⋯' : 'i');
-  var duration = typeof timeout === 'number' ? timeout : (typeof spec.duration === 'number' ? spec.duration : (level === 'loading' || spec.persistent ? 0 : 3200));
+  var duration = typeof timeout === 'number' ? timeout : (typeof spec.duration === 'number' ? spec.duration : (level === 'loading' || spec.persistent ? 0 : 2400));
 
   toast.className = 'sileo-toastbar sileo-toastbar--' + level;
   toast.setAttribute('role', level === 'error' ? 'alert' : 'status');
@@ -289,7 +289,7 @@ function showSileoToastBar(input, variant, timeout) {
     if (!duration) return;
     timer = window.setTimeout(function() {
       dismissSileoToast(toast);
-    }, 650);
+    }, 350);
   });
 
   toast.dismiss = function() {
@@ -321,7 +321,7 @@ function showSileoToastBar(input, variant, timeout) {
 function showSileoActionToast(payload) {
   var spec = normalizeToastSpec(payload, 'info');
   if (typeof spec.duration !== 'number') {
-    spec.duration = 3200;
+    spec.duration = 2400;
   }
   return showSileoToastBar(spec, 'info');
 }
@@ -332,7 +332,7 @@ function promptGuestbookAccess(sectionLabel) {
       title: GUESTBOOK_TOAST_TITLE,
       message: 'You need to sign the Digital Guestbook to unlock latest acquisitions.',
       variant: 'warning',
-      duration: 4200,
+      duration: 2800,
       position: 'top-right',
       actions: [
         { label: 'Sign Guestbook', href: 'index.php?page=login' },
@@ -1656,6 +1656,7 @@ function initLogoutToastActions() {
       }
 
       var href = link.getAttribute('href') || 'index.php?action=logout';
+      var isGuestLogout = link.classList.contains('nav-logout-icon-only');
       showSileoToastBar({
         title: 'Confirm Logout',
         message: 'Do you really want to log out?',
@@ -1667,8 +1668,8 @@ function initLogoutToastActions() {
             label: 'YES',
             onClick: function() {
               showSileoToastBar({
-                title: 'Logged Out',
-                message: 'Signing out...',
+                title: isGuestLogout ? 'Thank You' : 'Logged Out',
+                message: isGuestLogout ? 'Thank you, come again!' : 'Signing out...',
                 variant: 'success',
                 duration: 700,
                 position: 'top-right'
@@ -1783,6 +1784,116 @@ function initArtifactFilterModal() {
 
   form.addEventListener('submit', function() {
     setExpanded(false);
+  });
+}
+
+function initComboSkinSelects() {
+  var selects = document.querySelectorAll('select.js-combo-skin');
+  if (!selects.length) return;
+
+  var openWrap = null;
+
+  function closeWrap(wrap) {
+    if (!wrap) return;
+    wrap.classList.remove('is-open');
+    var trigger = wrap.querySelector('.combo-skin__trigger');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    if (openWrap === wrap) openWrap = null;
+  }
+
+  function closeAllExcept(keep) {
+    document.querySelectorAll('.combo-skin.is-open').forEach(function(wrap) {
+      if (wrap !== keep) closeWrap(wrap);
+    });
+  }
+
+  selects.forEach(function(select, idx) {
+    if (select.dataset.comboEnhanced === '1') return;
+    select.dataset.comboEnhanced = '1';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'combo-skin';
+
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'combo-skin__trigger';
+    trigger.id = 'comboSkinTrigger' + idx;
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+
+    var label = document.createElement('span');
+    label.className = 'combo-skin__label';
+
+    var caret = document.createElement('span');
+    caret.className = 'combo-skin__caret';
+    caret.innerHTML = '&#9662;';
+
+    trigger.appendChild(label);
+    trigger.appendChild(caret);
+
+    var menu = document.createElement('div');
+    menu.className = 'combo-skin__menu';
+    menu.setAttribute('role', 'listbox');
+    menu.setAttribute('aria-labelledby', trigger.id);
+
+    function refresh() {
+      var selected = select.options[select.selectedIndex];
+      label.textContent = selected ? selected.textContent : 'Select';
+      menu.querySelectorAll('.combo-skin__option').forEach(function(optBtn) {
+        optBtn.classList.toggle('is-active', optBtn.dataset.value === select.value);
+      });
+    }
+
+    Array.prototype.forEach.call(select.options, function(opt) {
+      var optBtn = document.createElement('button');
+      optBtn.type = 'button';
+      optBtn.className = 'combo-skin__option';
+      optBtn.setAttribute('role', 'option');
+      optBtn.dataset.value = opt.value;
+      optBtn.textContent = opt.textContent;
+
+      optBtn.addEventListener('click', function() {
+        if (select.value !== opt.value) {
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        closeWrap(wrap);
+        refresh();
+      });
+
+      menu.appendChild(optBtn);
+    });
+
+    trigger.addEventListener('click', function() {
+      var isOpen = wrap.classList.contains('is-open');
+      closeAllExcept(wrap);
+      if (isOpen) {
+        closeWrap(wrap);
+      } else {
+        wrap.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        openWrap = wrap;
+      }
+    });
+
+    select.classList.add('combo-skin__native');
+    select.parentNode.insertBefore(wrap, select);
+    wrap.appendChild(select);
+    wrap.appendChild(trigger);
+    wrap.appendChild(menu);
+
+    select.addEventListener('change', refresh);
+    refresh();
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.combo-skin')) {
+      closeAllExcept(null);
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAllExcept(null);
   });
 }
 
@@ -2309,16 +2420,30 @@ function initPublicPullToRefresh() {
 
 function initPublicSwipeFade() {
   if (document.querySelector('.adm-layout')) return;
-  if (window.innerWidth > 900) return;
 
   var startX = 0;
   var startY = 0;
   var active = false;
   var clearTimer = null;
+  var lastScrollY = window.scrollY || 0;
+  var lastScrollTriggerTs = 0;
+  var scrollTicking = false;
 
   function resetFadeClass() {
     document.body.classList.remove('swipe-fade-up');
     document.body.classList.remove('swipe-fade-down');
+  }
+
+  function triggerDirectionalFade(isUpDirection) {
+    resetFadeClass();
+    void document.body.offsetWidth;
+    document.body.classList.add(isUpDirection ? 'swipe-fade-up' : 'swipe-fade-down');
+
+    if (clearTimer) clearTimeout(clearTimer);
+    clearTimer = window.setTimeout(function() {
+      resetFadeClass();
+      clearTimer = null;
+    }, 320);
   }
 
   document.addEventListener('touchstart', function(e) {
@@ -2342,15 +2467,28 @@ function initPublicSwipeFade() {
     if (Math.abs(dy) < 46) return;
     if (Math.abs(dx) > Math.abs(dy) * 0.9) return;
 
-    resetFadeClass();
-    void document.body.offsetWidth;
-    document.body.classList.add(dy < 0 ? 'swipe-fade-up' : 'swipe-fade-down');
+    triggerDirectionalFade(dy < 0);
+  }, { passive: true });
 
-    if (clearTimer) clearTimeout(clearTimer);
-    clearTimer = window.setTimeout(function() {
-      resetFadeClass();
-      clearTimer = null;
-    }, 320);
+  window.addEventListener('scroll', function() {
+    if (scrollTicking) return;
+    scrollTicking = true;
+
+    window.requestAnimationFrame(function() {
+      var currentY = window.scrollY || 0;
+      var delta = currentY - lastScrollY;
+      lastScrollY = currentY;
+      scrollTicking = false;
+
+      if (Math.abs(delta) < 10) return;
+
+      var now = Date.now();
+      if (now - lastScrollTriggerTs < 180) return;
+      lastScrollTriggerTs = now;
+
+      // Scrolling down moves content up, so reuse the "swipe-up" visual.
+      triggerDirectionalFade(delta > 0);
+    });
   }, { passive: true });
 }
 
@@ -2381,6 +2519,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initPublicPullToRefresh();
   initPublicSwipeFade();
   initArtifactFilterModal();
+  initComboSkinSelects();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {

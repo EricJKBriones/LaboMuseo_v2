@@ -126,7 +126,7 @@ if ($showPdfArtifact && $search !== '') {
       <div class="artifact-filter-grid">
         <label class="artifact-filter-field">
           <span>Category</span>
-          <select id="mobileCategorySelect" name="cat" class="s-sel" onchange="this.form.submit()">
+          <select id="mobileCategorySelect" name="cat" class="s-sel js-combo-skin" onchange="this.form.submit()">
             <option value="" <?= !$catFilter ? 'selected' : '' ?>>All Categories</option>
             <?php foreach ($categories as $c): ?>
               <option value="<?= (int)$c['id'] ?>" <?= $catFilter===(int)$c['id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['name']) ?></option>
@@ -135,7 +135,7 @@ if ($showPdfArtifact && $search !== '') {
         </label>
         <label class="artifact-filter-field">
           <span>Origin</span>
-          <select name="origin" class="s-sel" onchange="this.form.submit()">
+          <select name="origin" class="s-sel js-combo-skin" onchange="this.form.submit()">
             <option value="">All Origins</option>
             <?php foreach ($origins as $o): ?>
               <option value="<?= htmlspecialchars($o['origin']) ?>" <?= $originFilter===$o['origin']?'selected':'' ?>><?= htmlspecialchars($o['origin']) ?></option>
@@ -144,7 +144,7 @@ if ($showPdfArtifact && $search !== '') {
         </label>
         <label class="artifact-filter-field">
           <span>Period/Year</span>
-          <select name="year" class="s-sel" onchange="this.form.submit()">
+          <select name="year" class="s-sel js-combo-skin" onchange="this.form.submit()">
             <option value="">All Periods/Years</option>
             <?php foreach ($years as $y): ?>
               <option value="<?= htmlspecialchars($y['artifact_year']) ?>" <?= $yearFilter===$y['artifact_year']?'selected':'' ?>><?= htmlspecialchars($y['artifact_year']) ?></option>
@@ -153,7 +153,7 @@ if ($showPdfArtifact && $search !== '') {
         </label>
         <label class="artifact-filter-field artifact-filter-sort">
           <span>Sort By</span>
-          <select name="sort" class="s-sel" onchange="this.form.submit()">
+          <select name="sort" class="s-sel js-combo-skin" onchange="this.form.submit()">
             <option value="newest" <?= $sort==='newest'?'selected':'' ?>>Newest</option>
             <option value="oldest" <?= $sort==='oldest'?'selected':'' ?>>Oldest</option>
             <option value="title_asc" <?= $sort==='title_asc'?'selected':'' ?>>Title A-Z</option>
