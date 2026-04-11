@@ -616,6 +616,14 @@ body.swipe-fade-up::after {
 }
 .btn-navy:hover { background:var(--navy2); }
 
+.btn-arrow-icon {
+  width:16px;
+  height:16px;
+  display:block;
+  object-fit:contain;
+  flex-shrink:0;
+}
+
 /* Submit button click animation (keeps each button's existing design) */
 .submit-animate-enabled {
   position:relative;
@@ -1150,7 +1158,7 @@ body.swipe-fade-up::after {
 .nc-title { font-family:'Playfair Display',serif; font-size:1.12rem; color:var(--navy); line-height:1.3; margin-bottom:8px; }
 .nc-text  { color:var(--text2); font-size:.85rem; line-height:1.65; flex:1; }
 .nc-foot  { margin-top:14px; padding-top:11px; border-top:1px solid var(--cream); display:flex; justify-content:flex-end; }
-.btn-ghost { background:none; border:none; color:var(--gold); font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.85rem; padding:0; transition:color .2s; }
+.btn-ghost { background:none; border:none; color:var(--gold); font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.85rem; padding:0; transition:color .2s; display:inline-flex; align-items:center; gap:6px; }
 .btn-ghost:hover { color:#b8811c; }
 
 /* ── CATEGORIES / EXHIBITS 4-col ────────────────────────────── */
@@ -1355,8 +1363,15 @@ body.swipe-fade-up::after {
 .cat-name  { font-family:'Playfair Display',serif; font-size:.97rem; color:var(--navy); margin-bottom:4px; line-height:1.3; transition:color .2s; }
 .cat-card:hover .cat-name { color:var(--gold); }
 .cat-count { font-size:.73rem; color:var(--text3); margin-bottom:11px; }
-.cat-btn   { margin-top:auto; padding:8px; background:var(--ivory2); color:var(--navy); border:none; border-radius:6px; font-weight:600; font-size:.78rem; cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif; text-align:center; width:100%; }
+.cat-btn   { margin-top:auto; padding:8px; background:var(--ivory2); color:var(--navy); border:none; border-radius:6px; font-weight:600; font-size:.78rem; cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif; text-align:center; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
 .cat-card:hover .cat-btn { background:var(--gold); color:#fff; }
+
+.btn-ghost:hover .btn-arrow-icon,
+.cat-card:hover .cat-btn .btn-arrow-icon,
+.btn-gold:hover .btn-arrow-icon,
+.btn-outline:hover .btn-arrow-icon {
+  transform:translateX(2px) scale(1.02);
+}
 
 /* Exhibit card */
 .ex-card {
@@ -2158,7 +2173,7 @@ input[type=number] { appearance:textfield; -moz-appearance:textfield; }
   .teaser-scrollport {
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
-    touch-action:pan-x;
+    touch-action:auto;
     scroll-snap-type:x proximity;
     -webkit-mask-image:none;
     mask-image:none;

@@ -66,7 +66,7 @@ require_once 'admin_header.php';
             </tbody>
           </table>
         </div>
-        <a href="visitors.php" class="btn-navy" style="font-size:.85rem;padding:9px 18px">View All Visitors &rarr;</a>
+        <a href="visitors.php" class="btn-navy" data-icon-name="right-arrow" data-icon-position="end" style="font-size:.85rem;padding:9px 18px">View All Visitors</a>
       </div>
       <div>
         <h3 class="adm-sec-title">&#128240; Recent News</h3>
@@ -86,7 +86,7 @@ require_once 'admin_header.php';
             </tbody>
           </table>
         </div>
-        <a href="news.php" class="btn-navy" style="font-size:.85rem;padding:9px 18px">Manage News &rarr;</a>
+        <a href="news.php" class="btn-navy" data-icon-name="right-arrow" data-icon-position="end" style="font-size:.85rem;padding:9px 18px">Manage News</a>
       </div>
     </div>
   </main>

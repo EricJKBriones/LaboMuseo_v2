@@ -886,6 +886,7 @@ body.artifact-export-mode .art-select-cell input {
 .alert-err { background:#fef0ee; border-left:4px solid var(--red); color:#8b2020; padding:12px 16px; border-radius:8px; margin-bottom:18px; font-size:.9rem; }
 .adm-account-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .adm-account-card { background:#fff; border-radius:12px; box-shadow:var(--shadow); border:1px solid var(--cream); padding:20px; }
+.adm-account-card--full { grid-column:1 / -1; }
 .adm-account-card h3 { font-family:var(--font-display); color:var(--navy); font-size:1.2rem; margin-bottom:8px; }
 .adm-account-card p { color:var(--text3); font-size:.84rem; margin-bottom:12px; }
 .adm-charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; }
