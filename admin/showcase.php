@@ -41,6 +41,9 @@ require_once 'admin_header.php';
         <div>
           <h2 class="showcase-title">Museum Showcase</h2>
           <p class="showcase-sub">Admin-only rotating display of artifact highlights.</p>
+          <p class="showcase-caution" role="note" aria-live="polite">
+            Caution: For the best viewing experience, desktop mode is recommended.
+          </p>
         </div>
         <div class="showcase-toolbar-actions">
           <a href="showcase.php?display=1" target="_blank" rel="noopener" class="btn-navy showcase-open-btn">Open in New Tab</a>
@@ -144,6 +147,9 @@ require_once 'admin_header.php';
   var isAnimating = false;
   var SWIPE_MS = 420;
   var PREP_MS = 120;
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchAxis = '';
 
   function updateDateTime() {
     if (!dateTimeEl) return;
@@ -288,6 +294,52 @@ require_once 'admin_header.php';
         controls.classList.remove('is-visible');
       }
     });
+
+    stage.addEventListener('touchstart', function(e) {
+      if (!e.touches || !e.touches.length) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchAxis = '';
+      showControls();
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', function(e) {
+      if (!e.touches || !e.touches.length) return;
+      var dx = e.touches[0].clientX - touchStartX;
+      var dy = e.touches[0].clientY - touchStartY;
+
+      if (!touchAxis) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        touchAxis = Math.abs(dx) > Math.abs(dy) + 8 ? 'x' : 'y';
+      }
+      if (touchAxis === 'x' && Math.abs(dx) > 16) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    stage.addEventListener('touchend', function(e) {
+      var t = (e.changedTouches && e.changedTouches.length) ? e.changedTouches[0] : null;
+      if (!t) {
+        touchAxis = '';
+        return;
+      }
+
+      var dx = t.clientX - touchStartX;
+      var dy = t.clientY - touchStartY;
+      var horizontalEnough = Math.abs(dx) > 42;
+      var mostlyHorizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+
+      if (horizontalEnough && mostlyHorizontal) {
+        if (dx < 0) {
+          goNext();
+        } else {
+          goPrev();
+        }
+        startAuto();
+      }
+
+      touchAxis = '';
+    }, { passive: true });
   }
 
   if (stageWrap) {

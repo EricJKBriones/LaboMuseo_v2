@@ -3,17 +3,48 @@
 ============================================================ */
 
 /* ── HAMBURGER MENU ─────────────────────────────────────────── */
+var mobileMenuCloseTimer = null;
+
 function toggleMenu() {
-  document.getElementById('navLinks').classList.toggle('open');
-  document.getElementById('hamburgerBtn').classList.toggle('open');
+  var nav = document.getElementById('navLinks');
+  var btn = document.getElementById('hamburgerBtn');
+  if (!nav || !btn) return;
+
+  if (nav.classList.contains('open')) {
+    closeMobileMenu();
+    return;
+  }
+
+  if (mobileMenuCloseTimer) {
+    clearTimeout(mobileMenuCloseTimer);
+    mobileMenuCloseTimer = null;
+  }
+  nav.classList.remove('is-collapsing');
+  nav.classList.add('open');
+  btn.classList.add('open');
 }
 
 function closeMobileMenu() {
   var nav = document.getElementById('navLinks');
   var btn = document.getElementById('hamburgerBtn');
   if (!nav || !btn) return;
-  nav.classList.remove('open');
+
+  if (!nav.classList.contains('open') || nav.classList.contains('is-collapsing')) {
+    btn.classList.remove('open');
+    return;
+  }
+
+  nav.classList.add('is-collapsing');
   btn.classList.remove('open');
+
+  if (mobileMenuCloseTimer) {
+    clearTimeout(mobileMenuCloseTimer);
+  }
+  mobileMenuCloseTimer = window.setTimeout(function() {
+    nav.classList.remove('open');
+    nav.classList.remove('is-collapsing');
+    mobileMenuCloseTimer = null;
+  }, 560);
 }
 
 function initMobileMenuAutoCollapse() {
@@ -1707,6 +1738,54 @@ function initPublicHeaderNavTransition() {
   });
 }
 
+function initArtifactFilterModal() {
+  var form = document.querySelector('[data-artifact-filter-form="1"]');
+  if (!form) return;
+
+  var toggleBtn = form.querySelector('[data-filter-open]');
+  var panel = form.querySelector('[data-filter-panel]');
+  if (!toggleBtn || !panel) return;
+
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  function setExpanded(nextOpen) {
+    var open = Boolean(nextOpen) && isMobile();
+    form.classList.toggle('is-filter-open', open);
+    toggleBtn.classList.toggle('is-open', open);
+    toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  toggleBtn.addEventListener('click', function() {
+    setExpanded(!form.classList.contains('is-filter-open'));
+  });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && form.classList.contains('is-filter-open')) {
+      setExpanded(false);
+    }
+  });
+
+  window.addEventListener('resize', function() {
+    if (!isMobile()) {
+      setExpanded(false);
+    }
+  });
+
+  panel.querySelectorAll('select').forEach(function(select) {
+    select.addEventListener('change', function() {
+      if (isMobile()) {
+        setExpanded(false);
+      }
+    });
+  });
+
+  form.addEventListener('submit', function() {
+    setExpanded(false);
+  });
+}
+
 function initArtifactMorphTransition() {
   if (!document.body.classList.contains('page-exhibits')) return;
 
@@ -2032,6 +2111,7 @@ function initAdminPullToRefresh() {
   document.body.appendChild(indicator);
 
   var startY = 0;
+  var startX = 0;
   var pulling = false;
   var ready = false;
   var threshold = 84;
@@ -2048,13 +2128,14 @@ function initAdminPullToRefresh() {
   document.addEventListener('touchstart', function(e) {
     if (!e.touches || !e.touches.length) return;
     if (window.scrollY > 0) return;
-    if (e.touches[0].clientY > 110) return;
+    if (e.touches[0].clientY > 36) return;
 
     var target = e.target;
-    if (target && target.closest('input, textarea, select, button, .adm-dashboard-table-wrap')) {
+    if (target && target.closest('input, textarea, select, button, .adm-dashboard-table-wrap, .showcase-stage, .showcase-stage-wrap')) {
       return;
     }
 
+    startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     pulling = true;
     ready = false;
@@ -2069,10 +2150,16 @@ function initAdminPullToRefresh() {
     }
 
     var dy = e.touches[0].clientY - startY;
+    var dx = e.touches[0].clientX - startX;
+    if (Math.abs(dx) > Math.abs(dy) + 8) {
+      resetIndicator();
+      return;
+    }
     if (dy <= 0) {
       resetIndicator();
       return;
     }
+    if (dy < 12) return;
 
     var pull = Math.min(dy, 130);
     var translateY = -72 + pull;
@@ -2131,6 +2218,7 @@ function initPublicPullToRefresh() {
   document.body.appendChild(indicator);
 
   var startY = 0;
+  var startX = 0;
   var pulling = false;
   var ready = false;
   var threshold = 84;
@@ -2147,13 +2235,14 @@ function initPublicPullToRefresh() {
   document.addEventListener('touchstart', function(e) {
     if (!e.touches || !e.touches.length) return;
     if (window.scrollY > 0) return;
-    if (e.touches[0].clientY > 120) return;
+    if (e.touches[0].clientY > 36) return;
 
     var target = e.target;
-    if (target && target.closest('input, textarea, select, button, .pdf-page-wrap, .showcase-stage')) {
+    if (target && target.closest('input, textarea, select, button, .pdf-page-wrap, .showcase-stage, .teaser-scrollport')) {
       return;
     }
 
+    startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     pulling = true;
     ready = false;
@@ -2168,10 +2257,16 @@ function initPublicPullToRefresh() {
     }
 
     var dy = e.touches[0].clientY - startY;
+    var dx = e.touches[0].clientX - startX;
+    if (Math.abs(dx) > Math.abs(dy) + 8) {
+      resetIndicator();
+      return;
+    }
     if (dy <= 0) {
       resetIndicator();
       return;
     }
+    if (dy < 12) return;
 
     var pull = Math.min(dy, 130);
     var translateY = -72 + pull;
@@ -2212,6 +2307,53 @@ function initPublicPullToRefresh() {
   }, { once: true });
 }
 
+function initPublicSwipeFade() {
+  if (document.querySelector('.adm-layout')) return;
+  if (window.innerWidth > 900) return;
+
+  var startX = 0;
+  var startY = 0;
+  var active = false;
+  var clearTimer = null;
+
+  function resetFadeClass() {
+    document.body.classList.remove('swipe-fade-up');
+    document.body.classList.remove('swipe-fade-down');
+  }
+
+  document.addEventListener('touchstart', function(e) {
+    if (!e.touches || !e.touches.length) return;
+    var t = e.target;
+    if (t && t.closest('input, textarea, select, button, .teaser-scrollport, .pdf-page-wrap')) {
+      active = false;
+      return;
+    }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    active = true;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (!active || !e.changedTouches || !e.changedTouches.length) return;
+    active = false;
+
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dy) < 46) return;
+    if (Math.abs(dx) > Math.abs(dy) * 0.9) return;
+
+    resetFadeClass();
+    void document.body.offsetWidth;
+    document.body.classList.add(dy < 0 ? 'swipe-fade-up' : 'swipe-fade-down');
+
+    if (clearTimer) clearTimeout(clearTimer);
+    clearTimer = window.setTimeout(function() {
+      resetFadeClass();
+      clearTimer = null;
+    }, 320);
+  }, { passive: true });
+}
+
 /* ── INIT ───────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
   initMobileMenuAutoCollapse();
@@ -2237,6 +2379,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initAdminDashboardTableScroll();
   initAdminPullToRefresh();
   initPublicPullToRefresh();
+  initPublicSwipeFade();
+  initArtifactFilterModal();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {

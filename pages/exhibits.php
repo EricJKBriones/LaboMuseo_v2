@@ -76,38 +76,97 @@ if ($showPdfArtifact && $search !== '') {
 
 <div class="wrap">
   <!-- Search + Filter -->
-  <form method="GET" action="index.php" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:26px">
+  <form method="GET" action="index.php" class="artifact-filter-form" data-artifact-filter-form="1">
     <input type="hidden" name="page" value="exhibits">
-    <?php if ($catFilter): ?><input type="hidden" name="cat" value="<?= $catFilter ?>"> <?php endif; ?>
-    <div class="s-wrap" style="max-width:340px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" name="q" id="exSearch" class="s-inp" placeholder="Search artifacts..." value="<?= htmlspecialchars($search) ?>" oninput="liveSearch('exSearch','ex-card')">
+    <div class="artifact-filter-top">
+      <div class="artifact-filter-row artifact-filter-row-search">
+        <div class="s-wrap artifact-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" name="q" id="exSearch" class="s-inp" placeholder="Search artifacts..." value="<?= htmlspecialchars($search) ?>" oninput="liveSearch('exSearch','ex-card')">
+        </div>
+        <button type="submit" class="btn-srch artifact-search-icon-btn" aria-label="Search artifacts">
+          <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
+        </button>
+        <?php if ($search || $catFilter || $originFilter!=='' || $yearFilter!=='' || $sort!=='newest'): ?>
+          <a href="index.php?page=exhibits" class="btn-clr artifact-clear-icon-btn" aria-label="Clear selected filters">
+            <img class="icon-swap" src="<?= $base ?>assets/Icon/clear_filter.png" data-png="<?= $base ?>assets/Icon/clear_filter.png" data-gif="<?= $base ?>assets/Icon/clear_filter.gif" alt="" aria-hidden="true">
+          </a>
+        <?php endif; ?>
+      </div>
+      <div class="artifact-filter-row artifact-filter-row-controls">
+        <button type="button" class="artifact-filter-trigger" data-filter-open aria-expanded="false" aria-controls="artifactMoreFilters">More Filters</button>
+      </div>
+      <?php if ($search || $catFilter || $originFilter!=='' || $yearFilter!=='' || $sort!=='newest'): ?>
+        <?php
+          $activeFilterSummary = [];
+          if ($catFilter && $currentCat) $activeFilterSummary[] = 'Category: '. $currentCat['name'];
+          if ($originFilter !== '') $activeFilterSummary[] = 'Origin: '. $originFilter;
+          if ($yearFilter !== '') $activeFilterSummary[] = 'Period/Year: '. $yearFilter;
+          if ($sort !== 'newest') {
+            $sortLabelMap = [
+              'newest' => 'Newest',
+              'oldest' => 'Oldest',
+              'title_asc' => 'Title A-Z',
+              'title_desc' => 'Title Z-A',
+              'year_desc' => 'Year/Period Desc',
+              'year_asc' => 'Year/Period Asc'
+            ];
+            if (isset($sortLabelMap[$sort])) {
+              $activeFilterSummary[] = 'Sort: ' . $sortLabelMap[$sort];
+            }
+          }
+          if ($search !== '') $activeFilterSummary[] = 'Search: "'. $search .'"';
+        ?>
+        <div class="artifact-filter-row artifact-filter-clear-row" aria-live="polite">
+          <span class="artifact-filter-summary"><?= htmlspecialchars(implode(' | ', $activeFilterSummary)) ?></span>
+        </div>
+      <?php endif; ?>
     </div>
-    <select name="origin" class="s-sel" onchange="this.form.submit()">
-      <option value="">All Origins</option>
-      <?php foreach ($origins as $o): ?>
-        <option value="<?= htmlspecialchars($o['origin']) ?>" <?= $originFilter===$o['origin']?'selected':'' ?>><?= htmlspecialchars($o['origin']) ?></option>
-      <?php endforeach; ?>
-    </select>
-    <select name="year" class="s-sel" onchange="this.form.submit()">
-      <option value="">All Periods/Years</option>
-      <?php foreach ($years as $y): ?>
-        <option value="<?= htmlspecialchars($y['artifact_year']) ?>" <?= $yearFilter===$y['artifact_year']?'selected':'' ?>><?= htmlspecialchars($y['artifact_year']) ?></option>
-      <?php endforeach; ?>
-    </select>
-    <select name="sort" class="s-sel" onchange="this.form.submit()">
-      <option value="newest" <?= $sort==='newest'?'selected':'' ?>>Newest</option>
-      <option value="oldest" <?= $sort==='oldest'?'selected':'' ?>>Oldest</option>
-      <option value="title_asc" <?= $sort==='title_asc'?'selected':'' ?>>Title A-Z</option>
-      <option value="title_desc" <?= $sort==='title_desc'?'selected':'' ?>>Title Z-A</option>
-      <option value="year_desc" <?= $sort==='year_desc'?'selected':'' ?>>Year/Period Desc</option>
-      <option value="year_asc" <?= $sort==='year_asc'?'selected':'' ?>>Year/Period Asc</option>
-    </select>
-    <button type="submit" class="btn-srch" aria-label="Search artifacts">
-      <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
-      <span>Search</span>
-    </button>
-    <?php if ($search || $catFilter || $originFilter!=='' || $yearFilter!=='' || $sort!=='newest'): ?><a href="index.php?page=exhibits" class="btn-clr">Clear</a><?php endif; ?>
+    <div class="artifact-filter-panel" data-filter-panel id="artifactMoreFilters">
+      <div class="artifact-filter-grid">
+        <label class="artifact-filter-field">
+          <span>Category</span>
+          <select id="mobileCategorySelect" name="cat" class="s-sel" onchange="this.form.submit()">
+            <option value="" <?= !$catFilter ? 'selected' : '' ?>>All Categories</option>
+            <?php foreach ($categories as $c): ?>
+              <option value="<?= (int)$c['id'] ?>" <?= $catFilter===(int)$c['id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <label class="artifact-filter-field">
+          <span>Origin</span>
+          <select name="origin" class="s-sel" onchange="this.form.submit()">
+            <option value="">All Origins</option>
+            <?php foreach ($origins as $o): ?>
+              <option value="<?= htmlspecialchars($o['origin']) ?>" <?= $originFilter===$o['origin']?'selected':'' ?>><?= htmlspecialchars($o['origin']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <label class="artifact-filter-field">
+          <span>Period/Year</span>
+          <select name="year" class="s-sel" onchange="this.form.submit()">
+            <option value="">All Periods/Years</option>
+            <?php foreach ($years as $y): ?>
+              <option value="<?= htmlspecialchars($y['artifact_year']) ?>" <?= $yearFilter===$y['artifact_year']?'selected':'' ?>><?= htmlspecialchars($y['artifact_year']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <label class="artifact-filter-field artifact-filter-sort">
+          <span>Sort By</span>
+          <select name="sort" class="s-sel" onchange="this.form.submit()">
+            <option value="newest" <?= $sort==='newest'?'selected':'' ?>>Newest</option>
+            <option value="oldest" <?= $sort==='oldest'?'selected':'' ?>>Oldest</option>
+            <option value="title_asc" <?= $sort==='title_asc'?'selected':'' ?>>Title A-Z</option>
+            <option value="title_desc" <?= $sort==='title_desc'?'selected':'' ?>>Title Z-A</option>
+            <option value="year_desc" <?= $sort==='year_desc'?'selected':'' ?>>Year/Period Desc</option>
+            <option value="year_asc" <?= $sort==='year_asc'?'selected':'' ?>>Year/Period Asc</option>
+          </select>
+        </label>
+      </div>
+      <div class="artifact-filter-actions">
+        <button type="submit" class="btn-srch">Apply Filters</button>
+      </div>
+    </div>
   </form>
 
   <!-- Category filter chips -->
@@ -125,6 +184,7 @@ if ($showPdfArtifact && $search !== '') {
       <a href="index.php?<?= http_build_query($chipQuery) ?>" class="fchip <?= $catFilter===(int)$c['id'] ? 'active':'' ?>"><?= htmlspecialchars($c['name']) ?></a>
     <?php endforeach; ?>
   </div>
+  <div class="artifact-filter-divider" aria-hidden="true"></div>
 
   <?php if (empty($exhibits) && !$showPdfArtifact): ?>
     <div class="empty-state"><div class="ei">&#127994;</div><h3>No artifacts found</h3><p>Try adjusting your search or filter.</p></div>

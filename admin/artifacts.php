@@ -277,7 +277,7 @@ require_once 'admin_header.php';
       <input type="hidden" name="dept" value="<?= (int)$deptId ?>">
       <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
 
-    <div class="tbl-wrap">
+    <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
         <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Department</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
         <tbody>
