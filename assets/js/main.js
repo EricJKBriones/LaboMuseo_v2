@@ -1423,7 +1423,11 @@ function initAdminButtonIcons() {
       icon.setAttribute('data-png', png);
       icon.setAttribute('data-gif', gif);
 
-      btn.insertBefore(icon, btn.firstChild);
+      if ((btn.getAttribute('data-icon-position') || '').toLowerCase() === 'end') {
+        btn.appendChild(icon);
+      } else {
+        btn.insertBefore(icon, btn.firstChild);
+      }
       bindHoverSwapIcon(icon);
     });
   }
@@ -1526,6 +1530,13 @@ function initAdminFloatingQuickActions() {
   function isQuickFormDirty(form) {
     if (!form) return false;
     if (form.dataset.quickSubmitting === '1') return false;
+
+    // Some admin panels use togglePanel but are outside the quick overlay.
+    // Initialize baseline lazily so first close doesn't trigger a false unsaved prompt.
+    if (!form.hasAttribute('data-quick-initial-state')) {
+      markQuickFormBaseline(form);
+      return false;
+    }
 
     var initialState = form.dataset.quickInitialState || '';
     return serializeQuickForm(form) !== initialState;
@@ -2710,6 +2721,14 @@ function initAdminAccountChangeConfirm() {
       }
 
       var mode = form.getAttribute('data-account-confirm') || '';
+      var confirmMessage = 'Apply account change?';
+      if (mode === 'password') {
+        confirmMessage = 'Change password?';
+      } else if (mode === 'username') {
+        confirmMessage = 'Change username?';
+      } else if (mode === 'logo') {
+        confirmMessage = 'Change website logo?';
+      }
       e.preventDefault();
       if (activeAccountToast && typeof activeAccountToast.dismiss === 'function') {
         activeAccountToast.dismiss();
@@ -2717,7 +2736,7 @@ function initAdminAccountChangeConfirm() {
 
       activeAccountToast = showSileoToastBar({
         title: 'Confirm',
-        message: mode === 'password' ? 'Change password?' : 'Change username?',
+        message: confirmMessage,
         variant: 'warning',
         persistent: true,
         position: 'top-right',

@@ -29,9 +29,8 @@ $cats = dbQuery($sql, $params);
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" name="q" class="s-inp" placeholder="Search departments..." value="<?= htmlspecialchars($search) ?>" oninput="liveSearch('liveSearchDept','cat-card')">
     </div>
-    <button type="submit" class="btn-srch" aria-label="Search departments">
+    <button type="submit" class="btn-srch artifact-search-icon-btn" aria-label="Search departments">
       <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
-      <span>Search</span>
     </button>
     <?php if ($search): ?><a href="index.php?page=categories" class="btn-clr">Clear</a><?php endif; ?>
   </form>
@@ -56,7 +55,7 @@ $cats = dbQuery($sql, $params);
         <?php if ($c['description']): ?>
           <div style="font-size:.78rem;color:var(--text3);margin-bottom:8px;line-height:1.5"><?= htmlspecialchars(mb_substr($c['description'],0,80)) ?>...</div>
         <?php endif; ?>
-        <div class="cat-btn">View Artifacts &rarr;</div>
+        <div class="cat-btn">View Artifacts <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></div>
       </div>
     </a>
     <?php endforeach; ?>
