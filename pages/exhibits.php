@@ -84,14 +84,16 @@ if ($showPdfArtifact && $search !== '') {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" name="q" id="exSearch" class="s-inp" placeholder="Search artifacts..." value="<?= htmlspecialchars($search) ?>" oninput="liveSearch('exSearch','ex-card')">
         </div>
-        <button type="submit" class="btn-srch artifact-search-icon-btn" aria-label="Search artifacts">
-          <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
-        </button>
-        <?php if ($search || $catFilter || $originFilter!=='' || $yearFilter!=='' || $sort!=='newest'): ?>
-          <a href="index.php?page=exhibits" class="btn-clr artifact-clear-icon-btn" aria-label="Clear selected filters">
-            <img class="icon-swap" src="<?= $base ?>assets/Icon/clear_filter.png" data-png="<?= $base ?>assets/Icon/clear_filter.png" data-gif="<?= $base ?>assets/Icon/clear_filter.gif" alt="" aria-hidden="true">
-          </a>
-        <?php endif; ?>
+        <div class="artifact-search-actions">
+          <button type="submit" class="btn-srch artifact-search-icon-btn" aria-label="Search artifacts">
+            <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
+          </button>
+          <?php if ($search || $catFilter || $originFilter!=='' || $yearFilter!=='' || $sort!=='newest'): ?>
+            <a href="index.php?page=exhibits" class="btn-clr artifact-clear-icon-btn" aria-label="Clear selected filters">
+              <img class="icon-swap" src="<?= $base ?>assets/Icon/clear_filter.png" data-png="<?= $base ?>assets/Icon/clear_filter.png" data-gif="<?= $base ?>assets/Icon/clear_filter.gif" alt="" aria-hidden="true">
+            </a>
+          <?php endif; ?>
+        </div>
       </div>
       <div class="artifact-filter-row artifact-filter-row-controls">
         <button type="button" class="artifact-filter-trigger" data-filter-open aria-expanded="false" aria-controls="artifactMoreFilters">More Filters</button>

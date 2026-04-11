@@ -1,6 +1,6 @@
 <?php
 // admin/admin_header.php — used by all admin pages
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 

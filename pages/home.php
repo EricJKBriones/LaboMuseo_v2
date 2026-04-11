@@ -302,9 +302,9 @@ if (document.readyState === 'loading') {
       <?php endif; ?>
     </div>
     <div class="teaser-nav-bar" style="<?= count($teaserArtifacts) > 1 ? '' : 'display:none' ?>">
-      <button type="button" id="teaserPrevBtn" class="teaser-nav-btn" aria-label="Previous acquisitions">&larr; Back</button>
+      <button type="button" id="teaserPrevBtn" class="teaser-nav-btn" aria-label="Previous acquisitions">&lt;</button>
       <span id="teaserPageStat" class="teaser-page-stat">1 / 1</span>
-      <button type="button" id="teaserNextBtn" class="teaser-nav-btn" aria-label="Next acquisitions">Next &rarr;</button>
+      <button type="button" id="teaserNextBtn" class="teaser-nav-btn" aria-label="Next acquisitions">&gt;</button>
     </div>
   </div>
 </section>

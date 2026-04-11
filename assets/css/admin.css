@@ -331,6 +331,20 @@ body.admin-quick-open { overflow:hidden; }
   right:auto;
   bottom:auto;
 }
+
+@media (min-width: 901px) {
+  .adm-quick-form-shell {
+    align-items:center;
+    --quick-shell-top-pad: clamp(38px, 9vh, 88px);
+  }
+  .adm-quick-form-panel {
+    top:50%;
+    transform:translate(-50%, -46%) scale(.98);
+  }
+  .adm-quick-form-panel.is-open {
+    transform:translate(-50%, -50%) scale(1);
+  }
+}
 .adm-quick-form-head {
   display:flex;
   align-items:flex-start;
@@ -407,6 +421,24 @@ body.admin-quick-open { overflow:hidden; }
 .adm-menu li a.active { background:linear-gradient(135deg,#d6a249,#bf8531); color:#102537; padding-left:14px; box-shadow:0 8px 18px rgba(8,24,39,.2); }
 .adm-main { flex:1; background:#f0f2f5; padding:30px; box-sizing:border-box; min-width:0; }
 .adm-main > * { min-width:0; }
+
+@media (min-width: 901px) {
+  .adm-layout {
+    display:block;
+  }
+  .adm-sidebar {
+    position:fixed;
+    left:0;
+    top:0;
+    z-index:1200;
+  }
+  .adm-main {
+    margin-left:240px;
+  }
+  body.admin-sidebar-collapsed .adm-main {
+    margin-left:78px;
+  }
+}
 
 /* Admin page transition and menu click feedback */
 body.admin-page-enter .adm-main {

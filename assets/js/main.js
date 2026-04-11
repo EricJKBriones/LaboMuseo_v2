@@ -679,6 +679,7 @@ function initTeaserFader() {
   teaserScrollEl = document.getElementById('teaserScrollport');
   if (!teaserScrollEl) return;
 
+  teaserScrollEl.scrollLeft = 0;
   setTeaserStep();
   updateTeaserFaderMeta();
 
@@ -731,9 +732,9 @@ function showPrevTeaserSlide() {
 function updateTeaserFaderMeta() {
   if (!teaserScrollEl) return;
 
-  var stat = document.getElementById('teaserPageStat');
   var prevBtn = document.getElementById('teaserPrevBtn');
   var nextBtn = document.getElementById('teaserNextBtn');
+  var stat = document.getElementById('teaserPageStat');
 
   var cards = teaserScrollEl.querySelectorAll('.teaser-card');
   if (!cards.length) return;
@@ -752,6 +753,7 @@ function updateTeaserFaderMeta() {
   if (stat) {
     stat.textContent = current + ' / ' + total;
   }
+
   if (prevBtn) {
     prevBtn.disabled = teaserScrollEl.scrollLeft <= 4;
   }
@@ -877,9 +879,17 @@ function setPanelToggleButtonIcon(btn, isOpen) {
   icon.setAttribute('src', basePath + nextIcon + '.png');
 }
 
-function togglePanel(id) {
+function togglePanel(id, options) {
+  options = options || {};
   var el = document.getElementById(id);
   if (!el) return;
+  var isCurrentlyOpen = el.classList.contains('is-open');
+  if (isCurrentlyOpen && !options.skipConfirm && typeof window.requestAdminPanelClose === 'function') {
+    window.requestAdminPanelClose(el, function() {
+      togglePanel(id, { skipConfirm: true });
+    });
+    return false;
+  }
   var isOpen = el.classList.toggle('is-open');
   
   // Find and toggle the button that controls this panel
@@ -892,6 +902,8 @@ function togglePanel(id) {
   if (typeof window.syncAdminQuickOverlayState === 'function') {
     window.syncAdminQuickOverlayState();
   }
+
+  return isOpen;
 }
 
 // Initialize buttons to match form states on page load
@@ -1476,6 +1488,115 @@ function initAdminFloatingQuickActions() {
   if (!dock || !fab || !overlay || !menu) return;
 
   var quickForms = overlay.querySelectorAll('.adm-form[id]');
+  var activeDiscardToast = null;
+
+  function serializeQuickForm(form) {
+    var formEl = form ? form.querySelector('form') : null;
+    if (!formEl) return '';
+
+    var parts = [];
+    Array.prototype.forEach.call(formEl.elements, function(field) {
+      if (!field || !field.name || field.disabled) return;
+
+      var type = (field.type || '').toLowerCase();
+      if (type === 'button' || type === 'submit' || type === 'reset') return;
+
+      if (type === 'checkbox' || type === 'radio') {
+        parts.push(field.name + '=' + (field.checked ? '1' : '0'));
+        return;
+      }
+
+      if (type === 'file') {
+        parts.push(field.name + '=' + (field.value || ''));
+        return;
+      }
+
+      parts.push(field.name + '=' + (field.value || ''));
+    });
+
+    return parts.join('&');
+  }
+
+  function markQuickFormBaseline(form) {
+    if (!form) return;
+    form.dataset.quickInitialState = serializeQuickForm(form);
+    form.dataset.quickSubmitting = '0';
+  }
+
+  function isQuickFormDirty(form) {
+    if (!form) return false;
+    if (form.dataset.quickSubmitting === '1') return false;
+
+    var initialState = form.dataset.quickInitialState || '';
+    return serializeQuickForm(form) !== initialState;
+  }
+
+  function discardQuickFormChanges(form) {
+    if (!form) return;
+    var formEl = form.querySelector('form');
+    if (formEl) {
+      formEl.reset();
+      formEl.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    markQuickFormBaseline(form);
+  }
+
+  function requestQuickFormDiscard(form, onDiscard, onKeep) {
+    if (!form || !isQuickFormDirty(form)) {
+      if (typeof onDiscard === 'function') onDiscard();
+      return;
+    }
+
+    if (activeDiscardToast && typeof activeDiscardToast.dismiss === 'function') {
+      activeDiscardToast.dismiss();
+    }
+
+    activeDiscardToast = showSileoToastBar({
+      title: 'Unsaved input',
+      message: 'Discard draft?',
+      variant: 'warning',
+      persistent: true,
+      position: 'top-right',
+      actions: [
+        {
+          label: 'Keep',
+          dismiss: true,
+          onClick: function() {
+            activeDiscardToast = null;
+            if (typeof onKeep === 'function') onKeep();
+          }
+        },
+        {
+          label: 'Discard',
+          dismiss: true,
+          onClick: function() {
+            discardQuickFormChanges(form);
+            activeDiscardToast = null;
+            if (typeof onDiscard === 'function') onDiscard();
+          }
+        }
+      ]
+    });
+  }
+
+  quickForms.forEach(function(form) {
+    var formEl = form.querySelector('form');
+    if (!formEl) return;
+
+    markQuickFormBaseline(form);
+
+    formEl.addEventListener('submit', function() {
+      form.dataset.quickSubmitting = '1';
+    });
+  });
+
+  window.requestAdminPanelClose = function(panelEl, onDiscard, onKeep) {
+    if (!panelEl || !panelEl.classList || !panelEl.classList.contains('adm-form')) {
+      if (typeof onDiscard === 'function') onDiscard();
+      return;
+    }
+    requestQuickFormDiscard(panelEl, onDiscard, onKeep);
+  };
 
   if (!fab.querySelector('img.auto-btn-icon') && !fab.querySelector('img.icon-swap')) {
     var fabIcon = fab.querySelector('img');
@@ -1485,12 +1606,50 @@ function initAdminFloatingQuickActions() {
     bindHoverSwapIcon(img);
   });
 
-  function closeQuickForms() {
+  function closeQuickForms(options, onDone) {
+    options = options || {};
+    var exceptId = options.exceptId || null;
+    var formsToClose = [];
+
     quickForms.forEach(function(form) {
+      if (exceptId && form.id === exceptId) return;
       if (form.classList.contains('is-open')) {
-        togglePanel(form.id);
+        formsToClose.push(form);
       }
     });
+
+    if (!formsToClose.length) {
+      if (typeof onDone === 'function') onDone(true);
+      return;
+    }
+
+    function closeNext(index) {
+      if (index >= formsToClose.length) {
+        if (typeof onDone === 'function') onDone(true);
+        return;
+      }
+
+      var form = formsToClose[index];
+      if (!form || !form.classList.contains('is-open')) {
+        closeNext(index + 1);
+        return;
+      }
+
+      requestQuickFormDiscard(
+        form,
+        function() {
+          if (form.classList.contains('is-open')) {
+            togglePanel(form.id, { skipConfirm: true });
+          }
+          closeNext(index + 1);
+        },
+        function() {
+          if (typeof onDone === 'function') onDone(false);
+        }
+      );
+    }
+
+    closeNext(0);
   }
 
   function syncAdminQuickOverlayState() {
@@ -1537,47 +1696,69 @@ function initAdminFloatingQuickActions() {
     }
   }
 
-  function openAdminQuickMenu() {
+  function openAdminQuickMenu(onDone) {
     if (overlay.querySelector('.adm-form.is-open')) {
-      closeQuickForms();
+      closeQuickForms({}, function(closed) {
+        if (!closed) {
+          syncAdminQuickOverlayState();
+          if (typeof onDone === 'function') onDone(false);
+          return;
+        }
+
+        dock.classList.toggle('is-menu-open');
+        syncAdminQuickOverlayState();
+        if (typeof onDone === 'function') onDone(true);
+      });
+      return;
     }
+
     dock.classList.toggle('is-menu-open');
     syncAdminQuickOverlayState();
+    if (typeof onDone === 'function') onDone(true);
   }
 
-  function closeAdminQuickDock() {
+  function closeAdminQuickDock(options, onDone) {
+    options = options || {};
     dock.classList.remove('is-menu-open');
-    closeQuickForms();
-    syncAdminQuickOverlayState();
+    closeQuickForms(options, function(closed) {
+      if (!closed) {
+        syncAdminQuickOverlayState();
+        if (typeof onDone === 'function') onDone(false);
+        return;
+      }
+      syncAdminQuickOverlayState();
+      if (typeof onDone === 'function') onDone(true);
+    });
   }
 
   function openAdminQuickPanel(panelId) {
     if (!panelId) return;
 
     dock.classList.remove('is-menu-open');
-    quickForms.forEach(function(form) {
-      if (form.id !== panelId && form.classList.contains('is-open')) {
-        togglePanel(form.id);
+    closeQuickForms({ exceptId: panelId }, function(closed) {
+      if (!closed) {
+        syncAdminQuickOverlayState();
+        return;
+      }
+
+      var target = document.getElementById(panelId);
+      if (target) {
+        if (!target.classList.contains('is-open')) {
+          togglePanel(panelId);
+        }
+        target.scrollTop = 0;
+        var shell = overlay.querySelector('.adm-quick-form-shell');
+        if (shell) shell.scrollTop = 0;
+        syncAdminQuickOverlayState();
+        var firstField = target.querySelector('input, select, textarea, button');
+        var shouldAutoFocus = window.matchMedia && window.matchMedia('(min-width: 901px)').matches;
+        if (shouldAutoFocus && firstField && typeof firstField.focus === 'function') {
+          window.setTimeout(function() {
+            firstField.focus();
+          }, 160);
+        }
       }
     });
-
-    var target = document.getElementById(panelId);
-    if (target) {
-      if (!target.classList.contains('is-open')) {
-        togglePanel(panelId);
-      }
-      target.scrollTop = 0;
-      var shell = overlay.querySelector('.adm-quick-form-shell');
-      if (shell) shell.scrollTop = 0;
-      syncAdminQuickOverlayState();
-      var firstField = target.querySelector('input, select, textarea, button');
-      var shouldAutoFocus = window.matchMedia && window.matchMedia('(min-width: 901px)').matches;
-      if (shouldAutoFocus && firstField && typeof firstField.focus === 'function') {
-        window.setTimeout(function() {
-          firstField.focus();
-        }, 160);
-      }
-    }
   }
 
   window.syncAdminQuickOverlayState = syncAdminQuickOverlayState;
@@ -1589,10 +1770,25 @@ function initAdminFloatingQuickActions() {
     e.preventDefault();
     e.stopPropagation();
     triggerButtonSpin(fab);
-    if (dock.classList.contains('is-menu-open') || overlay.querySelector('.adm-form.is-open')) {
+
+    var hasOpenForm = !!overlay.querySelector('.adm-form.is-open');
+    if (hasOpenForm) {
+      closeAdminQuickDock({}, function(closed) {
+        if (!closed) return;
+        window.setTimeout(function() {
+          if (overlay.querySelector('.adm-form.is-open')) return;
+          if (dock.classList.contains('is-menu-open')) return;
+          openAdminQuickMenu();
+        }, 220);
+      });
+      return;
+    }
+
+    if (dock.classList.contains('is-menu-open')) {
       closeAdminQuickDock();
       return;
     }
+
     openAdminQuickMenu();
   });
 
@@ -2121,6 +2317,11 @@ function initPageLoadingOverlay() {
 
 function bindSubmitAnimationOnForm(form) {
   if (!form || form.dataset.submitAnimBound === '1') return;
+
+  // Account settings forms have their own toast-driven submit flow.
+  // Skipping submit-animation forwarding here prevents accidental auto-submit.
+  if (form.matches && form.matches('form[data-account-confirm]')) return;
+
   form.dataset.submitAnimBound = '1';
 
   form.addEventListener('submit', function(e) {
@@ -2492,6 +2693,61 @@ function initPublicSwipeFade() {
   }, { passive: true });
 }
 
+function initAdminAccountChangeConfirm() {
+  var accountForms = document.querySelectorAll('form[data-account-confirm]');
+  if (!accountForms.length) return;
+
+  var activeAccountToast = null;
+
+  accountForms.forEach(function(form) {
+    if (form.dataset.accountConfirmBound === '1') return;
+    form.dataset.accountConfirmBound = '1';
+
+    form.addEventListener('submit', function(e) {
+      if (form.dataset.accountConfirmedSubmit === '1') {
+        form.dataset.accountConfirmedSubmit = '0';
+        return;
+      }
+
+      var mode = form.getAttribute('data-account-confirm') || '';
+      e.preventDefault();
+      if (activeAccountToast && typeof activeAccountToast.dismiss === 'function') {
+        activeAccountToast.dismiss();
+      }
+
+      activeAccountToast = showSileoToastBar({
+        title: 'Confirm',
+        message: mode === 'password' ? 'Change password?' : 'Change username?',
+        variant: 'warning',
+        persistent: true,
+        position: 'top-right',
+        actions: [
+          {
+            label: 'No',
+            dismiss: true,
+            onClick: function() {
+              activeAccountToast = null;
+            }
+          },
+          {
+            label: 'Change',
+            dismiss: true,
+            onClick: function() {
+              activeAccountToast = null;
+              form.dataset.accountConfirmedSubmit = '1';
+              if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+              } else {
+                HTMLFormElement.prototype.submit.call(form);
+              }
+            }
+          }
+        ]
+      });
+    });
+  });
+}
+
 /* ── INIT ───────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
   initMobileMenuAutoCollapse();
@@ -2520,6 +2776,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initPublicSwipeFade();
   initArtifactFilterModal();
   initComboSkinSelects();
+  initAdminAccountChangeConfirm();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {

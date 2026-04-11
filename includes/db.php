@@ -23,5 +23,3 @@ define('DB_USER', $user);
 define('DB_PASS', $password);
 define('DB_NAME', $database);
 define('DB_CHARSET', 'utf8mb4');
-
-require_once __DIR__ . '/app_core.php';

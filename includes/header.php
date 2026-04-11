@@ -1,6 +1,6 @@
 <?php
 // includes/header.php
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/init.php';
 sessionStart();
 $currentPage = $_GET['page'] ?? 'home';
 $bodyClass = $currentPage === 'home' ? 'page-home' : 'page-inner';
