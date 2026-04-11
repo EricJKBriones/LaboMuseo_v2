@@ -8,6 +8,7 @@ $adminPage = basename($_SERVER['PHP_SELF'], '.php');
     <span></span>
     <span></span>
   </span>
+  <span class="adm-mobile-fab-label">Admin Menu</span>
 </button>
 <aside class="adm-sidebar" id="adminSidebar">
   <div class="adm-side-head">

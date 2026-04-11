@@ -29,7 +29,7 @@
   --font-baybayin: 'Noto Sans Tagalog', 'Noto Serif Tagalog', 'Noto Sans', 'DejaVu Sans', 'Segoe UI Symbol', sans-serif;
 }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html { scroll-behavior:smooth; }
+html { scroll-behavior:smooth; background:var(--ivory); }
 body { font-family:var(--font-ui); background:var(--ivory); color:var(--text); line-height:1.6; }
 img  { max-width:100%; display:block; }
 a    { text-decoration:none; color:inherit; }
@@ -218,6 +218,42 @@ body.header-hidden .site-header { transform:translateY(-100%); }
   font-size:.92rem;
   letter-spacing:1px;
   font-weight:600;
+}
+
+.site-pull-refresh-indicator {
+  position:fixed;
+  top:10px;
+  left:50%;
+  transform:translate(-50%, -72px);
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  background:rgba(250,246,239,.96);
+  border:1px solid rgba(201,146,42,.45);
+  box-shadow:0 10px 24px rgba(27,42,59,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  z-index:4990;
+  transition:transform .18s ease, opacity .18s ease;
+}
+.site-pull-refresh-indicator.is-visible {
+  opacity:1;
+}
+.site-pull-refresh-indicator img {
+  width:26px;
+  height:26px;
+  object-fit:contain;
+}
+.site-pull-refresh-indicator.is-ready img,
+.site-pull-refresh-indicator.is-loading img {
+  animation:sitePullSpin .8s linear infinite;
+}
+@keyframes sitePullSpin {
+  from { transform:rotate(0deg); }
+  to { transform:rotate(360deg); }
 }
 
 /* ── SHARED COMPONENTS ─────────────────────────────────────── */

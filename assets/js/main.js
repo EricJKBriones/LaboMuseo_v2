@@ -1125,6 +1125,13 @@ function syncAdminSidebarFabState() {
   });
 }
 
+function triggerButtonSpin(btn) {
+  if (!btn) return;
+  btn.classList.remove('is-spinning');
+  void btn.offsetWidth;
+  btn.classList.add('is-spinning');
+}
+
 function initAdminSidebarCollapse() {
   if (!document.querySelector('.adm-sidebar')) return;
 
@@ -1133,6 +1140,7 @@ function initAdminSidebarCollapse() {
     btn.dataset.sidebarToggleBound = '1';
     btn.addEventListener('click', function(e) {
       e.preventDefault();
+      triggerButtonSpin(btn);
       toggleAdminSidebar();
     });
   });
@@ -1549,6 +1557,7 @@ function initAdminFloatingQuickActions() {
   fab.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
+    triggerButtonSpin(fab);
     if (dock.classList.contains('is-menu-open') || overlay.querySelector('.adm-form.is-open')) {
       closeAdminQuickDock();
       return;
@@ -1954,6 +1963,255 @@ function bindSubmitAnimationOnForm(form) {
   });
 }
 
+function initAdminDashboardTableScroll() {
+  var wrappers = document.querySelectorAll('.adm-dashboard-table-wrap');
+  if (!wrappers.length) return;
+
+  wrappers.forEach(function(wrap) {
+    if (wrap.dataset.dragScrollBound === '1') return;
+    wrap.dataset.dragScrollBound = '1';
+
+    var startX = 0;
+    var startY = 0;
+    var startLeft = 0;
+    var dragging = false;
+    var lockAxis = '';
+
+    wrap.addEventListener('touchstart', function(e) {
+      if (!e.touches || !e.touches.length) return;
+      var t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      startLeft = wrap.scrollLeft;
+      dragging = true;
+      lockAxis = '';
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', function(e) {
+      if (!dragging || !e.touches || !e.touches.length) return;
+      var t = e.touches[0];
+      var dx = t.clientX - startX;
+      var dy = t.clientY - startY;
+
+      if (!lockAxis) {
+        lockAxis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+      }
+      if (lockAxis !== 'x') return;
+
+      wrap.scrollLeft = startLeft - dx;
+      e.preventDefault();
+    }, { passive: false });
+
+    wrap.addEventListener('touchend', function() {
+      dragging = false;
+      lockAxis = '';
+    }, { passive: true });
+
+    wrap.addEventListener('touchcancel', function() {
+      dragging = false;
+      lockAxis = '';
+    }, { passive: true });
+  });
+}
+
+function initAdminPullToRefresh() {
+  if (!document.querySelector('.adm-layout')) return;
+  if (window.innerWidth > 900) return;
+
+  var indicator = document.createElement('div');
+  indicator.className = 'adm-pull-refresh-indicator';
+  indicator.setAttribute('aria-hidden', 'true');
+
+  var icon = document.createElement('img');
+  icon.alt = 'Refreshing';
+  var loadingIcon = document.querySelector('.page-loading-icon');
+  if (loadingIcon && loadingIcon.getAttribute('src')) {
+    icon.src = loadingIcon.getAttribute('src');
+  }
+  indicator.appendChild(icon);
+  document.body.appendChild(indicator);
+
+  var startY = 0;
+  var pulling = false;
+  var ready = false;
+  var threshold = 84;
+
+  function resetIndicator() {
+    indicator.classList.remove('is-visible');
+    indicator.classList.remove('is-ready');
+    indicator.classList.remove('is-loading');
+    indicator.style.transform = 'translate(-50%, -72px)';
+    ready = false;
+    pulling = false;
+  }
+
+  document.addEventListener('touchstart', function(e) {
+    if (!e.touches || !e.touches.length) return;
+    if (window.scrollY > 0) return;
+    if (e.touches[0].clientY > 110) return;
+
+    var target = e.target;
+    if (target && target.closest('input, textarea, select, button, .adm-dashboard-table-wrap')) {
+      return;
+    }
+
+    startY = e.touches[0].clientY;
+    pulling = true;
+    ready = false;
+    indicator.classList.add('is-visible');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!pulling || !e.touches || !e.touches.length) return;
+    if (window.scrollY > 0) {
+      resetIndicator();
+      return;
+    }
+
+    var dy = e.touches[0].clientY - startY;
+    if (dy <= 0) {
+      resetIndicator();
+      return;
+    }
+
+    var pull = Math.min(dy, 130);
+    var translateY = -72 + pull;
+    indicator.style.transform = 'translate(-50%, ' + translateY + 'px)';
+    ready = pull >= threshold;
+    indicator.classList.toggle('is-ready', ready);
+  }, { passive: true });
+
+  document.addEventListener('touchend', function() {
+    if (!pulling) return;
+
+    if (ready) {
+      indicator.classList.add('is-loading');
+      indicator.style.transform = 'translate(-50%, 8px)';
+      var overlay = document.getElementById('pageLoadingOverlay');
+      if (overlay) {
+        overlay.classList.remove('is-hidden');
+        overlay.classList.add('is-visible');
+      }
+      window.setTimeout(function() {
+        window.location.reload();
+      }, 180);
+      return;
+    }
+
+    resetIndicator();
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', function() {
+    if (!pulling) return;
+    resetIndicator();
+  }, { passive: true });
+
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 900) {
+      indicator.remove();
+    }
+  }, { once: true });
+}
+
+function initPublicPullToRefresh() {
+  if (document.querySelector('.adm-layout')) return;
+  if (window.innerWidth > 900) return;
+
+  var indicator = document.createElement('div');
+  indicator.className = 'site-pull-refresh-indicator';
+  indicator.setAttribute('aria-hidden', 'true');
+
+  var icon = document.createElement('img');
+  icon.alt = 'Refreshing';
+  var loadingIcon = document.querySelector('.page-loading-icon');
+  if (loadingIcon && loadingIcon.getAttribute('src')) {
+    icon.src = loadingIcon.getAttribute('src');
+  }
+  indicator.appendChild(icon);
+  document.body.appendChild(indicator);
+
+  var startY = 0;
+  var pulling = false;
+  var ready = false;
+  var threshold = 84;
+
+  function resetIndicator() {
+    indicator.classList.remove('is-visible');
+    indicator.classList.remove('is-ready');
+    indicator.classList.remove('is-loading');
+    indicator.style.transform = 'translate(-50%, -72px)';
+    ready = false;
+    pulling = false;
+  }
+
+  document.addEventListener('touchstart', function(e) {
+    if (!e.touches || !e.touches.length) return;
+    if (window.scrollY > 0) return;
+    if (e.touches[0].clientY > 120) return;
+
+    var target = e.target;
+    if (target && target.closest('input, textarea, select, button, .pdf-page-wrap, .showcase-stage')) {
+      return;
+    }
+
+    startY = e.touches[0].clientY;
+    pulling = true;
+    ready = false;
+    indicator.classList.add('is-visible');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!pulling || !e.touches || !e.touches.length) return;
+    if (window.scrollY > 0) {
+      resetIndicator();
+      return;
+    }
+
+    var dy = e.touches[0].clientY - startY;
+    if (dy <= 0) {
+      resetIndicator();
+      return;
+    }
+
+    var pull = Math.min(dy, 130);
+    var translateY = -72 + pull;
+    indicator.style.transform = 'translate(-50%, ' + translateY + 'px)';
+    ready = pull >= threshold;
+    indicator.classList.toggle('is-ready', ready);
+  }, { passive: true });
+
+  document.addEventListener('touchend', function() {
+    if (!pulling) return;
+
+    if (ready) {
+      indicator.classList.add('is-loading');
+      indicator.style.transform = 'translate(-50%, 8px)';
+      var overlay = document.getElementById('pageLoadingOverlay');
+      if (overlay) {
+        overlay.classList.remove('is-hidden');
+        overlay.classList.add('is-visible');
+      }
+      window.setTimeout(function() {
+        window.location.reload();
+      }, 180);
+      return;
+    }
+
+    resetIndicator();
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', function() {
+    if (!pulling) return;
+    resetIndicator();
+  }, { passive: true });
+
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 900) {
+      indicator.remove();
+    }
+  }, { once: true });
+}
+
 /* ── INIT ───────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
   initMobileMenuAutoCollapse();
@@ -1976,6 +2234,9 @@ document.addEventListener('DOMContentLoaded', function() {
   initHeaderScrollVisibility();
   initPageLoadingOverlay();
   initAdminFloatingQuickActions();
+  initAdminDashboardTableScroll();
+  initAdminPullToRefresh();
+  initPublicPullToRefresh();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {
