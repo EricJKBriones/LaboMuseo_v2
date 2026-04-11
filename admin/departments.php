@@ -1,6 +1,6 @@
 <?php
 // admin/departments.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 
@@ -179,7 +179,7 @@ require_once 'admin_header.php';
     <?php endif; ?>
 
     <!-- TABLE -->
-    <div class="tbl-wrap">
+    <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
         <thead><tr><th>Image</th><th>Name</th><th>Description</th><th>Artifacts</th><th>Actions</th></tr></thead>
         <tbody>

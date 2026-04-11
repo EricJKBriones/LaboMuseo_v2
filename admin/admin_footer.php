@@ -3,15 +3,8 @@
 if (!isset($quickArtifactCategories) && function_exists('dbQuery')) {
   $quickArtifactCategories = dbQuery("SELECT id, name FROM categories ORDER BY name ASC");
 }
-$forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
-if ($forwardedProto !== '') {
-  $protocol = strtolower(trim(explode(',', $forwardedProto)[0]));
-} elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
-  $protocol = $_SERVER['REQUEST_SCHEME'];
-} else {
-  $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-}
-$base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\') . '/';
+$dir = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
+$base = ($dir === '' ? '/' : $dir . '/');
 ?>
 <footer style="background:var(--navy3);color:#8a9db0;text-align:center;padding:20px;border-top:2px solid var(--gold);font-size:.82rem;margin-top:auto">
   <strong style="color:var(--gold2)"><?= SITE_NAME ?></strong> &mdash; Admin Panel &bull; &copy; <?= date('Y') ?> &bull; &copy; <?= projectCreditsHtml() ?>

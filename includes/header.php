@@ -1,24 +1,15 @@
 <?php
 // includes/header.php
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/init.php';
 sessionStart();
 $currentPage = $_GET['page'] ?? 'home';
 $bodyClass = $currentPage === 'home' ? 'page-home' : 'page-inner';
 $bodyClass .= ' page-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $currentPage);
 
-// Bulletproof base URL — works on localhost/subfolder AND domain root
-$forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
-if ($forwardedProto !== '') {
-  $protocol = strtolower(trim(explode(',', $forwardedProto)[0]));
-} elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
-  $protocol = $_SERVER['REQUEST_SCHEME'];
-} else {
-  $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-}
-$host     = $_SERVER['HTTP_HOST'];
+// Path-based base URL to avoid protocol/host mismatch behind reverse proxies.
 $script   = $_SERVER['SCRIPT_NAME']; // e.g. /LaboMuseo/index.php or /index.php
 $dir      = rtrim(dirname($script), '/\\');
-$base     = $protocol . '://' . $host . $dir . '/';
+$base     = ($dir === '' ? '/' : $dir . '/');
 
 // Logo
 $logoFile = __DIR__ . '/../uploads/logo.png';
@@ -67,9 +58,6 @@ $logoUrl  = $base . 'uploads/logo.png';
         <?php if (isAdmin() || isGuest()): ?>
           <li><a href="<?= $base ?>index.php?page=categories" class="nav-lnk <?= $currentPage==='categories' ? 'active-page':'' ?>">Departments</a></li>
           <li><a href="<?= $base ?>index.php?page=exhibits"   class="nav-lnk <?= $currentPage==='exhibits'   ? 'active-page':'' ?>">All Artifacts</a></li>
-        <?php else: ?>
-          <li><a href="#" class="nav-lnk" aria-label="Sign the Digital Guestbook to access departments" onclick="return promptGuestbookAccess('Departments')">Departments</a></li>
-          <li><a href="#" class="nav-lnk" aria-label="Sign the Digital Guestbook to access all artifacts" onclick="return promptGuestbookAccess('All Artifacts')">All Artifacts</a></li>
         <?php endif; ?>
         <li><span class="nav-sep">|</span></li>
         <?php if (isAdmin()): ?>

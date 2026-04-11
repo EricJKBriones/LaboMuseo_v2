@@ -1,6 +1,6 @@
 <?php
 // admin/account.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 
@@ -33,7 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = getDB()->prepare("UPDATE admins SET username = ? WHERE id = ?");
                 $stmt->execute([$newUsername, $adminId]);
                 $admin['username'] = $newUsername;
-                $success = 'Username updated successfully.';
+                $_SESSION['account_success'] = 'Username updated successfully.';
+                header('Location: account.php');
+                exit;
             }
         }
     }
@@ -56,9 +58,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = getDB()->prepare("UPDATE admins SET password = ? WHERE id = ?");
             $stmt->execute([$hashed, $adminId]);
             $admin['password'] = $hashed;
-            $success = 'Password updated successfully.';
+            $_SESSION['account_success'] = 'Password updated successfully.';
+            header('Location: account.php');
+            exit;
         }
     }
+}
+
+// Check for success message from session (one-time display)
+if (isset($_SESSION['account_success'])) {
+    $success = $_SESSION['account_success'];
+    unset($_SESSION['account_success']);
 }
 
 $pageTitle = 'Account Settings — ' . SITE_NAME;
@@ -83,14 +93,24 @@ require_once 'admin_header.php';
     <?php endif; ?>
 
     <?php if ($success): ?>
-      <div class="alert-ok">&#10003; <?= htmlspecialchars($success) ?></div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          showSileoToastBar({
+            title: 'Success',
+            message: '<?= htmlspecialchars($success, ENT_QUOTES) ?>',
+            variant: 'success',
+            position: 'top-right',
+            duration: 3000
+          });
+        });
+      </script>
     <?php endif; ?>
 
     <div class="adm-account-grid">
       <section class="adm-account-card">
         <h3>Change Username</h3>
         <p>Current username: <strong><?= htmlspecialchars($admin['username']) ?></strong></p>
-        <form method="POST" action="account.php">
+        <form method="POST" action="account.php" data-account-confirm="username">
           <input type="hidden" name="action" value="update_username">
           <div class="fg2">
             <div class="full">
@@ -105,7 +125,7 @@ require_once 'admin_header.php';
       <section class="adm-account-card">
         <h3>Change Password</h3>
         <p>Use at least 8 characters for better security.</p>
-        <form method="POST" action="account.php">
+        <form method="POST" action="account.php" data-account-confirm="password">
           <input type="hidden" name="action" value="update_password">
           <div class="fg2">
             <div class="full">

@@ -1,6 +1,6 @@
 <?php
 // admin/charts.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 

@@ -1,6 +1,6 @@
 <?php
 // admin/visitors.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 
@@ -205,7 +205,7 @@ require_once 'admin_header.php';
       </div>
     <?php endif; ?>
 
-    <div class="tbl-wrap">
+    <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
         <thead>
           <tr>
