@@ -52,7 +52,7 @@ function newsCard(array $n, string $imgBase, string $now): string {
         <div class="nc-meta">'.$meta.'</div>
         <h3 class="nc-title">'.htmlspecialchars($n['title']).'</h3>
         <p class="nc-text">'.htmlspecialchars(mb_substr($n['content'],0,160)).'...</p>
-        <div class="nc-foot"><span class="btn-ghost">'.$lbl.' &rarr;</span></div>
+        <div class="nc-foot"><span class="btn-ghost">'.$lbl.' <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></span></div>
       </div></a>';
 }
 ?>
@@ -65,11 +65,11 @@ function newsCard(array $n, string $imgBase, string $now): string {
       <p class="hero-desc">Preserving the rich history, culture, and heritage of Camarines Norte. Step through our doors to uncover the stories of our ancestors and the treasures of our past.</p>
       <div class="hero-btns">
         <?php if ($loggedIn): ?>
-          <a href="index.php?page=categories" class="btn-gold">Enter the Catalog &rarr;</a>
+          <a href="index.php?page=categories" class="btn-gold">Enter the Catalog <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
         <?php else: ?>
           <a href="index.php?page=login" class="btn-gold">Sign Digital Guestbook &#10022;</a>
         <?php endif; ?>
-        <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More</a>
+        <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
       </div>
       <div class="hero-stats">
         <div><div class="stat-n"><?= $totalArtifacts ?></div><div class="stat-l">Artifacts</div></div>
@@ -271,7 +271,7 @@ if (document.readyState === 'loading') {
         <p style="color:#9bb8cc;font-size:.92rem;margin-top:6px"><?= $loggedIn ? 'Browse our full collection below' : '&#128274; Sign the Digital Guestbook to unlock full artifact details' ?></p>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
-        <?php if ($loggedIn): ?><a href="index.php?page=exhibits" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">View All Artifacts &rarr;</a><?php endif; ?>
+        <?php if ($loggedIn): ?><a href="index.php?page=exhibits" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">View All Artifacts <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a><?php endif; ?>
       </div>
     </div>
     <div class="teaser-fader" id="teaserFader">
@@ -351,7 +351,7 @@ window.calendarEvents = <?= json_encode(array_map(function($e){return['id'=>$e['
       <div class="sec-label" style="color:var(--gold2)">About the Museum</div>
       <h2 class="sec-title" style="color:#fff">Guardians of Labo's Heritage</h2>
       <p style="color:#9bb8cc;line-height:1.8;margin-bottom:24px"><strong style="color:#fff">Museo de Labo</strong> preserves and showcases the town's key historical, cultural, and artistic heritage in one place.</p>
-      <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More &rarr;</a>
+      <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
     </div>
     <ul style="list-style:none">
       <li style="display:flex;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.07)"><div style="width:36px;height:36px;border-radius:50%;background:rgba(201,146,42,.15);border:1px solid rgba(201,146,42,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">&#128205;</div><div><strong style="color:#fff;display:block;font-size:.85rem">Location</strong><span style="color:#7a9eb5;font-size:.82rem">Municipal Hall Compound, Labo, Camarines Norte</span></div></li>

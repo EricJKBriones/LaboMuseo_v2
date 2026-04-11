@@ -15,7 +15,7 @@
       <p>Founded to serve the people of Labo, the <strong>Museo de Labo</strong> began as an initiative to document and preserve the rich cultural history of our region for future generations.</p>
       <p>Our mission is to provide an accessible platform where students, historians, and enthusiasts can explore artifacts that define our shared human experience and local identity.</p>
       <p>We believe history should be interactive and inclusive. Through our digital and physical exhibits, even the most fragile artifacts can be studied and appreciated by all.</p>
-      <a href="index.php?page=exhibits" class="btn-gold" style="margin-top:8px">Explore the Collection</a>
+      <a href="index.php?page=exhibits" class="btn-gold" style="margin-top:8px">Explore the Collection <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
     </div>
     <div class="about-info-col">
       <div class="acard compact-card" style="margin-bottom:14px">

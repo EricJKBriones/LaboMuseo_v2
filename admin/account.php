@@ -63,6 +63,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     }
+
+      if ($action === 'update_logo') {
+        if (empty($_FILES['site_logo']['name'])) {
+          $errors[] = 'Please choose a logo file to upload.';
+        } elseif (!isset($_FILES['site_logo']['error']) || $_FILES['site_logo']['error'] !== UPLOAD_ERR_OK) {
+          $errors[] = 'Logo upload failed. Please try again.';
+        } else {
+          $tmpPath = $_FILES['site_logo']['tmp_name'] ?? '';
+          $size = (int)($_FILES['site_logo']['size'] ?? 0);
+          $mime = '';
+          if ($tmpPath && is_uploaded_file($tmpPath) && function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+              $mime = (string)finfo_file($finfo, $tmpPath);
+              finfo_close($finfo);
+            }
+          }
+
+          if ($size <= 0 || $size > 5 * 1024 * 1024) {
+            $errors[] = 'Logo must be a valid PNG image up to 5MB.';
+          } elseif ($mime !== 'image/png') {
+            $errors[] = 'Only PNG files are allowed for the website logo.';
+          } else {
+            $logoPath = __DIR__ . '/../uploads/logo.png';
+            if (!move_uploaded_file($tmpPath, $logoPath)) {
+              $errors[] = 'Unable to save the new logo file.';
+            } else {
+              $_SESSION['account_success'] = 'Website logo updated successfully.';
+              header('Location: account.php');
+              exit;
+            }
+          }
+        }
+      }
 }
 
 // Check for success message from session (one-time display)
@@ -73,6 +107,9 @@ if (isset($_SESSION['account_success'])) {
 
 $pageTitle = 'Account Settings — ' . SITE_NAME;
 require_once 'admin_header.php';
+
+$logoFile = __DIR__ . '/../uploads/logo.png';
+$logoVersion = file_exists($logoFile) ? (string)filemtime($logoFile) : (string)time();
 ?>
 
 <div class="adm-layout">
@@ -142,6 +179,31 @@ require_once 'admin_header.php';
             </div>
           </div>
           <button type="submit" class="btn-save" style="margin-top:12px">Save Password</button>
+        </form>
+      </section>
+
+      <section class="adm-account-card adm-account-card--full">
+        <h3>Change Website Logo</h3>
+        <p>Upload a PNG logo (max 5MB) to update the public website header logo.</p>
+        <form method="POST" action="account.php" enctype="multipart/form-data" data-account-confirm="logo">
+          <input type="hidden" name="action" value="update_logo">
+          <div class="fg2">
+            <div>
+              <label class="al">Current Logo</label>
+              <div style="width:82px;height:82px;border-radius:50%;border:2px solid rgba(201,146,42,.35);background:#1b2a3b;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                <?php if (file_exists($logoFile)): ?>
+                  <img src="../uploads/logo.png?v=<?= htmlspecialchars($logoVersion, ENT_QUOTES) ?>" alt="Current website logo" style="width:100%;height:100%;object-fit:cover;">
+                <?php else: ?>
+                  <span style="color:#c9922a;font-size:1.6rem;line-height:1;">&#9711;</span>
+                <?php endif; ?>
+              </div>
+            </div>
+            <div class="full">
+              <label class="al">New Logo (PNG)</label>
+              <input type="file" name="site_logo" class="ai" accept="image/png" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-save" style="margin-top:12px">Update Logo</button>
         </form>
       </section>
     </div>
