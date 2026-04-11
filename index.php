@@ -2,7 +2,7 @@
 // ============================================================
 // index.php — Front-end router
 // ============================================================
-require_once 'includes/db.php';
+require_once 'includes/init.php';
 sessionStart();
 
 // ── Handle logout ────────────────────────────────────────────
@@ -84,8 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // ── Page routing ─────────────────────────────────────────────
 $page = $_GET['page'] ?? 'home';
-$allowedPages = ['home','about','news','news_detail','categories','exhibits','detail','pdf_detail','pdf_reader','login'];
+$allowedPages = ['home','about','news','news_detail','categories','exhibits','detail','pdf_detail','pdf_reader','login','ai_proxy'];
 if (!in_array($page, $allowedPages)) $page = 'home';
+
+if ($page === 'ai_proxy') {
+    require_once 'pages/ai_proxy.php';
+    exit;
+}
 
 $pageTitle = SITE_NAME;
 switch($page) {

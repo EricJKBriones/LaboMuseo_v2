@@ -1,6 +1,6 @@
 <?php
 // admin/visitors.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 
@@ -199,13 +199,13 @@ require_once 'admin_header.php';
             </div>
           </div>
 
-          <button type="submit" class="btn-save">&#128190; Save Changes</button>
+          <button type="submit" class="btn-save">Save Changes</button>
           <a href="visitors.php" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
         </form>
       </div>
     <?php endif; ?>
 
-    <div class="tbl-wrap">
+    <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
         <thead>
           <tr>

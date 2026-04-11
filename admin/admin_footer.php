@@ -3,8 +3,8 @@
 if (!isset($quickArtifactCategories) && function_exists('dbQuery')) {
   $quickArtifactCategories = dbQuery("SELECT id, name FROM categories ORDER BY name ASC");
 }
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off') ? 'https' : 'http';
-$base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\') . '/';
+$dir = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
+$base = ($dir === '' ? '/' : $dir . '/');
 ?>
 <footer style="background:var(--navy3);color:#8a9db0;text-align:center;padding:20px;border-top:2px solid var(--gold);font-size:.82rem;margin-top:auto">
   <strong style="color:var(--gold2)"><?= SITE_NAME ?></strong> &mdash; Admin Panel &bull; &copy; <?= date('Y') ?> &bull; &copy; <?= projectCreditsHtml() ?>
@@ -64,7 +64,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
           <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save">&#128190; Save Artifact</button>
+          <button type="submit" class="btn-save">Save Artifact</button>
           <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddArtifactForm')">Cancel</button>
         </div>
       </form>
@@ -83,7 +83,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
           <div class="full"><label class="al">Description</label><textarea name="description" class="ai"></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save">&#128190; Save Department</button>
+          <button type="submit" class="btn-save">Save Department</button>
           <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddDeptForm')">Cancel</button>
         </div>
       </form>
@@ -110,7 +110,7 @@ $base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERV
           <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save" data-icon-name="post_news">&#128226; Publish</button>
+          <button type="submit" class="btn-save" data-icon-name="post_news">Publish</button>
           <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddNewsForm')">Cancel</button>
         </div>
       </form>

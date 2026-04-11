@@ -1,6 +1,6 @@
 <?php
 // admin/index.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 
@@ -47,10 +47,10 @@ require_once 'admin_header.php';
       <div class="astat orange"><div><div class="astat-n"><?= $totalNews ?></div><div class="astat-l">News &amp; Events</div></div><div class="astat-i">&#128240;</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div class="adm-dashboard-grid">
       <div>
         <h3 class="adm-sec-title">&#128101; Recent Visitors</h3>
-        <div class="tbl-wrap">
+        <div class="tbl-wrap adm-dashboard-table-wrap">
           <table class="adm-tbl">
             <thead><tr><th>Name</th><th>Type</th><th>Date</th></tr></thead>
             <tbody>
@@ -70,7 +70,7 @@ require_once 'admin_header.php';
       </div>
       <div>
         <h3 class="adm-sec-title">&#128240; Recent News</h3>
-        <div class="tbl-wrap">
+        <div class="tbl-wrap adm-dashboard-table-wrap">
           <table class="adm-tbl">
             <thead><tr><th>Title</th><th>Type</th><th>Date</th></tr></thead>
             <tbody>

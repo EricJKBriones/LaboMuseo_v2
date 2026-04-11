@@ -220,7 +220,7 @@ function runAiSearch(event) {
 }
 
 function postAiAsk(question) {
-  var endpoints = ['http://127.0.0.1:8008/ask', 'http://localhost:8008/ask'];
+  var endpoints = ['index.php?page=ai_proxy'];
 
   function tryIndex(i) {
     if (i >= endpoints.length) {
