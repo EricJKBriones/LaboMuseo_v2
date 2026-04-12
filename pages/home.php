@@ -313,7 +313,7 @@ if (document.readyState === 'loading') {
   <div class="wrap">
     <div class="sec-label">Schedule</div>
     <h2 class="sec-title">Event Calendar</h2>
-    <p class="sec-sub" style="margin-bottom:36px">Click on highlighted dates to see scheduled events.</p>
+    <p class="sec-sub" style="margin-bottom:36px">Click on highlighted dates to see scheduled events and Philippine holidays.</p>
     <div class="calendar-layout">
       <div class="calendar-wrap">
         <div class="cal-header">
