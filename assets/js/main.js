@@ -73,7 +73,16 @@ var sileoToastDefaults = {
   position: 'top-right'
 };
 var sileoToastMaxVisible = 4;
+var sileoToastMobileBreakpoint = 768;
+var sileoToastResizeBound = false;
 var GUESTBOOK_TOAST_TITLE = 'Guestbook Required';
+
+function getSileoToastMaxVisible() {
+  if (window.innerWidth <= sileoToastMobileBreakpoint) {
+    return 1;
+  }
+  return sileoToastMaxVisible;
+}
 
 function normalizeToastSpec(input, fallbackVariant) {
   if (typeof input === 'string') {
@@ -163,11 +172,21 @@ function dismissSileoToastNow(toast) {
 function enforceSileoToastLimit(host) {
   if (!host) return;
 
+  var maxVisible = getSileoToastMaxVisible();
   var activeToasts = host.querySelectorAll('.sileo-toastbar:not([data-leaving="1"])');
-  while (activeToasts.length >= sileoToastMaxVisible) {
+  while (activeToasts.length >= maxVisible) {
     dismissSileoToastNow(activeToasts[0]);
     activeToasts = host.querySelectorAll('.sileo-toastbar:not([data-leaving="1"])');
   }
+}
+
+function bindSileoToastResizeGuard() {
+  if (sileoToastResizeBound) return;
+  sileoToastResizeBound = true;
+
+  window.addEventListener('resize', function() {
+    enforceSileoToastLimit(getSileoToastHost());
+  }, { passive: true });
 }
 
 function showSileoToastBar(input, variant, timeout) {
@@ -379,6 +398,9 @@ function showSileoPromiseToast(promiseOrFactory, payload) {
 }
 
 function initSileoToastBars() {
+  bindSileoToastResizeGuard();
+  enforceSileoToastLimit(getSileoToastHost());
+
   var toastParams = new URLSearchParams(window.location.search || '');
   if (toastParams.get('no_toast') === '1') {
     return;
@@ -2370,8 +2392,17 @@ function initAdminDashboardTableScroll() {
   if (!wrappers.length) return;
 
   wrappers.forEach(function(wrap) {
+    if (wrap.classList.contains('adm-dashboard-table-wrap-news')) {
+      wrap.style.webkitOverflowScrolling = 'touch';
+      wrap.style.touchAction = 'pan-x';
+      return;
+    }
+
     if (wrap.dataset.dragScrollBound === '1') return;
     wrap.dataset.dragScrollBound = '1';
+
+    wrap.style.webkitOverflowScrolling = 'touch';
+    wrap.style.touchAction = 'pan-y';
 
     var startX = 0;
     var startY = 0;
@@ -2391,12 +2422,14 @@ function initAdminDashboardTableScroll() {
 
     wrap.addEventListener('touchmove', function(e) {
       if (!dragging || !e.touches || !e.touches.length) return;
+
       var t = e.touches[0];
       var dx = t.clientX - startX;
       var dy = t.clientY - startY;
 
-      if (!lockAxis) {
-        lockAxis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+      if (!lockAxis && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        // Bias toward horizontal to make row-level swipe feel reliable on mobile.
+        lockAxis = Math.abs(dx) >= Math.abs(dy) * 0.7 ? 'x' : 'y';
       }
       if (lockAxis !== 'x') return;
 
