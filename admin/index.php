@@ -50,7 +50,7 @@ require_once 'admin_header.php';
     <div class="adm-dashboard-grid">
       <div>
         <h3 class="adm-sec-title">&#128101; Recent Visitors</h3>
-        <div class="tbl-wrap adm-dashboard-table-wrap">
+        <div class="tbl-wrap adm-dashboard-table-wrap tbl-wrap-mobile-fix">
           <table class="adm-tbl">
             <thead><tr><th>Name</th><th>Type</th><th>Date</th></tr></thead>
             <tbody>
@@ -70,8 +70,8 @@ require_once 'admin_header.php';
       </div>
       <div>
         <h3 class="adm-sec-title">&#128240; Recent News</h3>
-        <div class="tbl-wrap adm-dashboard-table-wrap">
-          <table class="adm-tbl">
+        <div class="tbl-wrap adm-dashboard-table-wrap adm-dashboard-table-wrap-news tbl-wrap-mobile-fix">
+          <table class="adm-tbl adm-tbl-news">
             <thead><tr><th>Title</th><th>Type</th><th>Date</th></tr></thead>
             <tbody>
               <?php if (empty($recentNews)): ?>

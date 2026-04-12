@@ -31,7 +31,7 @@ if (!file_exists($pdfAbsolute)) {
 
   <div class="pdf-reader-frame-wrap" id="pdfReaderFrameWrap">
     <iframe
-      src="<?= htmlspecialchars($pdfUrl) ?>#view=FitH"
+      src="<?= htmlspecialchars($pdfUrl) ?>#page=1&view=FitH&zoom=page-width&pagemode=none&toolbar=0&navpanes=0&scrollbar=0"
       title="Ksay-say Layout full reader"
       class="pdf-reader-frame"></iframe>
 
@@ -250,7 +250,18 @@ function escapeHtml(value) {
 }
 
 document.addEventListener('fullscreenchange', syncReaderFullscreenButton);
-document.addEventListener('DOMContentLoaded', syncReaderFullscreenButton);
+document.addEventListener('DOMContentLoaded', function() {
+  syncReaderFullscreenButton();
+
+  var frame = document.querySelector('.pdf-reader-frame');
+  if (!frame) return;
+
+  if (window.innerWidth <= 900) {
+    var src = frame.getAttribute('src') || '';
+    var base = src.split('#')[0];
+    frame.setAttribute('src', base + '#page=1&zoom=page-width&view=FitH&toolbar=0&navpanes=0&scrollbar=0&pagemode=none');
+  }
+});
 
 document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape') {

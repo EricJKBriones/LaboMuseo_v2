@@ -6,8 +6,10 @@ if (!isset($quickArtifactCategories) && function_exists('dbQuery')) {
 $dir = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
 $base = ($dir === '' ? '/' : $dir . '/');
 ?>
-<footer style="background:var(--navy3);color:#8a9db0;text-align:center;padding:20px;border-top:2px solid var(--gold);font-size:.82rem;margin-top:auto">
-  <strong style="color:var(--gold2)"><?= SITE_NAME ?></strong> &mdash; Admin Panel &bull; &copy; <?= date('Y') ?> &bull; &copy; <?= projectCreditsHtml() ?>
+<footer class="admin-footer">
+  <div class="admin-footer-text">
+    <strong><?= SITE_NAME ?></strong> &mdash; Admin Panel &bull; &copy; <?= date('Y') ?> &bull; &copy; <?= projectCreditsHtml() ?>
+  </div>
 </footer>
 <div class="adm-quick-dock" id="adminQuickDock">
   <button type="button" class="adm-quick-fab" id="adminQuickFab" aria-label="Quick actions" aria-expanded="false">
