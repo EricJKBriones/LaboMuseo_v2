@@ -549,9 +549,95 @@ window.addEventListener('resize', function() {
 
 /* ── CALENDAR ───────────────────────────────────────────────── */
 var calYear, calMonth, calSelectedDate = null;
+var phHolidayCache = {};
 
 var CAL_MONTHS = ['January','February','March','April','May','June',
                   'July','August','September','October','November','December'];
+
+function pad2(n) {
+  return (n < 10 ? '0' : '') + n;
+}
+
+function toDateStr(year, month, day) {
+  return year + '-' + pad2(month) + '-' + pad2(day);
+}
+
+function addDaysIso(dateStr, days) {
+  var parts = dateStr.split('-');
+  var dt = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.getUTCFullYear() + '-' + pad2(dt.getUTCMonth() + 1) + '-' + pad2(dt.getUTCDate());
+}
+
+function calcEasterSundayISO(year) {
+  // Meeus/Jones/Butcher Gregorian algorithm.
+  var a = year % 19;
+  var b = Math.floor(year / 100);
+  var c = year % 100;
+  var d = Math.floor(b / 4);
+  var e = b % 4;
+  var f = Math.floor((b + 8) / 25);
+  var g = Math.floor((b - f + 1) / 3);
+  var h = (19 * a + b - d - g + 15) % 30;
+  var i = Math.floor(c / 4);
+  var k = c % 4;
+  var l = (32 + 2 * e + 2 * i - h - k) % 7;
+  var m = Math.floor((a + 11 * h + 22 * l) / 451);
+  var month = Math.floor((h + l - 7 * m + 114) / 31);
+  var day = ((h + l - 7 * m + 114) % 31) + 1;
+  return toDateStr(year, month, day);
+}
+
+function getLastWeekdayOfMonth(year, monthIndex, weekday) {
+  var date = new Date(year, monthIndex + 1, 0);
+  while (date.getDay() !== weekday) {
+    date.setDate(date.getDate() - 1);
+  }
+  return toDateStr(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+function buildPhilippineHolidays(year) {
+  if (phHolidayCache[year]) {
+    return phHolidayCache[year];
+  }
+
+  var holidays = [];
+
+  function pushHoliday(dateStr, title, holidayType) {
+    holidays.push({
+      id: 'ph-' + dateStr + '-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      title: title,
+      event_date: dateStr,
+      type: 'holiday',
+      holiday_type: holidayType || 'holiday'
+    });
+  }
+
+  // Fixed-date holidays commonly observed nationwide.
+  pushHoliday(toDateStr(year, 1, 1), 'New Year\'s Day', 'regular');
+  pushHoliday(toDateStr(year, 2, 25), 'EDSA People Power Revolution Anniversary', 'special');
+  pushHoliday(toDateStr(year, 4, 9), 'Araw ng Kagitingan', 'regular');
+  pushHoliday(toDateStr(year, 5, 1), 'Labor Day', 'regular');
+  pushHoliday(toDateStr(year, 6, 12), 'Independence Day', 'regular');
+  pushHoliday(toDateStr(year, 8, 21), 'Ninoy Aquino Day', 'special');
+  pushHoliday(toDateStr(year, 11, 1), 'All Saints\' Day', 'special');
+  pushHoliday(toDateStr(year, 11, 30), 'Bonifacio Day', 'regular');
+  pushHoliday(toDateStr(year, 12, 8), 'Feast of the Immaculate Conception', 'special');
+  pushHoliday(toDateStr(year, 12, 25), 'Christmas Day', 'regular');
+  pushHoliday(toDateStr(year, 12, 30), 'Rizal Day', 'regular');
+  pushHoliday(toDateStr(year, 12, 31), 'Last Day of the Year', 'special');
+
+  // National Heroes Day: last Monday of August.
+  pushHoliday(getLastWeekdayOfMonth(year, 7, 1), 'National Heroes Day', 'regular');
+
+  // Holy Week dates derived from Easter Sunday.
+  var easter = calcEasterSundayISO(year);
+  pushHoliday(addDaysIso(easter, -3), 'Maundy Thursday', 'regular');
+  pushHoliday(addDaysIso(easter, -2), 'Good Friday', 'regular');
+
+  phHolidayCache[year] = holidays;
+  return holidays;
+}
 
 function initCalendar() {
   var now  = new Date();
@@ -560,14 +646,21 @@ function initCalendar() {
   renderCalendar();
 }
 
-function buildEventMap() {
+function buildEventMap(year) {
   var map = {};
+
   (window.calendarEvents || []).forEach(function(ev) {
     if (ev.event_date) {
       map[ev.event_date] = map[ev.event_date] || [];
       map[ev.event_date].push(ev);
     }
   });
+
+  buildPhilippineHolidays(year || (new Date()).getFullYear()).forEach(function(ev) {
+    map[ev.event_date] = map[ev.event_date] || [];
+    map[ev.event_date].push(ev);
+  });
+
   return map;
 }
 
@@ -581,7 +674,7 @@ function renderCalendar() {
   var firstDay    = new Date(calYear, calMonth, 1).getDay();
   var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   var daysInPrev  = new Date(calYear, calMonth, 0).getDate();
-  var eventMap    = buildEventMap();
+  var eventMap    = buildEventMap(calYear);
   var totalCells  = Math.ceil((firstDay + daysInMonth) / 7) * 7;
   var html        = '';
 
@@ -605,7 +698,12 @@ function renderCalendar() {
                  && today.getDate()     === day;
 
       if (isToday)              cls += ' today';
-      if (eventMap[dateStr])    cls += ' has-event';
+      if (eventMap[dateStr]) {
+        cls += ' has-event';
+        if (eventMap[dateStr].some(function(e) { return e.type === 'holiday'; })) {
+          cls += ' has-holiday';
+        }
+      }
       if (dateStr === calSelectedDate) cls += ' selected';
 
       if (eventMap[dateStr]) {
@@ -643,23 +741,33 @@ function selectCalDay(dateStr) {
   var d     = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   var dateLabel = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
-  var eventMap  = buildEventMap();
+  var selectedYear = parseInt((dateStr || '').split('-')[0], 10) || calYear;
+  var eventMap  = buildEventMap(selectedYear);
   var dayEvents = eventMap[dateStr] || [];
   var now       = new Date(); now.setHours(0,0,0,0);
 
   if (!dayEvents.length) {
     // No events — just update header, clear the list silently
     panelHdr.textContent = dateLabel;
-    panel.innerHTML = '<p style="color:var(--text3);font-size:.88rem;padding:4px 0;font-style:italic">No events on this date.</p>';
+    panel.innerHTML = '<p style="color:var(--text3);font-size:.88rem;padding:4px 0;font-style:italic">No events or holidays on this date.</p>';
     return;
   }
 
-  // Has events — show them
+  // Has entries — show events and offline holiday markers.
   panelHdr.textContent = dateLabel;
   panel.innerHTML = dayEvents.map(function(ev) {
+    var isHoliday = ev.type === 'holiday';
     var evDate = new Date(ev.event_date + 'T00:00:00');
     var isPast = evDate < now;
-    var url    = 'index.php?page=news_detail&id=' + ev.id;
+    if (isHoliday) {
+      var holidayLabel = ev.holiday_type === 'regular' ? 'Regular Holiday' : 'Special Holiday';
+      return '<div class="cal-event-item holiday" style="text-decoration:none;display:block">'
+        + '<div class="cal-event-date holiday">&#127881; Philippine Holiday - ' + escHTML(holidayLabel) + '</div>'
+        + '<div class="cal-event-title">' + escHTML(ev.title) + '</div>'
+        + '</div>';
+    }
+
+    var url = 'index.php?page=news_detail&id=' + ev.id;
     return '<a href="' + url + '" class="cal-event-item' + (isPast ? ' past' : '') + '" style="text-decoration:none;display:block">'
       + '<div class="cal-event-date' + (isPast ? ' past' : '') + '">'
       + (isPast ? '&#128193; Past Event' : '&#128197; Upcoming Event')

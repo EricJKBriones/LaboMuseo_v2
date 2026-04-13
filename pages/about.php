@@ -32,6 +32,23 @@
     </div>
   </div>
 
+  <div class="acard org-member-card">
+    <h3 class="org-heading"><span class="org-heading-logo"><img src="uploads/Labo Logo.jpg" alt="Labo Logo" loading="lazy"></span><span>Organization Member</span></h3>
+    <p class="org-intro">Museo de Labo operates under the Tourism organizational unit of the Local Government Unit of Labo (LGU Labo), working to preserve and promote our local history and cultural identity.</p>
+    <div class="org-member-layout">
+      <div class="org-member-visuals" aria-hidden="true">
+        <div class="org-photo-oval">
+          <img src="uploads/JoseRamonLagatuz.jpg" alt="Jose Ramon B. Lagatuz" loading="lazy">
+        </div>
+      </div>
+      <div class="org-member-text">
+        <h4>Municipal Tourism Officer</h4>
+        <p class="org-member-name">Jose Ramon B. Lagatuz</p>
+        <blockquote class="org-message">Welcome to Museo de Labo. We invite everyone to discover our shared stories, honor our heritage, and help us keep the spirit of Labo alive for the next generation.</blockquote>
+      </div>
+    </div>
+  </div>
+
   <div class="acard">
     <h3>&#128205; Find Us</h3>
     <iframe class="map-frame" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241.5!2d122.8279576!3d14.1540476!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3398a5006231e8ef%3A0x212d1fdc51094dfb!2sMuseo%20de%20Labo!5e0!3m2!1sen!2sph!4v1" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>

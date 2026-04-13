@@ -1,8 +1,7 @@
 <?php
 // pages/home.php
 $now     = date('Y-m-d');
-$monthStart = date('Y-m-01');
-$monthEnd   = date('Y-m-t');
+$thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
 $dayNow = (int)date('j');
 $daysInMonth = (int)date('t');
 $daysRemaining = $daysInMonth - $dayNow;
@@ -14,16 +13,16 @@ $imgBase = __DIR__ . '/../uploads/';
 $totalArtifacts    = dbCount("SELECT COUNT(*) FROM exhibits");
 $totalDepts        = dbCount("SELECT COUNT(*) FROM categories");
 $totalVisitors     = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests WHERE visit_date = ?", [date('Y-m-d')]);
-$latestNews        = dbOne("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) BETWEEN ? AND ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 1", [$monthStart, $monthEnd]);
+$latestNews        = dbOne("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) >= ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 1", [$thirtyDaysAgo]);
 $latestArt         = dbOne("SELECT e.*,c.name as cat_name FROM exhibits e LEFT JOIN categories c ON e.category_id=c.id ORDER BY e.id DESC LIMIT 1");
-$tickerItems       = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) BETWEEN ? AND ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 5", [$monthStart, $monthEnd]);
-$latestNewsList    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='news' AND date_posted BETWEEN ? AND ? ORDER BY date_posted DESC, id DESC LIMIT 6", [$monthStart, $monthEnd]);
-$upcomingEvents    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='event' AND event_date BETWEEN ? AND ? AND event_date >= ? ORDER BY event_date ASC LIMIT 6", [$monthStart, $monthEnd, $now]);
-$oldNews           = dbQuery("SELECT * FROM news_events WHERE ((is_archived=1 AND date_posted BETWEEN ? AND ?) OR (type='event' AND event_date BETWEEN ? AND ? AND event_date < ?)) ORDER BY COALESCE(event_date, date_posted) DESC LIMIT 6", [$monthStart, $monthEnd, $monthStart, $monthEnd, $now]);
+$tickerItems       = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) >= ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 5", [$thirtyDaysAgo]);
+$latestNewsList    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='news' AND date_posted >= ? ORDER BY date_posted DESC, id DESC LIMIT 6", [$thirtyDaysAgo]);
+$upcomingEvents    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='event' AND event_date >= ? ORDER BY event_date ASC LIMIT 6", [$now]);
+$oldNews           = dbQuery("SELECT * FROM news_events WHERE is_archived=1 OR (is_archived=0 AND ((type='event' AND event_date IS NOT NULL AND event_date < ?) OR (type='news' AND date_posted < ?))) ORDER BY COALESCE(event_date, date_posted) DESC LIMIT 6", [$now, $thirtyDaysAgo]);
 $teaserArtifacts   = dbQuery("SELECT e.*,c.name as cat_name FROM exhibits e LEFT JOIN categories c ON e.category_id=c.id ORDER BY e.id DESC LIMIT 8");
 $calEvents         = dbQuery("SELECT id,title,event_date,type FROM news_events WHERE event_date IS NOT NULL ORDER BY event_date ASC");
-$calUpcomingSql = "SELECT * FROM news_events WHERE type='event' AND is_archived=0 AND ((event_date BETWEEN ? AND ? AND event_date >= ?)";
-$calUpcomingParams = [$monthStart, $monthEnd, $now];
+$calUpcomingSql = "SELECT * FROM news_events WHERE type='event' AND is_archived=0 AND (event_date >= ?";
+$calUpcomingParams = [$now];
 if ($daysRemaining <= 5) {
   $calUpcomingSql .= " OR (event_date BETWEEN ? AND ? )";
   $calUpcomingParams[] = $nextMonthStart;
@@ -313,7 +312,7 @@ if (document.readyState === 'loading') {
   <div class="wrap">
     <div class="sec-label">Schedule</div>
     <h2 class="sec-title">Event Calendar</h2>
-    <p class="sec-sub" style="margin-bottom:36px">Click on highlighted dates to see scheduled events.</p>
+    <p class="sec-sub" style="margin-bottom:36px">Click on highlighted dates to see scheduled events and Philippine holidays.</p>
     <div class="calendar-layout">
       <div class="calendar-wrap">
         <div class="cal-header">
