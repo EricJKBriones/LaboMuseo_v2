@@ -764,7 +764,6 @@ function selectCalDay(dateStr) {
       return '<div class="cal-event-item holiday" style="text-decoration:none;display:block">'
         + '<div class="cal-event-date holiday">&#127881; Philippine Holiday - ' + escHTML(holidayLabel) + '</div>'
         + '<div class="cal-event-title">' + escHTML(ev.title) + '</div>'
-        + '<div style="font-size:.75rem;color:var(--text3);margin-top:4px">Built-in offline holiday data</div>'
         + '</div>';
     }
 
