@@ -1,7 +1,7 @@
 <?php
 // includes/footer.php
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off') ? 'https' : 'http';
-$base = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') . '/';
+$dir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+$base = ($dir === '' ? '/' : $dir . '/');
 ?>
 <footer class="site-footer">
   <div class="footer-inner">

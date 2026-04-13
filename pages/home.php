@@ -1,8 +1,7 @@
 <?php
 // pages/home.php
 $now     = date('Y-m-d');
-$monthStart = date('Y-m-01');
-$monthEnd   = date('Y-m-t');
+$thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
 $dayNow = (int)date('j');
 $daysInMonth = (int)date('t');
 $daysRemaining = $daysInMonth - $dayNow;
@@ -14,16 +13,16 @@ $imgBase = __DIR__ . '/../uploads/';
 $totalArtifacts    = dbCount("SELECT COUNT(*) FROM exhibits");
 $totalDepts        = dbCount("SELECT COUNT(*) FROM categories");
 $totalVisitors     = dbCount("SELECT COALESCE(SUM(headcount), 0) FROM guests WHERE visit_date = ?", [date('Y-m-d')]);
-$latestNews        = dbOne("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) BETWEEN ? AND ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 1", [$monthStart, $monthEnd]);
+$latestNews        = dbOne("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) >= ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 1", [$thirtyDaysAgo]);
 $latestArt         = dbOne("SELECT e.*,c.name as cat_name FROM exhibits e LEFT JOIN categories c ON e.category_id=c.id ORDER BY e.id DESC LIMIT 1");
-$tickerItems       = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) BETWEEN ? AND ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 5", [$monthStart, $monthEnd]);
-$latestNewsList    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='news' AND date_posted BETWEEN ? AND ? ORDER BY date_posted DESC, id DESC LIMIT 6", [$monthStart, $monthEnd]);
-$upcomingEvents    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='event' AND event_date BETWEEN ? AND ? AND event_date >= ? ORDER BY event_date ASC LIMIT 6", [$monthStart, $monthEnd, $now]);
-$oldNews           = dbQuery("SELECT * FROM news_events WHERE ((is_archived=1 AND date_posted BETWEEN ? AND ?) OR (type='event' AND event_date BETWEEN ? AND ? AND event_date < ?)) ORDER BY COALESCE(event_date, date_posted) DESC LIMIT 6", [$monthStart, $monthEnd, $monthStart, $monthEnd, $now]);
+$tickerItems       = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND COALESCE(event_date, date_posted) >= ? ORDER BY COALESCE(event_date, date_posted) DESC, id DESC LIMIT 5", [$thirtyDaysAgo]);
+$latestNewsList    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='news' AND date_posted >= ? ORDER BY date_posted DESC, id DESC LIMIT 6", [$thirtyDaysAgo]);
+$upcomingEvents    = dbQuery("SELECT * FROM news_events WHERE is_archived=0 AND type='event' AND event_date >= ? ORDER BY event_date ASC LIMIT 6", [$now]);
+$oldNews           = dbQuery("SELECT * FROM news_events WHERE is_archived=1 OR (is_archived=0 AND ((type='event' AND event_date IS NOT NULL AND event_date < ?) OR (type='news' AND date_posted < ?))) ORDER BY COALESCE(event_date, date_posted) DESC LIMIT 6", [$now, $thirtyDaysAgo]);
 $teaserArtifacts   = dbQuery("SELECT e.*,c.name as cat_name FROM exhibits e LEFT JOIN categories c ON e.category_id=c.id ORDER BY e.id DESC LIMIT 8");
 $calEvents         = dbQuery("SELECT id,title,event_date,type FROM news_events WHERE event_date IS NOT NULL ORDER BY event_date ASC");
-$calUpcomingSql = "SELECT * FROM news_events WHERE type='event' AND is_archived=0 AND ((event_date BETWEEN ? AND ? AND event_date >= ?)";
-$calUpcomingParams = [$monthStart, $monthEnd, $now];
+$calUpcomingSql = "SELECT * FROM news_events WHERE type='event' AND is_archived=0 AND (event_date >= ?";
+$calUpcomingParams = [$now];
 if ($daysRemaining <= 5) {
   $calUpcomingSql .= " OR (event_date BETWEEN ? AND ? )";
   $calUpcomingParams[] = $nextMonthStart;
@@ -52,7 +51,7 @@ function newsCard(array $n, string $imgBase, string $now): string {
         <div class="nc-meta">'.$meta.'</div>
         <h3 class="nc-title">'.htmlspecialchars($n['title']).'</h3>
         <p class="nc-text">'.htmlspecialchars(mb_substr($n['content'],0,160)).'...</p>
-        <div class="nc-foot"><span class="btn-ghost">'.$lbl.' &rarr;</span></div>
+        <div class="nc-foot"><span class="btn-ghost">'.$lbl.' <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></span></div>
       </div></a>';
 }
 ?>
@@ -65,11 +64,11 @@ function newsCard(array $n, string $imgBase, string $now): string {
       <p class="hero-desc">Preserving the rich history, culture, and heritage of Camarines Norte. Step through our doors to uncover the stories of our ancestors and the treasures of our past.</p>
       <div class="hero-btns">
         <?php if ($loggedIn): ?>
-          <a href="index.php?page=categories" class="btn-gold">Enter the Catalog &rarr;</a>
+          <a href="index.php?page=categories" class="btn-gold">Enter the Catalog <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
         <?php else: ?>
           <a href="index.php?page=login" class="btn-gold">Sign Digital Guestbook &#10022;</a>
         <?php endif; ?>
-        <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More</a>
+        <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
       </div>
       <div class="hero-stats">
         <div><div class="stat-n"><?= $totalArtifacts ?></div><div class="stat-l">Artifacts</div></div>
@@ -136,10 +135,22 @@ function newsCard(array $n, string $imgBase, string $now): string {
         <button class="ntab"        id="hntab-archive"  onclick="homeTab('archive',this)">&#128193; Archive</button>
         <a href="index.php?page=news" class="ntab" style="text-decoration:none">View All &rarr;</a>
       </div>
+      <div class="news-tab-combo-wrap">
+        <button type="button" class="news-tab-combo-btn" id="homeNewsComboBtn" aria-expanded="false" aria-controls="homeNewsComboMenu">
+          <span class="news-tab-combo-label" id="homeNewsComboLabel">&#128240; Latest News</span>
+          <span class="news-tab-combo-caret" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="news-tab-combo-menu" id="homeNewsComboMenu" role="listbox" aria-label="Choose News and Events view">
+          <button type="button" class="news-tab-combo-opt is-active" data-tab="latest">&#128240; Latest News</button>
+          <button type="button" class="news-tab-combo-opt" data-tab="upcoming">&#128197; Upcoming Events</button>
+          <button type="button" class="news-tab-combo-opt" data-tab="archive">&#128193; Archive</button>
+          <button type="button" class="news-tab-combo-opt" data-tab="all">View All &rarr;</button>
+        </div>
+      </div>
     </div>
 
     <!-- Latest News panel -->
-    <div id="hnpanel-latest">
+    <div id="hnpanel-latest" class="home-news-panel">
       <?php if (empty($latestNewsList)): ?>
         <div class="empty-state"><div class="ei">&#128240;</div><h3>No news yet</h3><p>Check back soon.</p></div>
       <?php else: ?>
@@ -148,7 +159,7 @@ function newsCard(array $n, string $imgBase, string $now): string {
     </div>
 
     <!-- Upcoming Events panel -->
-    <div id="hnpanel-upcoming" style="display:none">
+    <div id="hnpanel-upcoming" class="home-news-panel" style="display:none">
       <?php if (empty($upcomingEvents)): ?>
         <div class="empty-state"><div class="ei">&#128197;</div><h3>No upcoming events</h3><p>Check back for future events.</p></div>
       <?php else: ?>
@@ -157,7 +168,7 @@ function newsCard(array $n, string $imgBase, string $now): string {
     </div>
 
     <!-- Archive panel -->
-    <div id="hnpanel-archive" style="display:none">
+    <div id="hnpanel-archive" class="home-news-panel" style="display:none">
       <?php if (empty($oldNews)): ?>
         <div class="empty-state"><div class="ei">&#128193;</div><h3>No archived items</h3><p>Past events and old news appear here.</p></div>
       <?php else: ?>
@@ -179,8 +190,74 @@ function homeTab(tab, btn) {
   });
   // Show selected
   var panel = document.getElementById('hnpanel-' + tab);
-  if (panel) panel.style.display = 'block';
+  if (panel) {
+    panel.style.display = 'block';
+    panel.classList.remove('is-entering');
+    void panel.offsetWidth;
+    panel.classList.add('is-entering');
+    window.setTimeout(function() {
+      panel.classList.remove('is-entering');
+    }, 320);
+  }
   if (btn) btn.classList.add('active');
+
+  var comboLabel = document.getElementById('homeNewsComboLabel');
+  var comboOpts = document.querySelectorAll('.news-tab-combo-opt[data-tab]');
+  comboOpts.forEach(function(opt) {
+    var isActive = opt.getAttribute('data-tab') === tab;
+    opt.classList.toggle('is-active', isActive);
+    if (isActive && comboLabel) {
+      comboLabel.textContent = opt.textContent;
+    }
+  });
+}
+
+function homeTabSelect(tab) {
+  if (tab === 'all') {
+    window.location.href = 'index.php?page=news';
+    return;
+  }
+  var btn = document.getElementById('hntab-' + tab);
+  homeTab(tab, btn || null);
+}
+
+function initHomeNewsCombo() {
+  var wrap = document.querySelector('.news-tab-combo-wrap');
+  var btn = document.getElementById('homeNewsComboBtn');
+  var menu = document.getElementById('homeNewsComboMenu');
+  if (!wrap || !btn || !menu) return;
+
+  function closeMenu() {
+    wrap.classList.remove('is-open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  btn.addEventListener('click', function() {
+    var isOpen = wrap.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  menu.querySelectorAll('.news-tab-combo-opt').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      var tab = opt.getAttribute('data-tab') || 'latest';
+      closeMenu();
+      homeTabSelect(tab);
+    });
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!wrap.contains(e.target)) closeMenu();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHomeNewsCombo);
+} else {
+  initHomeNewsCombo();
 }
 </script>
 
@@ -193,7 +270,7 @@ function homeTab(tab, btn) {
         <p style="color:#9bb8cc;font-size:.92rem;margin-top:6px"><?= $loggedIn ? 'Browse our full collection below' : '&#128274; Sign the Digital Guestbook to unlock full artifact details' ?></p>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
-        <?php if ($loggedIn): ?><a href="index.php?page=exhibits" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">View All Artifacts &rarr;</a><?php endif; ?>
+        <?php if ($loggedIn): ?><a href="index.php?page=exhibits" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">View All Artifacts <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a><?php endif; ?>
       </div>
     </div>
     <div class="teaser-fader" id="teaserFader">
@@ -224,9 +301,9 @@ function homeTab(tab, btn) {
       <?php endif; ?>
     </div>
     <div class="teaser-nav-bar" style="<?= count($teaserArtifacts) > 1 ? '' : 'display:none' ?>">
-      <button type="button" id="teaserPrevBtn" class="teaser-nav-btn" aria-label="Previous acquisitions">&larr; Back</button>
+      <button type="button" id="teaserPrevBtn" class="teaser-nav-btn" aria-label="Previous acquisitions">&lt;</button>
       <span id="teaserPageStat" class="teaser-page-stat">1 / 1</span>
-      <button type="button" id="teaserNextBtn" class="teaser-nav-btn" aria-label="Next acquisitions">Next &rarr;</button>
+      <button type="button" id="teaserNextBtn" class="teaser-nav-btn" aria-label="Next acquisitions">&gt;</button>
     </div>
   </div>
 </section>
@@ -235,7 +312,7 @@ function homeTab(tab, btn) {
   <div class="wrap">
     <div class="sec-label">Schedule</div>
     <h2 class="sec-title">Event Calendar</h2>
-    <p class="sec-sub" style="margin-bottom:36px">Click on highlighted dates to see scheduled events.</p>
+    <p class="sec-sub" style="margin-bottom:36px">Click on highlighted dates to see scheduled events and Philippine holidays.</p>
     <div class="calendar-layout">
       <div class="calendar-wrap">
         <div class="cal-header">
@@ -272,9 +349,8 @@ window.calendarEvents = <?= json_encode(array_map(function($e){return['id'=>$e['
     <div>
       <div class="sec-label" style="color:var(--gold2)">About the Museum</div>
       <h2 class="sec-title" style="color:#fff">Guardians of Labo's Heritage</h2>
-      <p style="color:#9bb8cc;line-height:1.8;margin-bottom:14px">Located in the heart of Camarines Norte, <strong style="color:#fff">Museo de Labo</strong> serves as the primary custodian of the municipality's historical artifacts, cultural relics, and artistic heritage.</p>
-      <p style="color:#9bb8cc;line-height:1.8;margin-bottom:24px">From ancient indigenous roots to the Spanish colonial era and the rich mining history of the region &mdash; every piece tells a unique story.</p>
-      <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More &rarr;</a>
+      <p style="color:#9bb8cc;line-height:1.8;margin-bottom:24px"><strong style="color:#fff">Museo de Labo</strong> preserves and showcases the town's key historical, cultural, and artistic heritage in one place.</p>
+      <a href="index.php?page=about" class="btn-outline" style="color:#9bb8cc;border-color:rgba(155,184,204,.4)">Learn More <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
     </div>
     <ul style="list-style:none">
       <li style="display:flex;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.07)"><div style="width:36px;height:36px;border-radius:50%;background:rgba(201,146,42,.15);border:1px solid rgba(201,146,42,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">&#128205;</div><div><strong style="color:#fff;display:block;font-size:.85rem">Location</strong><span style="color:#7a9eb5;font-size:.82rem">Municipal Hall Compound, Labo, Camarines Norte</span></div></li>

@@ -6,7 +6,8 @@ if (isLoggedIn()) {
 }
 $loginError = $_SESSION['login_error'] ?? '';
 $regError   = $_SESSION['reg_error'] ?? '';
-$showAdminPanel = !empty($loginError);
+$mode = strtolower(trim($_GET['mode'] ?? ''));
+$showAdminPanel = !empty($loginError) || $mode === 'admin';
 $showGuestPanel = !$showAdminPanel;
 unset($_SESSION['login_error'], $_SESSION['reg_error']);
 ?>
@@ -78,8 +79,6 @@ unset($_SESSION['login_error'], $_SESSION['reg_error']);
           <button type="submit" class="lbtn gold">&#10022; Sign &amp; Enter Catalog</button>
         </form>
       </div>
-
-      <div class="l-link-row"><a href="#" onclick="showAdminPanel();return false;">Admin Login Portal</a></div>
     </div>
 
   </div>

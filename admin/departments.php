@@ -1,6 +1,6 @@
 <?php
 // admin/departments.php
-require_once '../includes/db.php';
+require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
 
@@ -151,7 +151,7 @@ require_once 'admin_header.php';
           <div><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
           <div class="full"><label class="al">Description</label><textarea name="description" class="ai"></textarea></div>
         </div>
-        <button type="submit" class="btn-save">&#128190; Save</button>
+        <button type="submit" class="btn-save">Save</button>
         <button type="button" class="btn-cancel-f" onclick="togglePanel('addDeptForm')">Cancel</button>
       </form>
     </div>
@@ -172,14 +172,14 @@ require_once 'admin_header.php';
           <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path']) ?>"></div>
           <div class="full"><label class="al">Description</label><textarea name="description" class="ai"><?= htmlspecialchars($editRow['description'] ?? '') ?></textarea></div>
         </div>
-        <button type="submit" class="btn-save">&#128190; Update</button>
+        <button type="submit" class="btn-save">Update</button>
         <a href="departments.php" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
       </form>
     </div>
     <?php endif; ?>
 
     <!-- TABLE -->
-    <div class="tbl-wrap">
+    <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
         <thead><tr><th>Image</th><th>Name</th><th>Description</th><th>Artifacts</th><th>Actions</th></tr></thead>
         <tbody>

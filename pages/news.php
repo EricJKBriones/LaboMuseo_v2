@@ -35,7 +35,7 @@ function newsCard(array $n, string $imgBase, string $now): string {
         <div class="nc-meta">'.$meta.'</div>
         <h3 class="nc-title">'.htmlspecialchars($n['title']).'</h3>
         <p class="nc-text">'.htmlspecialchars(mb_substr($n['content'],0,180)).'...</p>
-        <div class="nc-foot"><span class="btn-ghost">'.$lbl.' &rarr;</span></div>
+        <div class="nc-foot"><span class="btn-ghost">'.$lbl.' <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></span></div>
       </div></a>';
 }
 
@@ -72,13 +72,15 @@ $baseUrl = 'index.php?page=news';
     <form method="GET" action="index.php" style="display:flex;gap:0;background:#fff;border-radius:99px;box-shadow:0 2px 16px rgba(27,42,59,.12);border:1.5px solid var(--cream);overflow:hidden;transition:border-color .2s" id="newsSearchForm">
       <input type="hidden" name="page" value="news">
       <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
-      <input type="text" name="q" id="newsSearchInput" placeholder="&#128269;  Search news &amp; events..." value="<?= htmlspecialchars($search) ?>"
+      <input type="text" name="q" id="newsSearchInput" placeholder="Search news &amp; events..." value="<?= htmlspecialchars($search) ?>"
         style="flex:1;padding:13px 20px;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.95rem;background:transparent;color:var(--text)"
         oninput="liveNewsSearch(this.value)">
       <?php if ($search): ?>
         <a href="<?= $baseUrl ?>&tab=<?= $tab ?>" style="padding:0 16px;display:flex;align-items:center;color:var(--text3);text-decoration:none;font-size:1.1rem" title="Clear search">&#10005;</a>
       <?php endif; ?>
-      <button type="submit" style="padding:13px 24px;background:var(--gold);color:#fff;border:none;cursor:pointer;font-weight:600;font-family:'DM Sans',sans-serif;font-size:.9rem;transition:background .2s" onmouseover="this.style.background='#b8811c'" onmouseout="this.style.background='var(--gold)'">Search</button>
+      <button type="submit" class="btn-srch artifact-search-icon-btn" style="border-radius:0 99px 99px 0" aria-label="Search news and events">
+        <img class="icon-swap" src="assets/Icon/search.png" data-png="assets/Icon/search.png" data-gif="assets/Icon/search.gif" alt="" aria-hidden="true">
+      </button>
     </form>
     <?php if ($search): ?>
       <p style="text-align:center;margin-top:10px;font-size:.85rem;color:var(--text3)">

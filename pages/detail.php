@@ -13,13 +13,6 @@ if (!$ex) {
 $back = isset($_GET['cat']) ? 'index.php?page=exhibits&cat='.(int)$_GET['cat'] : 'index.php?page=exhibits';
 ?>
 
-<div class="det-hero">
-  <div style="max-width:1080px;margin:0 auto">
-    <div class="sec-label">Artifact Detail</div>
-    <h1 style="color:#fff;font-family:'Playfair Display',serif;font-size:1.9rem;margin:0"><?= htmlspecialchars($ex['title']) ?></h1>
-  </div>
-</div>
-
 <div class="det-wrap">
   <a href="<?= $back ?>" class="det-back">&#8592; Back to Collection</a>
   <div class="det-grid">

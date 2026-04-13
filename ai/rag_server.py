@@ -3,6 +3,7 @@ import base64
 import re
 from pathlib import Path
 from typing import List, Optional
+import numpy as np
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +12,6 @@ from pydantic import BaseModel
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
 from langchain_ollama import ChatOllama
 import ollama
 from pypdf import PdfReader
@@ -79,7 +79,32 @@ def load_text_documents(text_path: Path) -> List[Document]:
     return docs
 
 
-def build_vectorstore(text_path: Path) -> FAISS:
+class SimpleEmbeddingRetriever:
+    def __init__(self, docs: List[Document], embeddings: HuggingFaceEmbeddings, k: int = 4) -> None:
+        self.docs = docs
+        self.embeddings = embeddings
+        self.k = k
+
+        vectors = self.embeddings.embed_documents([d.page_content for d in self.docs])
+        self.matrix = np.asarray(vectors, dtype=np.float32)
+        norms = np.linalg.norm(self.matrix, axis=1, keepdims=True)
+        self.matrix = self.matrix / np.clip(norms, 1e-12, None)
+
+    def invoke(self, query: str) -> List[Document]:
+        q_vec = np.asarray(self.embeddings.embed_query(query), dtype=np.float32)
+        q_norm = np.linalg.norm(q_vec)
+        if q_norm <= 1e-12:
+            return []
+
+        q_vec = q_vec / q_norm
+        scores = self.matrix @ q_vec
+
+        top_k = max(1, min(self.k, len(self.docs)))
+        top_idx = np.argsort(scores)[-top_k:][::-1]
+        return [self.docs[int(i)] for i in top_idx]
+
+
+def build_retriever(text_path: Path) -> SimpleEmbeddingRetriever:
     docs = load_text_documents(text_path)
     if not docs:
         raise ValueError(f"No text content found in source file: {text_path}")
@@ -90,9 +115,8 @@ def build_vectorstore(text_path: Path) -> FAISS:
         separators=["\n\n", "\n", ". ", " ", ""],
     )
     chunks = splitter.split_documents(docs)
-
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    return FAISS.from_documents(chunks, embeddings)
+    return SimpleEmbeddingRetriever(chunks, embeddings, k=4)
 
 
 def make_prompt(question: str, context: str, visual_context: str) -> str:
@@ -302,8 +326,7 @@ if not PDF_PATH.exists():
 TEXT_PATH = get_text_path(PDF_PATH)
 TEXT_PATH = ensure_text_source(PDF_PATH, TEXT_PATH)
 
-VECTORSTORE = build_vectorstore(TEXT_PATH)
-RETRIEVER = VECTORSTORE.as_retriever(search_kwargs={"k": 4})
+RETRIEVER = build_retriever(TEXT_PATH)
 
 OLLAMA_MODEL = resolve_model_name()
 OLLAMA_VISION_MODEL = resolve_vision_model_name()
@@ -382,4 +405,6 @@ def ask(req: AskRequest) -> AskResponse:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("rag_server:app", host="127.0.0.1", port=8008, reload=False)
+    host = os.getenv("API_HOST", "127.0.0.1")
+    port = int(os.getenv("API_PORT", "8008"))
+    uvicorn.run("rag_server:app", host=host, port=port, reload=False)

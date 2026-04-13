@@ -15,7 +15,7 @@
       <p>Founded to serve the people of Labo, the <strong>Museo de Labo</strong> began as an initiative to document and preserve the rich cultural history of our region for future generations.</p>
       <p>Our mission is to provide an accessible platform where students, historians, and enthusiasts can explore artifacts that define our shared human experience and local identity.</p>
       <p>We believe history should be interactive and inclusive. Through our digital and physical exhibits, even the most fragile artifacts can be studied and appreciated by all.</p>
-      <a href="index.php?page=exhibits" class="btn-gold" style="margin-top:8px">Explore the Collection</a>
+      <a href="index.php?page=exhibits" class="btn-gold" style="margin-top:8px">Explore the Collection <img class="icon-swap btn-arrow-icon" src="assets/Icon/right-arrow.png" data-png="assets/Icon/right-arrow.png" data-gif="assets/Icon/right-arrow.gif" alt="" aria-hidden="true"></a>
     </div>
     <div class="about-info-col">
       <div class="acard compact-card" style="margin-bottom:14px">
@@ -28,6 +28,23 @@
         <div class="vi"><div class="vi-icon">&#127963;</div><div><strong>Address</strong><span>Labo People's Park, Labo, Camarines Norte</span></div></div>
         <div class="vi"><div class="vi-icon">&#128231;</div><div class="vi-stack"><strong>Email</strong><span>josecarlosblagatuz@gmail.com</span><span>labotourism08@yahoo.com</span></div></div>
         <div class="vi"><div class="vi-icon">&#128222;</div><div class="vi-stack"><strong>Phone</strong><span>(054) 885-1074</span><span>+63 0928 661 2138</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="acard org-member-card">
+    <h3 class="org-heading"><span class="org-heading-logo"><img src="uploads/Labo Logo.jpg" alt="Labo Logo" loading="lazy"></span><span>Organization Member</span></h3>
+    <p class="org-intro">Museo de Labo operates under the Tourism organizational unit of the Local Government Unit of Labo (LGU Labo), working to preserve and promote our local history and cultural identity.</p>
+    <div class="org-member-layout">
+      <div class="org-member-visuals" aria-hidden="true">
+        <div class="org-photo-oval">
+          <img src="uploads/JoseRamonLagatuz.jpg" alt="Jose Ramon B. Lagatuz" loading="lazy">
+        </div>
+      </div>
+      <div class="org-member-text">
+        <h4>Municipal Tourism Officer</h4>
+        <p class="org-member-name">Jose Ramon B. Lagatuz</p>
+        <blockquote class="org-message">Welcome to Museo de Labo. We invite everyone to discover our shared stories, honor our heritage, and help us keep the spirit of Labo alive for the next generation.</blockquote>
       </div>
     </div>
   </div>
