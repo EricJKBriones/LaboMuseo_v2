@@ -31,9 +31,19 @@ if (!file_exists($pdfAbsolute)) {
 
   <div class="pdf-reader-frame-wrap" id="pdfReaderFrameWrap">
     <iframe
+      id="pdfReaderFrame"
       src="<?= htmlspecialchars($pdfUrl) ?>#page=1&view=FitH&zoom=page-width&pagemode=none&toolbar=0&navpanes=0&scrollbar=0"
       title="Ksay-say Layout full reader"
       class="pdf-reader-frame"></iframe>
+
+    <div class="pdf-mobile-fallback" id="pdfMobileFallback" hidden>
+      <div class="pdf-mobile-fallback-card">
+        <div class="pdf-mobile-fallback-icon">PDF</div>
+        <p class="pdf-mobile-fallback-title">Mobile browser cannot display this PDF inline.</p>
+        <p class="pdf-mobile-fallback-sub">Open it in your phone&apos;s PDF viewer for full reading mode.</p>
+        <a href="<?= htmlspecialchars($pdfUrl) ?>" target="_blank" rel="noopener" class="btn-gold pdf-mobile-open-btn">Open PDF</a>
+      </div>
+    </div>
 
     <button
       type="button"
@@ -250,6 +260,34 @@ function escapeHtml(value) {
 }
 
 document.addEventListener('fullscreenchange', syncReaderFullscreenButton);
+
+function setMobilePdfFallbackState(isMobile) {
+  var wrap = document.getElementById('pdfReaderFrameWrap');
+  var frame = document.getElementById('pdfReaderFrame');
+  var fallback = document.getElementById('pdfMobileFallback');
+  var fullscreenBtn = document.getElementById('readerFullscreenBtn');
+  if (!wrap || !frame || !fallback) return;
+
+  if (isMobile) {
+    wrap.classList.add('is-mobile-fallback');
+    frame.setAttribute('aria-hidden', 'true');
+    fallback.hidden = false;
+    if (fullscreenBtn) {
+      fullscreenBtn.disabled = true;
+      fullscreenBtn.textContent = 'Fullscreen N/A on Mobile';
+    }
+    return;
+  }
+
+  wrap.classList.remove('is-mobile-fallback');
+  frame.removeAttribute('aria-hidden');
+  fallback.hidden = true;
+  if (fullscreenBtn) {
+    fullscreenBtn.disabled = false;
+    syncReaderFullscreenButton();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   syncReaderFullscreenButton();
 
@@ -257,10 +295,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!frame) return;
 
   if (window.innerWidth <= 900) {
-    var src = frame.getAttribute('src') || '';
-    var base = src.split('#')[0];
-    frame.setAttribute('src', base + '#page=1&zoom=page-width&view=FitH&toolbar=0&navpanes=0&scrollbar=0&pagemode=none');
+    setMobilePdfFallbackState(true);
+  } else {
+    setMobilePdfFallbackState(false);
   }
+
+  window.addEventListener('resize', function() {
+    setMobilePdfFallbackState(window.innerWidth <= 900);
+  });
 });
 
 document.addEventListener('keydown', function(event) {
