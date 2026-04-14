@@ -238,7 +238,7 @@ require_once 'admin_header.php';
               <td>
                 <a href="visitors.php?edit=<?= (int)$g['id'] ?>" class="btn-edit" title="Edit visitor" aria-label="Edit visitor">&#9999; Edit</a>
                 <a href="visitors.php?delete=<?= $g['id'] ?>" class="btn-del"
-                   onclick="return confirm('Delete this visitor record?')">&#128465;</a>
+                   data-admin-confirm="Delete this visitor record?" data-admin-confirm-title="Confirm Delete" data-admin-confirm-yes="Delete" data-admin-confirm-no="Cancel">&#128465;</a>
               </td>
             </tr>
           <?php endforeach; endif; ?>

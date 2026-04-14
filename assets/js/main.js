@@ -2908,6 +2908,66 @@ function initAdminAccountChangeConfirm() {
   });
 }
 
+function initAdminActionToastConfirm() {
+  var actionLinks = document.querySelectorAll('a[data-admin-confirm]');
+  if (!actionLinks.length) return;
+
+  var activeAdminActionToast = null;
+
+  actionLinks.forEach(function(link) {
+    if (link.dataset.adminConfirmBound === '1') return;
+    link.dataset.adminConfirmBound = '1';
+
+    link.addEventListener('click', function(e) {
+      if (e.defaultPrevented) return;
+
+      e.preventDefault();
+      if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+      } else {
+        e.stopPropagation();
+      }
+
+      var href = link.getAttribute('data-admin-confirm-href') || link.getAttribute('href') || '';
+      if (!href) return;
+
+      var message = link.getAttribute('data-admin-confirm') || 'Continue with this action?';
+      var title = link.getAttribute('data-admin-confirm-title') || 'Confirm Action';
+      var yesLabel = link.getAttribute('data-admin-confirm-yes') || 'Yes';
+      var noLabel = link.getAttribute('data-admin-confirm-no') || 'Cancel';
+
+      if (activeAdminActionToast && typeof activeAdminActionToast.dismiss === 'function') {
+        activeAdminActionToast.dismiss();
+      }
+
+      activeAdminActionToast = showSileoToastBar({
+        title: title,
+        message: message,
+        variant: 'warning',
+        persistent: true,
+        position: 'top-right',
+        actions: [
+          {
+            label: noLabel,
+            dismiss: true,
+            onClick: function() {
+              activeAdminActionToast = null;
+            }
+          },
+          {
+            label: yesLabel,
+            dismiss: true,
+            onClick: function() {
+              activeAdminActionToast = null;
+              window.location.href = href;
+            }
+          }
+        ]
+      }, 'warning');
+    }, true);
+  });
+}
+
 /* ── INIT ───────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
   initMobileMenuAutoCollapse();
@@ -2937,6 +2997,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initArtifactFilterModal();
   initComboSkinSelects();
   initAdminAccountChangeConfirm();
+  initAdminActionToastConfirm();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {

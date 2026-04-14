@@ -97,7 +97,7 @@ switch($page) {
     case 'about':      $pageTitle = 'About — ' . SITE_NAME; break;
     case 'news':       $pageTitle = 'News & Events — ' . SITE_NAME; break;
     case 'news_detail': $pageTitle = 'News Detail — ' . SITE_NAME; break;
-    case 'categories': $pageTitle = 'Departments — ' . SITE_NAME; break;
+    case 'categories': $pageTitle = 'Types of Artifacts — ' . SITE_NAME; break;
     case 'exhibits':   $pageTitle = 'All Artifacts — ' . SITE_NAME; break;
     case 'detail':     $pageTitle = 'Artifact Detail — ' . SITE_NAME; break;
     case 'pdf_detail': $pageTitle = 'Artifact Document Detail — ' . SITE_NAME; break;

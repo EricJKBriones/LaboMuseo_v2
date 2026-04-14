@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['action']) && $_POST['ac
       $newsTitle = 'New Donated Artifact: ' . $title;
       $newsParts = ['A newly donated artifact has been added to the museum collection.'];
       if ($donor !== '') $newsParts[] = 'Donated by: ' . $donor . '.';
-      if ($catName !== '') $newsParts[] = 'Department: ' . $catName . '.';
+      if ($catName !== '') $newsParts[] = 'Type of Artifact: ' . $catName . '.';
       if ($year !== '') $newsParts[] = 'Year/Period: ' . $year . '.';
       if ($origin !== '') $newsParts[] = 'Origin: ' . $origin . '.';
       $newsParts[] = 'Description: ' . $desc;
@@ -153,7 +153,7 @@ require_once 'admin_header.php';
       <label for="artQ">Search</label>
       <input id="artQ" type="text" name="q" class="mi" placeholder="Search by artifact title..." value="<?= htmlspecialchars($search) ?>" autocomplete="off" oninput="adminDebounceSubmit(this.form, 700)">
 
-      <label for="artDept">Department</label>
+      <label for="artDept">Type of Artifact</label>
       <select id="artDept" name="dept" class="mi" onchange="this.form.submit()">
         <option value="0">All</option>
         <?php foreach ($categories as $c): ?>
@@ -169,7 +169,7 @@ require_once 'admin_header.php';
         <option value="title_desc" <?= $sort==='title_desc'?'selected':'' ?>>Title Z-A</option>
         <option value="year_desc" <?= $sort==='year_desc'?'selected':'' ?>>Year High-Low</option>
         <option value="year_asc" <?= $sort==='year_asc'?'selected':'' ?>>Year Low-High</option>
-        <option value="dept_asc" <?= $sort==='dept_asc'?'selected':'' ?>>Department A-Z</option>
+        <option value="dept_asc" <?= $sort==='dept_asc'?'selected':'' ?>>Type A-Z</option>
       </select>
 
       <a href="artifacts.php" class="btn-clf" style="text-decoration:none;display:inline-flex;align-items:center">Clear</a>
@@ -209,7 +209,7 @@ require_once 'admin_header.php';
         <div class="fg2">
           <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" required></div>
           <div>
-            <label class="al">Department</label>
+            <label class="al">Type of Artifact</label>
             <select name="category_id" class="ai">
               <option value="">-- Select --</option>
               <?php foreach ($categories as $c): ?>
@@ -244,7 +244,7 @@ require_once 'admin_header.php';
         <div class="fg2">
           <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" value="<?= htmlspecialchars($editRow['title']) ?>" required></div>
           <div>
-            <label class="al">Department</label>
+            <label class="al">Type of Artifact</label>
             <select name="category_id" class="ai">
               <option value="">-- Select --</option>
               <?php foreach ($categories as $c): ?>
@@ -279,7 +279,7 @@ require_once 'admin_header.php';
 
     <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
-        <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Department</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
+        <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Type of Artifact</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
         <tbody>
           <?php if (empty($exhibits)): ?>
             <tr><td colspan="7" style="text-align:center;padding:20px;color:#888">No artifacts found.</td></tr>
@@ -299,7 +299,7 @@ require_once 'admin_header.php';
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['origin'] ?? '—') ?></td>
               <td>
                 <a href="artifacts.php?edit=<?= $ex['id'] ?>" class="btn-edit btn-icon" title="Edit artifact" aria-label="Edit artifact">&#9999;</a>
-                <a href="artifacts.php?delete=<?= $ex['id'] ?>" class="btn-del" onclick="return confirm('Delete this artifact?')">&#128465;</a>
+                <a href="artifacts.php?delete=<?= $ex['id'] ?>" class="btn-del" data-admin-confirm="Delete this artifact?" data-admin-confirm-title="Confirm Delete" data-admin-confirm-yes="Delete" data-admin-confirm-no="Cancel">&#128465;</a>
               </td>
             </tr>
           <?php endforeach; endif; ?>
