@@ -3,12 +3,34 @@
 require_once '../includes/init.php';
 sessionStart();
 requireAdmin();
+require_once '../includes/phpqrcode/qrlib.php';
+$localIP = exec("hostname -I | cut -d' ' -f1"); 
+if (!$localIP) {
+    $localIP = $_SERVER['SERVER_ADDR']; // Fallback
+}
+
+// 2. Define the URL for mobile access
+$mobileUrl = "http://" . $localIP . "/index.php"; 
+
+$qrFolder = __DIR__ . '/../uploads/qr/'; 
+if (!file_exists($qrFolder)) {
+    mkdir($qrFolder, 0775, true);
+}
+$qrFile = 'index_qr.png';
+$qrPath = $qrFolder . $qrFile;
+
+// Generate
+QRcode::png($mobileUrl, $qrPath, QR_ECLEVEL_L, 4);
+
+// For the HTML src, keep it relative to the browser
+$webQrPath = '../uploads/qr/' . $qrFile;
 
 $displayMode = isset($_GET['display']) && $_GET['display'] === '1';
 $tourismLogoPath = __DIR__ . '/../uploads/tourism-logo.png';
 $tourismLogoUrl = '../uploads/tourism-logo.png';
 $mainLogoPath = __DIR__ . '/../uploads/logo.png';
 $mainLogoUrl = '../uploads/logo.png';
+
 
 $artifacts = dbQuery(
     "SELECT id, title, artifact_year, donated_by, image_path FROM exhibits WHERE title IS NOT NULL AND title <> '' ORDER BY id DESC LIMIT 40"
@@ -108,10 +130,15 @@ require_once 'admin_header.php';
           </div>
         </div>
 
-        <aside class="showcase-qr-float" id="showcaseQrFloat" aria-label="QR code placeholder">
-          <div class="showcase-qr-blank-card">
-            <div class="showcase-qr-blank-box" aria-hidden="true"></div>
-            <div class="showcase-qr-blank-label">QR Code</div>
+        <aside class="showcase-qr-float" id="showcaseQrFloat" aria-label="Scan to view on mobile">
+          <div class="showcase-qr-card">
+            <div class="showcase-qr-image">
+              <img src="<?= $webQrPath ?>?t=<?= time() ?>" alt="QR Code">
+            </div>
+            <div class="showcase-qr-label">
+                <strong>Scan to Sync</strong><br>
+                <small><?= $localIP ?></small>
+            </div>
           </div>
         </aside>
       </div>

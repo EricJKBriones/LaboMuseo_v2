@@ -103,7 +103,7 @@ foreach ($artifacts as $artifact) {
 
 $generatedAt = date('l, F j, Y');
 $exportLabel = $scope === 'selected' ? 'Selected Artifacts' : 'All Filtered Artifacts';
-$columns = ['#', 'Title', 'Type of Artifact', 'Year/Period', 'Donated By', 'Origin', 'Description', 'Image Filename'];
+$columns = ['#', 'Title', 'Department/Category', 'Year/Period', 'Donated By', 'Origin', 'Description', 'Image Filename'];
 
 if ($format === 'csv') {
     $filename = 'Museo_Artifacts_' . date('Y-m-d') . '.csv';
@@ -633,7 +633,7 @@ $isSingleExport = count($artifacts) === 1;
           <div class="content">
             <h2 class="title"><?= htmlspecialchars($artifact['title']) ?></h2>
             <div class="chips">
-              <span class="chip">Type of Artifact: <?= htmlspecialchars($artifact['category_name'] ?: 'N/A') ?></span>
+              <span class="chip">Department: <?= htmlspecialchars($artifact['category_name'] ?: 'N/A') ?></span>
               <span class="chip">Year: <?= htmlspecialchars($artifact['artifact_year'] ?: 'N/A') ?></span>
               <span class="chip">Donated By: <?= htmlspecialchars($artifact['donated_by'] ?: 'N/A') ?></span>
             </div>

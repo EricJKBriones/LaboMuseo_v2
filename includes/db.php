@@ -5,9 +5,9 @@
 
 // Mysqli-style connection variables
 $host = 'localhost';
-$user = 'root';
-$password = '';
-$database = 'museo_db';
+$user = 'admin';
+$password = 'labomuseo123';
+$database = 'museeum_db';
 
 // Try direct connection first
 try {

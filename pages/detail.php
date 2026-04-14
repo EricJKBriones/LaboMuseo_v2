@@ -36,7 +36,7 @@ $back = isset($_GET['cat']) ? 'index.php?page=exhibits&cat='.(int)$_GET['cat'] :
         <div class="det-mi"><div class="det-ml">Period / Year</div><div class="det-mv"><?= htmlspecialchars($ex['artifact_year'] ?? 'Unknown') ?></div></div>
         <div class="det-mi"><div class="det-ml">Origin</div><div class="det-mv"><?= htmlspecialchars($ex['origin'] ?? 'Unknown') ?></div></div>
         <div class="det-mi"><div class="det-ml">Donated By</div><div class="det-mv"><?= htmlspecialchars($ex['donated_by'] ?? 'Museum Archive') ?></div></div>
-        <div class="det-mi"><div class="det-ml">Type of Artifact</div><div class="det-mv"><?= htmlspecialchars($ex['cat_name'] ?? '—') ?></div></div>
+        <div class="det-mi"><div class="det-ml">Department</div><div class="det-mv"><?= htmlspecialchars($ex['cat_name'] ?? '—') ?></div></div>
       </div>
       <div class="det-dh">Description</div>
       <p class="det-desc"><?= nl2br(htmlspecialchars($ex['description'] ?? '')) ?></p>

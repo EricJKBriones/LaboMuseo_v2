@@ -56,7 +56,7 @@ $logoUrl  = $base . 'uploads/logo.png';
         <li><a href="<?= $base ?>index.php?page=about"      class="nav-lnk <?= $currentPage==='about'      ? 'active-page':'' ?>">About</a></li>
         <li><a href="<?= $base ?>index.php?page=news"       class="nav-lnk <?= $currentPage==='news'       ? 'active-page':'' ?>">News &amp; Events</a></li>
         <?php if (isAdmin() || isGuest()): ?>
-          <li><a href="<?= $base ?>index.php?page=categories" class="nav-lnk <?= $currentPage==='categories' ? 'active-page':'' ?>">Types of Artifacts</a></li>
+          <li><a href="<?= $base ?>index.php?page=categories" class="nav-lnk <?= $currentPage==='categories' ? 'active-page':'' ?>">Departments</a></li>
           <li><a href="<?= $base ?>index.php?page=exhibits"   class="nav-lnk <?= $currentPage==='exhibits'   ? 'active-page':'' ?>">All Artifacts</a></li>
         <?php endif; ?>
         <li><span class="nav-sep">|</span></li>

@@ -2,8 +2,8 @@
 // pages/categories.php
 if (!isLoggedIn()) {
     renderGuestbookLockView(
-      'Sign In to Browse Types of Artifacts',
-      'The digital catalog is available exclusively to registered visitors. Sign our Digital Guestbook to gain full access to all artifact types and artifacts.'
+      'Sign In to Browse Departments',
+      'The digital catalog is available exclusively to registered visitors. Sign our Digital Guestbook to gain full access to all departments and artifacts.'
     );
     return;
 }
@@ -18,7 +18,7 @@ $cats = dbQuery($sql, $params);
 
 <div class="page-hero">
   <div class="sec-label">Explore</div>
-  <h1 class="sec-title">Types of Artifacts</h1>
+  <h1 class="sec-title">Museum Departments</h1>
   <p class="page-hero-sub">Browse our curated collection organized by historical category and period.</p>
 </div>
 
@@ -27,16 +27,16 @@ $cats = dbQuery($sql, $params);
     <input type="hidden" name="page" value="categories">
     <div class="s-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" name="q" class="s-inp" placeholder="Search artifact types..." value="<?= htmlspecialchars($search) ?>" oninput="liveSearch('liveSearchDept','cat-card')">
+      <input type="text" name="q" class="s-inp" placeholder="Search departments..." value="<?= htmlspecialchars($search) ?>" oninput="liveSearch('liveSearchDept','cat-card')">
     </div>
-    <button type="submit" class="btn-srch artifact-search-icon-btn" aria-label="Search artifact types">
+    <button type="submit" class="btn-srch artifact-search-icon-btn" aria-label="Search departments">
       <img class="icon-swap" src="<?= $base ?>assets/Icon/search.png" data-png="<?= $base ?>assets/Icon/search.png" data-gif="<?= $base ?>assets/Icon/search.gif" alt="" aria-hidden="true">
     </button>
     <?php if ($search): ?><a href="index.php?page=categories" class="btn-clr">Clear</a><?php endif; ?>
   </form>
 
   <?php if (empty($cats)): ?>
-    <div class="empty-state"><div class="ei">&#127963;</div><h3>No artifact types found</h3><p>Try a different search term.</p></div>
+    <div class="empty-state"><div class="ei">&#127963;</div><h3>No departments found</h3><p>Try a different search term.</p></div>
   <?php else: ?>
   <div class="grid4" id="catGrid">
     <?php foreach ($cats as $c): ?>

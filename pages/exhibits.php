@@ -71,7 +71,7 @@ if ($showPdfArtifact && $search !== '') {
 <div class="page-hero">
   <div class="sec-label">Collection</div>
   <h1 class="sec-title"><?= $currentCat ? htmlspecialchars($currentCat['name']) : 'All Artifacts' ?></h1>
-  <p class="page-hero-sub"><?= $currentCat ? 'Browse artifacts in the '.htmlspecialchars($currentCat['name']).' type.' : 'Discover the complete museum collection documenting the rich legacy of Labo.' ?></p>
+  <p class="page-hero-sub"><?= $currentCat ? 'Browse artifacts in the '.htmlspecialchars($currentCat['name']).' department.' : 'Discover the complete museum collection documenting the rich legacy of Labo.' ?></p>
 </div>
 
 <div class="wrap">

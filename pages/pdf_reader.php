@@ -1,5 +1,6 @@
 <?php
 // pages/pdf_reader.php
+
 if (!isLoggedIn()) {
     header('Location: index.php?page=login');
     exit;
@@ -16,6 +17,60 @@ if (!file_exists($pdfAbsolute)) {
 }
 ?>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+<style>
+    /* Panel and UI Styles */
+    .ai-search-popup {
+        width: 320px;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+    }
+    
+    .ai-search-popup.minimized {
+        transform: translateY(calc(100% - 55px));
+        opacity: 0.95;
+    }
+
+    .btn-minimize-panel {
+        background: rgba(0,0,0,0.05);
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0 8px;
+        border-radius: 4px;
+        color: #666;
+    }
+
+    .ai-search-result {
+        max-height: 200px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        margin-top: 10px;
+    }
+
+    .search-jump-item {
+        background: #d4af37;
+        color: #000;
+        margin-bottom: 8px;
+        padding: 10px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+    .search-jump-item:hover { transform: translateX(-5px); filter: brightness(1.1); }
+    
+    .speed-ctrl {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+    }
+</style>
+
 <div class="pdf-reader-wrap">
   <div class="pdf-reader-toolbar">
     <div class="pdf-reader-title-wrap">
@@ -23,7 +78,6 @@ if (!file_exists($pdfAbsolute)) {
       <h1 class="pdf-reader-title">Ksay-say Layout (Final 6-8-23)</h1>
     </div>
     <div class="pdf-reader-actions">
-      <a href="<?= htmlspecialchars($pdfUrl) ?>" target="_blank" rel="noopener" class="btn-outline">Open in New Tab</a>
       <button type="button" class="btn-reader-fullscreen" id="readerFullscreenBtn" onclick="toggleReaderFullscreen()">Enter Fullscreen</button>
       <button type="button" class="btn-exit-reader" onclick="openReaderExitPopup()">Exit Reader</button>
     </div>
@@ -31,18 +85,15 @@ if (!file_exists($pdfAbsolute)) {
 
   <div class="pdf-reader-frame-wrap" id="pdfReaderFrameWrap">
     <iframe
-      id="pdfReaderFrame"
-      src="<?= htmlspecialchars($pdfUrl) ?>#page=1&view=FitH&zoom=page-width&pagemode=none&toolbar=0&navpanes=0&scrollbar=0"
+      id="pdfIframe"
+      src="<?= htmlspecialchars($pdfUrl) ?>#view=FitH"
       title="Ksay-say Layout full reader"
       class="pdf-reader-frame"></iframe>
 
-    <div class="pdf-mobile-fallback" id="pdfMobileFallback" hidden>
-      <div class="pdf-mobile-fallback-card">
-        <div class="pdf-mobile-fallback-icon">PDF</div>
-        <p class="pdf-mobile-fallback-title">Mobile browser cannot display this PDF inline.</p>
-        <p class="pdf-mobile-fallback-sub">Open it in your phone&apos;s PDF viewer for full reading mode.</p>
-        <a href="<?= htmlspecialchars($pdfUrl) ?>" target="_blank" rel="noopener" class="btn-gold pdf-mobile-open-btn">Open PDF</a>
-      </div>
+    <div id="pdfMobileFallback" style="display:none;flex-direction:column;gap:12px;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;background:#faf7ef;">
+      <strong style="font-size:18px;color:#2b2b2b;">Mobile PDF fallback mode</strong>
+      <p style="margin:0;color:#5b5b5b;max-width:460px;">Your browser may block embedded PDF viewing. Open the document directly for stable reading on mobile.</p>
+      <a href="<?= htmlspecialchars($pdfUrl) ?>" target="_blank" rel="noopener" class="btn-gold" style="background:#d4af37;color:#000;padding:10px 16px;text-decoration:none;border-radius:8px;font-weight:700;">Open PDF</a>
     </div>
 
     <button
@@ -50,275 +101,213 @@ if (!file_exists($pdfAbsolute)) {
       class="ai-float-btn"
       id="aiFloatBtn"
       onclick="toggleAiSearchPopup()"
-      title="AI Search"
-      aria-label="Open AI search popup">
-      Ask AI
+      title="Search & Scroll">
+      Search & Scroll
     </button>
 
     <div class="ai-search-popup" id="aiSearchPopup" aria-hidden="true">
       <div class="ai-search-head">
         <div class="ai-head-meta">
-          <span class="ai-head-kicker">Local Assistant</span>
-          <strong>Ask this PDF</strong>
+          <span class="ai-head-kicker">Navigation</span>
+          <strong>Find & Scroll</strong>
         </div>
-        <button type="button" class="ai-close-btn" onclick="closeAiSearchPopup()" aria-label="Close AI search">&times;</button>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button type="button" class="btn-minimize-panel" onclick="toggleMinimizePanel()" id="minBtn">−</button>
+            <button type="button" class="ai-close-btn" onclick="closeAiSearchPopup()">&times;</button>
+        </div>
       </div>
-      <p class="ai-search-sub">Powered by local Ollama + LangChain. Nothing is sent to cloud services.</p>
-      <div class="ai-suggest-row">
-        <button type="button" class="ai-suggest-btn" onclick="setAiPrompt('Give me a 5 bullet summary of this PDF.')">Quick summary</button>
-        <button type="button" class="ai-suggest-btn" onclick="setAiPrompt('What are the key names, places, and dates in this document?')">Key details</button>
-        <button type="button" class="ai-suggest-btn" onclick="setAiPrompt('Explain this document in simple Filipino.')">Simple explain</button>
-      </div>
-      <form onsubmit="runAiSearch(event)" class="ai-search-form">
-        <input type="text" id="aiSearchInput" class="ai-search-input" placeholder="Ask about this document..." required>
-        <button type="submit" class="ai-search-go" id="aiSearchGoBtn">Ask</button>
-      </form>
-      <div class="ai-search-result" id="aiSearchResult" aria-live="polite">
-        <div class="ai-empty">Try a question above to start reading insights from this PDF.</div>
+      
+      <div id="panelContent">
+          <form onsubmit="runPdfSearch(event)" class="ai-search-form">
+            <input type="text" id="aiSearchInput" class="ai-search-input" placeholder="Search keyword..." required>
+            <button type="submit" class="ai-search-go" id="aiSearchGoBtn">Find</button>
+          </form>
+
+          <div class="ai-search-result" id="aiSearchResult" aria-live="polite">
+            <div class="ai-empty">Results will appear here.</div>
+          </div>
+
+          <div class="speed-ctrl">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <label style="font-size:11px; font-weight:bold; color:#666;">AUTOSCROLL SPEED</label>
+                <span id="speedVal" style="font-size:11px; color:#d4af37; font-weight:bold;">2x</span>
+            </div>
+            <input type="range" id="scrollSpeedRange" min="0" max="15" value="2" style="width:100%; accent-color:#d4af37;" oninput="updateScrollSpeed()">
+          </div>
+          
       </div>
     </div>
   </div>
 </div>
-
 <div class="reader-exit-popup" id="readerExitPopup" aria-hidden="true" onclick="closeReaderExitPopup(event)">
-  <div class="reader-exit-dialog" role="dialog" aria-modal="true" aria-labelledby="readerExitTitle" onclick="event.stopPropagation()">
-    <h2 id="readerExitTitle">Exit Reading Mode?</h2>
-    <p>You will return to the document detail page.</p>
-    <div class="reader-exit-actions">
-      <button type="button" class="btn-outline" onclick="closeReaderExitPopup(event)">Stay</button>
-      <a href="index.php?page=pdf_detail" class="btn-gold">Yes, Exit</a>
+  <div class="reader-exit-dialog" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
+    <h2 style="margin-top:0; color:#333;">Exit Reading Mode?</h2>
+    <p style="color:#666;">You will return to the document detail page.</p>
+    <div class="reader-exit-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+      <button type="button" class="btn-outline" onclick="closeReaderExitPopup(event)" style="padding:10px 20px; cursor:pointer;">Stay</button>
+      <a href="index.php?page=pdf_detail" class="btn-gold" style="background:#d4af37; color:#000; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold;">Yes, Exit</a>
     </div>
   </div>
 </div>
-
 <script>
-function openReaderExitPopup() {
-  var popup = document.getElementById('readerExitPopup');
-  if (!popup) return;
-  popup.classList.add('is-open');
-  popup.setAttribute('aria-hidden', 'false');
-}
+const PDF_URL = "<?= $pdfUrl ?>";
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-function closeReaderExitPopup(event) {
-  if (event) event.preventDefault();
-  var popup = document.getElementById('readerExitPopup');
-  if (!popup) return;
-  popup.classList.remove('is-open');
-  popup.setAttribute('aria-hidden', 'true');
-}
+let pdfDoc = null;
+let isScrolling = false;
+let scrollInterval = null;
+let scrollSpeed = 2;
 
-function toggleReaderFullscreen() {
-  var wrap = document.getElementById('pdfReaderFrameWrap');
-  if (!wrap) return;
+// Load PDF background for scanning
+pdfjsLib.getDocument(PDF_URL).promise.then(doc => { pdfDoc = doc; });
 
-  var inFullscreen = document.fullscreenElement === wrap;
-  if (inFullscreen) {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
+async function runPdfSearch(event) {
+    if (event) event.preventDefault();
+    const query = document.getElementById('aiSearchInput').value.trim();
+    const resultDiv = document.getElementById('aiSearchResult');
+    
+    if (!query || !pdfDoc) return;
+
+    resultDiv.innerHTML = '<div style="padding:10px; text-align:center;">Scanning...</div>';
+    let matches = [];
+
+    for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const textContent = await page.getTextContent();
+        const text = textContent.items.map(item => item.str).join(' ').toLowerCase();
+        if (text.includes(query.toLowerCase())) matches.push(i);
     }
+
+    if (matches.length > 0) {
+        resultDiv.innerHTML = '';
+        matches.forEach(pageNum => {
+            const div = document.createElement('div');
+            div.className = 'search-jump-item';
+            div.innerHTML = `<span>Page ${pageNum}</span> <small>Jump & Highlight</small>`;
+            div.onclick = () => jumpToPage(pageNum, query);
+            resultDiv.appendChild(div);
+        });
+    } else {
+        resultDiv.innerHTML = '<div class="ai-empty">No matches found.</div>';
+    }
+}
+
+
+function jumpToPage(pageNum, query) {
+    const iframe = document.getElementById('pdfIframe');
+  if (!iframe || iframe.style.display === 'none') {
+    window.open(`${PDF_URL}#page=${pageNum}`, '_blank', 'noopener');
     return;
   }
+    
+    // 1. We add a 't' parameter (timestamp) to the URL.
+    // This forces the browser to treat it as a new request so it re-scans for highlights.
+    const baseUrl = PDF_URL.split('#')[0]; // Get URL without existing hashes
+    const targetUrl = `${baseUrl}?t=${Date.now()}#page=${pageNum}&search="${encodeURIComponent(query)}"`;
 
-  if (wrap.requestFullscreen) {
-    wrap.requestFullscreen();
-  }
+    // 2. Clear the iframe briefly to reset the browser's internal Find state
+    iframe.src = 'about:blank'; 
+    
+    setTimeout(() => {
+        iframe.src = targetUrl;
+    }, 60); // 60ms is the "sweet spot" to trigger a reload without a long flicker
 }
 
-function syncReaderFullscreenButton() {
-  var btn = document.getElementById('readerFullscreenBtn');
-  var wrap = document.getElementById('pdfReaderFrameWrap');
-  if (!btn || !wrap) return;
+/** UI & SCROLL LOGIC **/
+function toggleMinimizePanel() {
+    const popup = document.getElementById('aiSearchPopup');
+    const minBtn = document.getElementById('minBtn');
+    const isMinimized = popup.classList.toggle('minimized');
+    minBtn.textContent = isMinimized ? '+' : '−';
+}
 
-  var inFullscreen = document.fullscreenElement === wrap;
-  btn.textContent = inFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen';
+function updateScrollSpeed() {
+    scrollSpeed = parseInt(document.getElementById('scrollSpeedRange').value);
+    document.getElementById('speedVal').textContent = scrollSpeed + 'x';
+    if (scrollSpeed > 0 && !isScrolling) startScrolling();
+    if (scrollSpeed === 0) stopScrolling();
+}
+
+function startScrolling() {
+    if (isScrolling) clearInterval(scrollInterval);
+    isScrolling = true;
+    const iframe = document.getElementById('pdfIframe');
+  if (!iframe) return;
+    scrollInterval = setInterval(() => {
+        if(iframe.contentWindow) iframe.contentWindow.scrollBy(0, scrollSpeed);
+    }, 30);
+}
+
+function stopScrolling() {
+    clearInterval(scrollInterval);
+    isScrolling = false;
 }
 
 function toggleAiSearchPopup() {
-  var popup = document.getElementById('aiSearchPopup');
-  var btn = document.getElementById('aiFloatBtn');
-  if (!popup) return;
-
-  var isOpen = popup.classList.contains('is-open');
-  if (isOpen) {
-    closeAiSearchPopup();
-    return;
-  }
-
-  popup.classList.add('is-open');
-  popup.setAttribute('aria-hidden', 'false');
-  if (btn) btn.classList.add('is-active');
-
-  var input = document.getElementById('aiSearchInput');
-  if (input) input.focus();
+    var popup = document.getElementById('aiSearchPopup');
+    var btn = document.getElementById('aiFloatBtn');
+    if (popup.classList.contains('is-open')) {
+        closeAiSearchPopup();
+    } else {
+        popup.classList.add('is-open');
+        popup.classList.remove('minimized');
+        document.getElementById('minBtn').textContent = '−';
+        btn.classList.add('is-active');
+        startScrolling();
+    }
 }
 
 function closeAiSearchPopup() {
-  var popup = document.getElementById('aiSearchPopup');
-  var btn = document.getElementById('aiFloatBtn');
-  if (!popup) return;
-
-  popup.classList.remove('is-open');
-  popup.setAttribute('aria-hidden', 'true');
-  if (btn) btn.classList.remove('is-active');
+    var popup = document.getElementById('aiSearchPopup');
+    var btn = document.getElementById('aiFloatBtn');
+    popup.classList.remove('is-open');
+    btn.classList.remove('is-active');
+    stopScrolling();
 }
 
-function setAiPrompt(text) {
-  var input = document.getElementById('aiSearchInput');
-  if (!input) return;
-  input.value = text;
-  input.focus();
+function toggleReaderFullscreen() {
+    var wrap = document.getElementById('pdfReaderFrameWrap');
+    if (document.fullscreenElement === wrap) document.exitFullscreen();
+    else wrap.requestFullscreen();
 }
 
-function runAiSearch(event) {
-  if (event) event.preventDefault();
-  var input = document.getElementById('aiSearchInput');
-  var result = document.getElementById('aiSearchResult');
-  var btn = document.getElementById('aiSearchGoBtn');
-  if (!input) return;
-
-  var query = input.value.trim();
-  if (!query) return;
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Thinking...';
-  }
-  if (result) {
-    result.innerHTML = '<div class="ai-status"><span class="ai-status-dot"></span>Connecting to local AI service...</div>';
-  }
-
-  postAiAsk(query)
-    .then(function(response) {
-      if (!response.ok) {
-        return response.json().then(function(data) {
-          throw new Error((data && data.detail) ? data.detail : 'AI request failed.');
-        }).catch(function() {
-          throw new Error('AI request failed.');
-        });
-      }
-      return response.json();
-    })
-    .then(function(data) {
-      if (!result) return;
-      var answer = (data && data.answer) ? data.answer : 'No answer returned.';
-      var sources = Array.isArray(data && data.sources) ? data.sources : [];
-
-      var srcHtml = '';
-      if (sources.length) {
-        srcHtml = '<div class="ai-sources"><strong>Source snippets:</strong><ul>'
-          + sources.map(function(s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('')
-          + '</ul></div>';
-      }
-
-      result.innerHTML = '<div class="ai-answer">' + escapeHtml(answer) + '</div>' + srcHtml;
-    })
-    .catch(function(error) {
-      if (!result) return;
-      var message = (error && error.message) ? error.message : 'Unknown error';
-      result.innerHTML = '<div class="ai-error">Local AI is not ready.<br>'
-        + '1) Start API: <code>python ai/rag_server.py</code><br>'
-        + '2) Install/start Ollama and run: <code>ollama serve</code><br>'
-        + '3) Pull model: <code>ollama pull llama3</code> (or <code>phi3</code>)<br>'
-        + 'Error: ' + escapeHtml(message) + '</div>';
-    })
-    .finally(function() {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Ask';
-      }
-    });
+function isLikelyMobilePdfEmbedUnsupported() {
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroidMobile = /Android/i.test(ua) && /Mobile/i.test(ua);
+  return isIOS || isAndroidMobile;
 }
 
-function postAiAsk(question) {
-  var endpoints = ['index.php?page=ai_proxy'];
-
-  function tryIndex(i) {
-    if (i >= endpoints.length) {
-      return Promise.reject(new Error('Failed to fetch'));
-    }
-
-    return fetch(endpoints[i], {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: question })
-    }).catch(function() {
-      return tryIndex(i + 1);
-    });
-  }
-
-  return tryIndex(0);
-}
-
-function escapeHtml(value) {
-  if (value == null) return '';
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-document.addEventListener('fullscreenchange', syncReaderFullscreenButton);
-
-function setMobilePdfFallbackState(isMobile) {
-  var wrap = document.getElementById('pdfReaderFrameWrap');
-  var frame = document.getElementById('pdfReaderFrame');
+function applyMobilePdfFallback() {
+  var iframe = document.getElementById('pdfIframe');
   var fallback = document.getElementById('pdfMobileFallback');
-  var fullscreenBtn = document.getElementById('readerFullscreenBtn');
-  if (!wrap || !frame || !fallback) return;
+  var aiBtn = document.getElementById('aiFloatBtn');
 
-  if (isMobile) {
-    wrap.classList.add('is-mobile-fallback');
-    frame.setAttribute('aria-hidden', 'true');
-    fallback.hidden = false;
-    if (fullscreenBtn) {
-      fullscreenBtn.disabled = true;
-      fullscreenBtn.textContent = 'Fullscreen N/A on Mobile';
-    }
-    return;
-  }
+  if (!iframe || !fallback) return;
+  if (!isLikelyMobilePdfEmbedUnsupported()) return;
 
-  wrap.classList.remove('is-mobile-fallback');
-  frame.removeAttribute('aria-hidden');
-  fallback.hidden = true;
-  if (fullscreenBtn) {
-    fullscreenBtn.disabled = false;
-    syncReaderFullscreenButton();
-  }
+  iframe.style.display = 'none';
+  fallback.style.display = 'flex';
+  if (aiBtn) aiBtn.style.display = 'none';
+  stopScrolling();
 }
+
+function openReaderExitPopup() {
+    document.getElementById('readerExitPopup').classList.add('is-open');
+}
+
+function closeReaderExitPopup(event) {
+    if (event) event.preventDefault();
+    document.getElementById('readerExitPopup').classList.remove('is-open');
+}
+
+document.addEventListener('fullscreenchange', function() {
+    var btn = document.getElementById('readerFullscreenBtn');
+    var wrap = document.getElementById('pdfReaderFrameWrap');
+    btn.textContent = (document.fullscreenElement === wrap) ? 'Exit Fullscreen' : 'Enter Fullscreen';
+});
 
 document.addEventListener('DOMContentLoaded', function() {
-  syncReaderFullscreenButton();
-
-  var frame = document.querySelector('.pdf-reader-frame');
-  if (!frame) return;
-
-  if (window.innerWidth <= 900) {
-    setMobilePdfFallbackState(true);
-  } else {
-    setMobilePdfFallbackState(false);
-  }
-
-  window.addEventListener('resize', function() {
-    setMobilePdfFallbackState(window.innerWidth <= 900);
-  });
-});
-
-document.addEventListener('keydown', function(event) {
-  if (event.key === 'Escape') {
-    closeReaderExitPopup();
-    closeAiSearchPopup();
-  }
-});
-
-document.addEventListener('click', function(event) {
-  var popup = document.getElementById('aiSearchPopup');
-  var btn = document.getElementById('aiFloatBtn');
-  if (!popup || !btn) return;
-  if (!popup.classList.contains('is-open')) return;
-
-  if (popup.contains(event.target) || btn.contains(event.target)) return;
-  closeAiSearchPopup();
+  applyMobilePdfFallback();
 });
 </script>

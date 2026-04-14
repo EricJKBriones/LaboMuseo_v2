@@ -1932,3 +1932,35 @@ body.showcase-display-mode .showcase-datetime {
     transform:none;
   }
 }
+.showcase-qr-float {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  backdrop-filter: blur(5px);
+  transition: opacity 0.5s ease;
+}
+
+/* Hide QR code when controls fade out in fullscreen */
+.showcase-stage:not(.controls-visible) .showcase-qr-float {
+  opacity: 0.1; /* Keeps it slightly visible but out of the way */
+}
+
+.showcase-qr-image img {
+  width: 120px;
+  height: 120px;
+  display: block;
+  border-radius: 4px;
+}
+
+.showcase-qr-label {
+  text-align: center;
+  font-size: 0.75rem;
+  margin-top: 8px;
+  color: #333;
+  font-family: sans-serif;
+}

@@ -265,14 +265,14 @@ require_once 'admin_header.php';
                 <?php if ($view === 'active'): ?>
                   <a href="news.php?edit=<?= $n['id'] ?>&view=active" class="btn-edit">&#9999; Edit</a>
                   <a href="news.php?archive=<?= $n['id'] ?>" class="btn-del btn-archive" data-icon-name="folder" style="background:#e67e22"
-                    data-admin-confirm="Move this post to Archive?" data-admin-confirm-title="Confirm Archive" data-admin-confirm-yes="Archive" data-admin-confirm-no="Cancel" title="Move to Archive">&#128193; Archive</a>
+                     onclick="return confirm('Move this post to Archive?')" title="Move to Archive">&#128193; Archive</a>
                   <a href="news.php?delete=<?= $n['id'] ?>&view=active" class="btn-del"
-                    data-admin-confirm="Permanently delete this post?" data-admin-confirm-title="Confirm Delete" data-admin-confirm-yes="Delete" data-admin-confirm-no="Cancel" title="Delete permanently">&#128465;</a>
+                     onclick="return confirm('Permanently delete this post?')" title="Delete permanently">&#128465;</a>
                 <?php else: ?>
                   <a href="news.php?unarchive=<?= $n['id'] ?>" class="btn-edit" style="background:#27ae60"
-                    data-admin-confirm="Restore this post to Active?" data-admin-confirm-title="Confirm Restore" data-admin-confirm-yes="Restore" data-admin-confirm-no="Cancel" title="Restore">&#9654; Restore</a>
+                     onclick="return confirm('Restore this post to Active?')" title="Restore">&#9654; Restore</a>
                   <a href="news.php?delete=<?= $n['id'] ?>&view=archive" class="btn-del"
-                    data-admin-confirm="Permanently delete this post?" data-admin-confirm-title="Confirm Delete" data-admin-confirm-yes="Delete" data-admin-confirm-no="Cancel" title="Delete permanently">&#128465; Delete</a>
+                     onclick="return confirm('Permanently delete this post?')" title="Delete permanently">&#128465; Delete</a>
                 <?php endif; ?>
               </td>
             </tr>

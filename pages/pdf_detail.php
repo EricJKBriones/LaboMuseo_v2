@@ -54,7 +54,7 @@ if (!file_exists($pdfAbsolute)) {
         <div class="det-mi"><div class="det-ml">Type</div><div class="det-mv">PDF Document</div></div>
         <div class="det-mi"><div class="det-ml">Period / Year</div><div class="det-mv">2023</div></div>
         <div class="det-mi"><div class="det-ml">Origin</div><div class="det-mv">Labo</div></div>
-        <div class="det-mi"><div class="det-ml">Type of Artifact</div><div class="det-mv">Document Archive</div></div>
+        <div class="det-mi"><div class="det-ml">Department</div><div class="det-mv">Document Archive</div></div>
       </div>
       <div class="det-dh">Description</div>
       <p class="det-desc">This artifact is preserved as a digital PDF. The panel on the left shows the first page preview. Use the button below to open full reading mode with a larger viewer optimized for reading.</p>

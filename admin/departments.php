@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='insert') {
         header('Location: departments.php?msg=added');
         exit;
     }
-    $msg = 'Type of artifact name is required.';
+    $msg = 'Department name is required.';
 }
 
 // UPDATE
@@ -86,7 +86,7 @@ $resultCount = count($cats);
 $isFiltered = ($search !== '' || $hasExhibs !== 'all');
 $editRow = $editId ? dbOne("SELECT * FROM categories WHERE id=?", [$editId]) : null;
 
-$pageTitle = 'Manage Types of Artifacts — ' . SITE_NAME;
+$pageTitle = 'Manage Departments — ' . SITE_NAME;
 require_once 'admin_header.php';
 ?>
 
@@ -95,11 +95,11 @@ require_once 'admin_header.php';
   <main class="adm-main">
 
     <?php if (isset($_GET['msg'])): ?>
-      <div class="alert-ok">&#10003; Type of artifact <?= htmlspecialchars($_GET['msg']) ?> successfully.</div>
+      <div class="alert-ok">&#10003; Department <?= htmlspecialchars($_GET['msg']) ?> successfully.</div>
     <?php endif; ?>
     <?php if (isset($_GET['warn'])): ?>
       <div class="alert-err" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <span>&#9888; This type of artifact has <?= (int)$_GET['cnt'] ?> artifact(s). Deleting it will unlink those artifacts. Continue?</span>
+        <span>&#9888; This department has <?= (int)$_GET['cnt'] ?> artifact(s). Deleting it will unlink those artifacts. Continue?</span>
         <div>
           <a href="departments.php?delete=<?= (int)$_GET['warn'] ?>&force=1" class="btn-del">Yes, Delete</a>
           <a href="departments.php" class="btn-cancel-f" style="margin-left:6px;text-decoration:none;display:inline-block">Cancel</a>
@@ -109,17 +109,17 @@ require_once 'admin_header.php';
     <?php if ($msg): ?><div class="alert-err">&#9888; <?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <h3 class="adm-sec-title" style="margin:0">&#128193; Manage Types of Artifacts</h3>
-      <button class="toggle-btn bg-blue2" onclick="togglePanel('addDeptForm')">&#10133; Add Type of Artifact</button>
+      <h3 class="adm-sec-title" style="margin:0">&#128193; Manage Departments</h3>
+      <button class="toggle-btn bg-blue2" onclick="togglePanel('addDeptForm')">&#10133; Add Department</button>
     </div>
 
     <form method="GET" action="departments.php" class="mbar">
       <label for="depQ">Search</label>
-      <input id="depQ" type="text" name="q" class="mi" placeholder="Search by type of artifact name..." value="<?= htmlspecialchars($search) ?>" autocomplete="off" oninput="adminDebounceSubmit(this.form, 700)">
+      <input id="depQ" type="text" name="q" class="mi" placeholder="Search by department name..." value="<?= htmlspecialchars($search) ?>" autocomplete="off" oninput="adminDebounceSubmit(this.form, 700)">
 
       <label for="depHas">Filter</label>
       <select id="depHas" name="has_artifacts" class="mi" onchange="this.form.submit()">
-        <option value="all" <?= $hasExhibs==='all'?'selected':'' ?>>All Types of Artifacts</option>
+        <option value="all" <?= $hasExhibs==='all'?'selected':'' ?>>All Departments</option>
         <option value="yes" <?= $hasExhibs==='yes'?'selected':'' ?>>With Artifacts</option>
         <option value="no" <?= $hasExhibs==='no'?'selected':'' ?>>Without Artifacts</option>
       </select>
@@ -138,12 +138,12 @@ require_once 'admin_header.php';
     </form>
 
     <div class="result-meta">
-      Showing <strong><?= $resultCount ?></strong> type<?= $resultCount!==1?'s':'' ?> of artifact<?= $resultCount!==1?'s':'' ?><?= $isFiltered ? ' (filtered)' : '' ?>
+      Showing <strong><?= $resultCount ?></strong> department<?= $resultCount!==1?'s':'' ?><?= $isFiltered ? ' (filtered)' : '' ?>
     </div>
 
     <!-- ADD FORM -->
     <div class="adm-form" id="addDeptForm">
-      <h3>New Type of Artifact</h3>
+      <h3>New Department</h3>
       <form method="POST" enctype="multipart/form-data" action="departments.php">
         <input type="hidden" name="action" value="insert">
         <div class="fg2">
@@ -159,7 +159,7 @@ require_once 'admin_header.php';
     <!-- EDIT FORM -->
     <?php if ($editRow): ?>
     <div class="adm-form is-open" id="editDeptForm">
-      <h3>Edit Type of Artifact</h3>
+      <h3>Edit Department</h3>
       <form method="POST" enctype="multipart/form-data" action="departments.php">
         <input type="hidden" name="action" value="update">
         <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
@@ -184,7 +184,7 @@ require_once 'admin_header.php';
         <thead><tr><th>Image</th><th>Name</th><th>Description</th><th>Artifacts</th><th>Actions</th></tr></thead>
         <tbody>
           <?php if (empty($cats)): ?>
-            <tr><td colspan="5" style="text-align:center;padding:20px;color:#888">No types of artifacts found.</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:20px;color:#888">No departments found.</td></tr>
           <?php else: foreach ($cats as $c): ?>
             <tr>
               <td>
@@ -199,14 +199,7 @@ require_once 'admin_header.php';
               <td><span class="vi2"><?= $c['artifact_count'] ?> artifact<?= $c['artifact_count']!=1?'s':'' ?></span></td>
               <td>
                 <a href="departments.php?edit=<?= $c['id'] ?>" class="btn-edit">&#9999; Edit</a>
-                <?php
-                  $typeHasArtifacts = (int)$c['artifact_count'] > 0;
-                  $typeDeleteHref = 'departments.php?delete=' . (int)$c['id'] . ($typeHasArtifacts ? '&force=1' : '');
-                  $typeDeleteMsg = $typeHasArtifacts
-                    ? ('Delete this type of artifact and unlink ' . (int)$c['artifact_count'] . ' artifact(s)?')
-                    : 'Delete this type of artifact?';
-                ?>
-                <a href="departments.php?delete=<?= $c['id'] ?>" class="btn-del" data-admin-confirm="<?= htmlspecialchars($typeDeleteMsg, ENT_QUOTES) ?>" data-admin-confirm-href="<?= htmlspecialchars($typeDeleteHref, ENT_QUOTES) ?>" data-admin-confirm-title="Confirm Delete" data-admin-confirm-yes="Delete" data-admin-confirm-no="Cancel">&#128465;</a>
+                <a href="departments.php?delete=<?= $c['id'] ?>" class="btn-del" onclick="return confirm('Delete this department?')">&#128465;</a>
               </td>
             </tr>
           <?php endforeach; endif; ?>
