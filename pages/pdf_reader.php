@@ -76,11 +76,6 @@ if (!file_exists($pdfAbsolute)) {
     }
     .search-jump-item:hover { transform: translateX(-5px); filter: brightness(1.1); }
     
-    .speed-ctrl {
-        margin-top: 15px;
-        padding-top: 10px;
-        border-top: 1px solid #eee;
-    }
 </style>
 
 <div class="pdf-reader-wrap">
@@ -140,14 +135,6 @@ if (!file_exists($pdfAbsolute)) {
             <div class="ai-empty">Results will appear here.</div>
           </div>
 
-          <div class="speed-ctrl">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <label style="font-size:11px; font-weight:bold; color:#666;">AUTOSCROLL SPEED</label>
-                <span id="speedVal" style="font-size:11px; color:#d4af37; font-weight:bold;">2x</span>
-            </div>
-            <input type="range" id="scrollSpeedRange" min="0" max="15" value="2" style="width:100%; accent-color:#d4af37;" oninput="updateScrollSpeed()">
-          </div>
-          
       </div>
     </div>
   </div>
@@ -167,9 +154,6 @@ const PDF_URL = "<?= $pdfUrl ?>";
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 let pdfDoc = null;
-let isScrolling = false;
-let scrollInterval = null;
-let scrollSpeed = 2;
 
 // Load PDF background for scanning
 pdfjsLib.getDocument(PDF_URL).promise.then(doc => { pdfDoc = doc; });
@@ -196,7 +180,7 @@ async function runPdfSearch(event) {
         matches.forEach(pageNum => {
             const div = document.createElement('div');
             div.className = 'search-jump-item';
-            div.innerHTML = `<span>Page ${pageNum}</span> <small>Jump & Highlight</small>`;
+            div.innerHTML = `<span>Page ${pageNum}</span> <small>Jump</small>`;
             div.onclick = () => jumpToPage(pageNum, query);
             resultDiv.appendChild(div);
         });
@@ -226,34 +210,12 @@ function jumpToPage(pageNum, query) {
     }, 60); // 60ms is the "sweet spot" to trigger a reload without a long flicker
 }
 
-/** UI & SCROLL LOGIC **/
+/** UI LOGIC **/
 function toggleMinimizePanel() {
     const popup = document.getElementById('aiSearchPopup');
     const minBtn = document.getElementById('minBtn');
     const isMinimized = popup.classList.toggle('minimized');
     minBtn.textContent = isMinimized ? '+' : '−';
-}
-
-function updateScrollSpeed() {
-    scrollSpeed = parseInt(document.getElementById('scrollSpeedRange').value);
-    document.getElementById('speedVal').textContent = scrollSpeed + 'x';
-    if (scrollSpeed > 0 && !isScrolling) startScrolling();
-    if (scrollSpeed === 0) stopScrolling();
-}
-
-function startScrolling() {
-    if (isScrolling) clearInterval(scrollInterval);
-    isScrolling = true;
-    const iframe = document.getElementById('pdfIframe');
-  if (!iframe) return;
-    scrollInterval = setInterval(() => {
-        if(iframe.contentWindow) iframe.contentWindow.scrollBy(0, scrollSpeed);
-    }, 30);
-}
-
-function stopScrolling() {
-    clearInterval(scrollInterval);
-    isScrolling = false;
 }
 
 function toggleAiSearchPopup() {
@@ -266,7 +228,6 @@ function toggleAiSearchPopup() {
         popup.classList.remove('minimized');
         document.getElementById('minBtn').textContent = '−';
         btn.classList.add('is-active');
-        startScrolling();
     }
 }
 
@@ -275,7 +236,6 @@ function closeAiSearchPopup() {
     var btn = document.getElementById('aiFloatBtn');
     popup.classList.remove('is-open');
     btn.classList.remove('is-active');
-    stopScrolling();
 }
 
 function toggleReaderFullscreen() {
@@ -305,7 +265,6 @@ function applyMobilePdfFallback() {
   iframe.style.display = 'none';
   fallback.style.display = 'flex';
   if (aiBtn) aiBtn.style.display = 'none';
-  stopScrolling();
 }
 
 // Additional fallback: if PDF fails to load on mobile after timeout
@@ -325,7 +284,6 @@ function enableMobilePdfLoadFallback() {
         iframe.style.display = 'none';
         fallback.style.display = 'flex';
         if (aiBtn) aiBtn.style.display = 'none';
-        stopScrolling();
       }
     }, 3000); // Wait 3 seconds for PDF to load
     
@@ -338,7 +296,6 @@ function enableMobilePdfLoadFallback() {
     iframe.style.display = 'none';
     fallback.style.display = 'flex';
     if (aiBtn) aiBtn.style.display = 'none';
-    stopScrolling();
   }
 }
 
