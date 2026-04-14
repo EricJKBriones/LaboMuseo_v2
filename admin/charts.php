@@ -168,7 +168,7 @@ require_once 'admin_header.php';
     <div class="adm-stats">
       <div class="astat blue"><div><div class="astat-n"><?= $totalVisitors ?></div><div class="astat-l">Total Visitors</div></div><div class="astat-i">&#128101;</div></div>
       <div class="astat green"><div><div class="astat-n"><?= $totalArtifacts ?></div><div class="astat-l">Artifacts</div></div><div class="astat-i">&#127994;</div></div>
-      <div class="astat purple"><div><div class="astat-n"><?= $totalDepartments ?></div><div class="astat-l">Departments</div></div><div class="astat-i">&#128193;</div></div>
+      <div class="astat purple"><div><div class="astat-n"><?= $totalDepartments ?></div><div class="astat-l">Types of Artifacts</div></div><div class="astat-i">&#128193;</div></div>
       <div class="astat orange"><div><div class="astat-n"><?= $totalNews ?></div><div class="astat-l">News &amp; Events</div></div><div class="astat-i">&#128240;</div></div>
     </div>
 

@@ -20,6 +20,18 @@ if (!file_exists($pdfAbsolute)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
 <style>
+    /* Fix for mobile viewport height changes (address bar show/hide) */
+    html, body { height: 100%; }
+    
+    /* Prevent zoom on iOS input focus */
+    input { font-size: 16px !important; }
+    
+    /* Disable user selection of PDF viewer controls on mobile */
+    @media(max-width:768px) {
+        .pdf-reader-frame-wrap { position: relative; top: 0; }
+        body { height: 100dvh; }
+    }
+    
     /* Panel and UI Styles */
     .ai-search-popup {
         width: 320px;
@@ -90,10 +102,11 @@ if (!file_exists($pdfAbsolute)) {
       title="Ksay-say Layout full reader"
       class="pdf-reader-frame"></iframe>
 
-    <div id="pdfMobileFallback" style="display:none;flex-direction:column;gap:12px;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;background:#faf7ef;">
-      <strong style="font-size:18px;color:#2b2b2b;">Mobile PDF fallback mode</strong>
-      <p style="margin:0;color:#5b5b5b;max-width:460px;">Your browser may block embedded PDF viewing. Open the document directly for stable reading on mobile.</p>
-      <a href="<?= htmlspecialchars($pdfUrl) ?>" target="_blank" rel="noopener" class="btn-gold" style="background:#d4af37;color:#000;padding:10px 16px;text-decoration:none;border-radius:8px;font-weight:700;">Open PDF</a>
+    <div id="pdfMobileFallback" style="display:none;flex-direction:column;gap:16px;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;background:#faf7ef;min-height:300px;">
+      <strong style="font-size:18px;color:#2b2b2b;">📄 PDF Viewer</strong>
+      <p style="margin:0;color:#5b5b5b;max-width:460px;line-height:1.6;">Your browser works best when opening PDFs directly. Tap the button below to view the document in fullscreen mode.</p>
+      <a href="<?= htmlspecialchars($pdfUrl) ?>" target="_blank" rel="noopener" class="btn-gold" style="background:#d4af37;color:#000;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;margin-top:8px;">Open PDF in Full View</a>
+      <small style="color:#8b8b8b;margin-top:8px;">Opens in a new tab</small>
     </div>
 
     <button
@@ -275,7 +288,10 @@ function isLikelyMobilePdfEmbedUnsupported() {
   var ua = navigator.userAgent || '';
   var isIOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var isAndroidMobile = /Android/i.test(ua) && /Mobile/i.test(ua);
-  return isIOS || isAndroidMobile;
+  var isTouchDevice = () => (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0));
+  
+  // Return true if it's mobile/touch and likely has issues with embedded PDFs
+  return (isIOS || isAndroidMobile || isTouchDevice());
 }
 
 function applyMobilePdfFallback() {
@@ -290,6 +306,40 @@ function applyMobilePdfFallback() {
   fallback.style.display = 'flex';
   if (aiBtn) aiBtn.style.display = 'none';
   stopScrolling();
+}
+
+// Additional fallback: if PDF fails to load on mobile after timeout
+function enableMobilePdfLoadFallback() {
+  if (!isLikelyMobilePdfEmbedUnsupported()) return;
+  
+  var iframe = document.getElementById('pdfIframe');
+  var fallback = document.getElementById('pdfMobileFallback');
+  var aiBtn = document.getElementById('aiFloatBtn');
+  var loadTimeout;
+  
+  try {
+    // Check if iframe loaded successfully
+    loadTimeout = setTimeout(function() {
+      // If no contentWindow access (PDF load failed), show fallback
+      if (!iframe.contentWindow || !iframe.contentDocument) {
+        iframe.style.display = 'none';
+        fallback.style.display = 'flex';
+        if (aiBtn) aiBtn.style.display = 'none';
+        stopScrolling();
+      }
+    }, 3000); // Wait 3 seconds for PDF to load
+    
+    // Clear timeout if iframe loads
+    iframe.addEventListener('load', function() {
+      clearTimeout(loadTimeout);
+    });
+  } catch(e) {
+    // Error accessing iframe, show fallback
+    iframe.style.display = 'none';
+    fallback.style.display = 'flex';
+    if (aiBtn) aiBtn.style.display = 'none';
+    stopScrolling();
+  }
 }
 
 function openReaderExitPopup() {
@@ -309,5 +359,6 @@ document.addEventListener('fullscreenchange', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
   applyMobilePdfFallback();
+  enableMobilePdfLoadFallback();
 });
 </script>

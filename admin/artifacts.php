@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['action']) && $_POST['ac
       $newsTitle = 'New Donated Artifact: ' . $title;
       $newsParts = ['A newly donated artifact has been added to the museum collection.'];
       if ($donor !== '') $newsParts[] = 'Donated by: ' . $donor . '.';
-      if ($catName !== '') $newsParts[] = 'Department: ' . $catName . '.';
+      if ($catName !== '') $newsParts[] = 'Type of Artifact: ' . $catName . '.';
       if ($year !== '') $newsParts[] = 'Year/Period: ' . $year . '.';
       if ($origin !== '') $newsParts[] = 'Origin: ' . $origin . '.';
       $newsParts[] = 'Description: ' . $desc;
@@ -145,7 +145,7 @@ require_once 'admin_header.php';
       <h3 class="adm-sec-title" style="margin:0">&#128444; Manage Artifacts</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" class="btn-exp" id="artifactExportToggleBtn" aria-expanded="false">&#128229; Export Artifacts</button>
-        <button class="toggle-btn bg-green" onclick="togglePanel('addArtForm')">&#10133; Add New Artifact</button>
+        <button class="toggle-btn bg-green" onclick="togglePanel('quickAddArtifactForm')">&#10133; Add New Artifact</button>
       </div>
     </div>
 
@@ -153,7 +153,7 @@ require_once 'admin_header.php';
       <label for="artQ">Search</label>
       <input id="artQ" type="text" name="q" class="mi" placeholder="Search by artifact title..." value="<?= htmlspecialchars($search) ?>" autocomplete="off" oninput="adminDebounceSubmit(this.form, 700)">
 
-      <label for="artDept">Department</label>
+      <label for="artDept">Type of Artifact</label>
       <select id="artDept" name="dept" class="mi" onchange="this.form.submit()">
         <option value="0">All</option>
         <?php foreach ($categories as $c): ?>
@@ -169,7 +169,7 @@ require_once 'admin_header.php';
         <option value="title_desc" <?= $sort==='title_desc'?'selected':'' ?>>Title Z-A</option>
         <option value="year_desc" <?= $sort==='year_desc'?'selected':'' ?>>Year High-Low</option>
         <option value="year_asc" <?= $sort==='year_asc'?'selected':'' ?>>Year Low-High</option>
-        <option value="dept_asc" <?= $sort==='dept_asc'?'selected':'' ?>>Department A-Z</option>
+        <option value="dept_asc" <?= $sort==='dept_asc'?'selected':'' ?>>Type of Artifact A-Z</option>
       </select>
 
       <a href="artifacts.php" class="btn-clf" style="text-decoration:none;display:inline-flex;align-items:center">Clear</a>
@@ -201,70 +201,47 @@ require_once 'admin_header.php';
       <span id="artifactSelectedCount" class="artifact-selected-count">0 selected</span>
     </form>
 
-    <!-- ADD FORM -->
-    <div class="adm-form" id="addArtForm">
-      <h3>New Artifact</h3>
-      <form method="POST" enctype="multipart/form-data" action="artifacts.php">
-        <input type="hidden" name="action" value="insert">
-        <div class="fg2">
-          <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" required></div>
-          <div>
-            <label class="al">Department</label>
-            <select name="category_id" class="ai">
-              <option value="">-- Select --</option>
-              <?php foreach ($categories as $c): ?>
-                <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div><label class="al">Year / Period</label><input type="text" name="artifact_year" class="ai" placeholder="e.g., 18th Century"></div>
-          <div><label class="al">Origin</label><input type="text" name="origin" class="ai" placeholder="e.g., Labo"></div>
-          <div class="full"><label class="al">Donated By</label><input type="text" name="donated_by" class="ai"></div>
-          <div class="full" style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border:1px dashed #d7dee7;border-radius:6px;background:#f8fbff">
-            <input type="checkbox" id="postToNews" name="post_to_news" value="1" style="margin-top:3px">
-            <label for="postToNews" style="margin:0;color:#2b3f52;font-size:.85rem;line-height:1.4">
-              Mark as newly donated artifact and auto-post to Museum News
-            </label>
-          </div>
-          <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-          <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required></textarea></div>
-        </div>
-        <button type="submit" class="btn-save">Save Artifact</button>
-        <button type="button" class="btn-cancel-f" onclick="togglePanel('addArtForm')">Cancel</button>
-      </form>
-    </div>
-
-    <!-- EDIT FORM -->
+    <!-- EDIT FORM MODAL -->
     <?php if ($editRow): ?>
-    <div class="adm-form is-open" id="editArtForm">
-      <h3>Edit Artifact</h3>
-      <form method="POST" enctype="multipart/form-data" action="artifacts.php">
-        <input type="hidden" name="action" value="update">
-        <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
-        <div class="fg2">
-          <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" value="<?= htmlspecialchars($editRow['title']) ?>" required></div>
-          <div>
-            <label class="al">Department</label>
-            <select name="category_id" class="ai">
-              <option value="">-- Select --</option>
-              <?php foreach ($categories as $c): ?>
-                <option value="<?= $c['id'] ?>" <?= $c['id']==$editRow['category_id']?'selected':'' ?>><?= htmlspecialchars($c['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
+    <div class="adm-quick-form-overlay adm-edit-modal is-open is-form-open" id="editArtOverlay" aria-hidden="false">
+      <button type="button" class="adm-quick-backdrop" onclick="closeEditArtModal()" aria-label="Close edit artifact form"></button>
+      <div class="adm-quick-form-shell">
+        <div class="adm-form adm-quick-form-panel is-open" id="editArtForm">
+          <div class="adm-quick-form-head">
+            <h3>Edit Artifact</h3>
+            <button type="button" class="adm-quick-close" onclick="closeEditArtModal()" aria-label="Close edit artifact form">&times;</button>
           </div>
-          <div><label class="al">Year / Period</label><input type="text" name="artifact_year" class="ai" value="<?= htmlspecialchars($editRow['artifact_year']) ?>"></div>
-          <div><label class="al">Origin</label><input type="text" name="origin" class="ai" value="<?= htmlspecialchars($editRow['origin']) ?>"></div>
-          <div class="full"><label class="al">Donated By</label><input type="text" name="donated_by" class="ai" value="<?= htmlspecialchars($editRow['donated_by']) ?>"></div>
-          <?php if ($editRow['image_path']): ?>
-            <div class="full"><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:80px;border-radius:6px;margin-top:4px"></div>
-          <?php endif; ?>
-          <div class="full"><label class="al">Upload New Image (optional)</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-          <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path']) ?>"></div>
-          <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required><?= htmlspecialchars($editRow['description']) ?></textarea></div>
+          <form method="POST" enctype="multipart/form-data" action="artifacts.php">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
+            <div class="fg2">
+              <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" value="<?= htmlspecialchars($editRow['title']) ?>" required></div>
+              <div>
+                <label class="al">Type of Artifact</label>
+                <select name="category_id" class="ai">
+                  <option value="">-- Select --</option>
+                  <?php foreach ($categories as $c): ?>
+                    <option value="<?= $c['id'] ?>" <?= $c['id']==$editRow['category_id']?'selected':'' ?>><?= htmlspecialchars($c['name']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div><label class="al">Year / Period</label><input type="text" name="artifact_year" class="ai" value="<?= htmlspecialchars($editRow['artifact_year']) ?>"></div>
+              <div><label class="al">Origin</label><input type="text" name="origin" class="ai" value="<?= htmlspecialchars($editRow['origin']) ?>"></div>
+              <div class="full"><label class="al">Donated By</label><input type="text" name="donated_by" class="ai" value="<?= htmlspecialchars($editRow['donated_by']) ?>"></div>
+              <?php if ($editRow['image_path']): ?>
+                <div class="full"><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:80px;border-radius:6px;margin-top:4px"></div>
+              <?php endif; ?>
+              <div class="full"><label class="al">Upload New Image (optional)</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+              <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path']) ?>"></div>
+              <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required><?= htmlspecialchars($editRow['description']) ?></textarea></div>
+            </div>
+            <div class="adm-quick-form-actions">
+              <button type="submit" class="btn-save">Update Artifact</button>
+              <button type="button" class="btn-cancel-f" onclick="closeEditArtModal()"><img class="auto-btn-icon" src="../assets/Icon/reset.png" data-png="../assets/Icon/reset.png" data-gif="../assets/Icon/reset.gif" alt="" aria-hidden="true">Cancel</button>
+            </div>
+          </form>
         </div>
-        <button type="submit" class="btn-save">Update Artifact</button>
-        <a href="artifacts.php" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
-      </form>
+      </div>
     </div>
     <?php endif; ?>
 
@@ -279,7 +256,7 @@ require_once 'admin_header.php';
 
     <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
-        <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Department</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
+        <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Type of Artifact</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
         <tbody>
           <?php if (empty($exhibits)): ?>
             <tr><td colspan="7" style="text-align:center;padding:20px;color:#888">No artifacts found.</td></tr>
@@ -297,9 +274,11 @@ require_once 'admin_header.php';
               <td><?= htmlspecialchars($ex['cat_name'] ?? '—') ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['artifact_year'] ?? '—') ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['origin'] ?? '—') ?></td>
-              <td>
+              <td class="adm-row-actions">
+                <div class="adm-row-actions-wrap">
                 <a href="artifacts.php?edit=<?= $ex['id'] ?>" class="btn-edit btn-icon" title="Edit artifact" aria-label="Edit artifact">&#9999;</a>
-                <a href="artifacts.php?delete=<?= $ex['id'] ?>" class="btn-del" onclick="return confirm('Delete this artifact?')">&#128465;</a>
+                <a href="artifacts.php?delete=<?= $ex['id'] ?>" class="btn-del" onclick="return handleDeleteWithToast(<?= $ex['id'] ?>, 'artifacts.php?delete=<?= $ex['id'] ?>', '<?= htmlspecialchars(addslashes($ex['title'])) ?>')">&#128465;</a>
+                </div>
               </td>
             </tr>
           <?php endforeach; endif; ?>
@@ -311,6 +290,10 @@ require_once 'admin_header.php';
 </div>
 
 <script>
+function closeEditArtModal() {
+  window.location.href = 'artifacts.php';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var searchInput = document.getElementById('artQ');
   if (searchInput && searchInput.value) {

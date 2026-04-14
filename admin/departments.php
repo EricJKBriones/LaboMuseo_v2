@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='insert') {
         header('Location: departments.php?msg=added');
         exit;
     }
-    $msg = 'Department name is required.';
+    $msg = 'Type of Artifact name is required.';
 }
 
 // UPDATE
@@ -86,7 +86,7 @@ $resultCount = count($cats);
 $isFiltered = ($search !== '' || $hasExhibs !== 'all');
 $editRow = $editId ? dbOne("SELECT * FROM categories WHERE id=?", [$editId]) : null;
 
-$pageTitle = 'Manage Departments — ' . SITE_NAME;
+$pageTitle = 'Manage Types of Artifacts — ' . SITE_NAME;
 require_once 'admin_header.php';
 ?>
 
@@ -95,11 +95,11 @@ require_once 'admin_header.php';
   <main class="adm-main">
 
     <?php if (isset($_GET['msg'])): ?>
-      <div class="alert-ok">&#10003; Department <?= htmlspecialchars($_GET['msg']) ?> successfully.</div>
+      <div class="alert-ok">&#10003; Type of Artifact <?= htmlspecialchars($_GET['msg']) ?> successfully.</div>
     <?php endif; ?>
     <?php if (isset($_GET['warn'])): ?>
       <div class="alert-err" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <span>&#9888; This department has <?= (int)$_GET['cnt'] ?> artifact(s). Deleting it will unlink those artifacts. Continue?</span>
+        <span>&#9888; This type of artifact has <?= (int)$_GET['cnt'] ?> artifact(s). Deleting it will unlink those artifacts. Continue?</span>
         <div>
           <a href="departments.php?delete=<?= (int)$_GET['warn'] ?>&force=1" class="btn-del">Yes, Delete</a>
           <a href="departments.php" class="btn-cancel-f" style="margin-left:6px;text-decoration:none;display:inline-block">Cancel</a>
@@ -109,17 +109,17 @@ require_once 'admin_header.php';
     <?php if ($msg): ?><div class="alert-err">&#9888; <?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <h3 class="adm-sec-title" style="margin:0">&#128193; Manage Departments</h3>
-      <button class="toggle-btn bg-blue2" onclick="togglePanel('addDeptForm')">&#10133; Add Department</button>
+      <h3 class="adm-sec-title" style="margin:0">&#128193; Manage Types of Artifacts</h3>
+      <button class="toggle-btn bg-blue2" onclick="togglePanel('quickAddDeptForm')">&#10133; Add Type of Artifact</button>
     </div>
 
     <form method="GET" action="departments.php" class="mbar">
       <label for="depQ">Search</label>
-      <input id="depQ" type="text" name="q" class="mi" placeholder="Search by department name..." value="<?= htmlspecialchars($search) ?>" autocomplete="off" oninput="adminDebounceSubmit(this.form, 700)">
+      <input id="depQ" type="text" name="q" class="mi" placeholder="Search by type of artifact name..." value="<?= htmlspecialchars($search) ?>" autocomplete="off" oninput="adminDebounceSubmit(this.form, 700)">
 
       <label for="depHas">Filter</label>
       <select id="depHas" name="has_artifacts" class="mi" onchange="this.form.submit()">
-        <option value="all" <?= $hasExhibs==='all'?'selected':'' ?>>All Departments</option>
+        <option value="all" <?= $hasExhibs==='all'?'selected':'' ?>>All Types of Artifacts</option>
         <option value="yes" <?= $hasExhibs==='yes'?'selected':'' ?>>With Artifacts</option>
         <option value="no" <?= $hasExhibs==='no'?'selected':'' ?>>Without Artifacts</option>
       </select>
@@ -138,43 +138,38 @@ require_once 'admin_header.php';
     </form>
 
     <div class="result-meta">
-      Showing <strong><?= $resultCount ?></strong> department<?= $resultCount!==1?'s':'' ?><?= $isFiltered ? ' (filtered)' : '' ?>
+      Showing <strong><?= $resultCount ?></strong> type<?= $resultCount!==1?'s':'' ?> of artifacts<?= $isFiltered ? ' (filtered)' : '' ?>
     </div>
 
-    <!-- ADD FORM -->
-    <div class="adm-form" id="addDeptForm">
-      <h3>New Department</h3>
-      <form method="POST" enctype="multipart/form-data" action="departments.php">
-        <input type="hidden" name="action" value="insert">
-        <div class="fg2">
-          <div><label class="al">Name *</label><input type="text" name="name" class="ai" required></div>
-          <div><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-          <div class="full"><label class="al">Description</label><textarea name="description" class="ai"></textarea></div>
-        </div>
-        <button type="submit" class="btn-save">Save</button>
-        <button type="button" class="btn-cancel-f" onclick="togglePanel('addDeptForm')">Cancel</button>
-      </form>
-    </div>
-
-    <!-- EDIT FORM -->
+    <!-- EDIT FORM MODAL -->
     <?php if ($editRow): ?>
-    <div class="adm-form is-open" id="editDeptForm">
-      <h3>Edit Department</h3>
-      <form method="POST" enctype="multipart/form-data" action="departments.php">
-        <input type="hidden" name="action" value="update">
-        <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
-        <div class="fg2">
-          <div><label class="al">Name *</label><input type="text" name="name" class="ai" value="<?= htmlspecialchars($editRow['name']) ?>" required></div>
-          <div><label class="al">Upload New Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-          <?php if ($editRow['image_path']): ?>
-            <div><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:70px;border-radius:6px;margin-top:4px"></div>
-          <?php endif; ?>
-          <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path']) ?>"></div>
-          <div class="full"><label class="al">Description</label><textarea name="description" class="ai"><?= htmlspecialchars($editRow['description'] ?? '') ?></textarea></div>
+    <div class="adm-quick-form-overlay adm-edit-modal is-open is-form-open" id="editDeptOverlay" aria-hidden="false">
+      <button type="button" class="adm-quick-backdrop" onclick="closeEditDeptModal()" aria-label="Close edit type of artifact form"></button>
+      <div class="adm-quick-form-shell">
+        <div class="adm-form adm-quick-form-panel is-open" id="editDeptForm">
+          <div class="adm-quick-form-head">
+            <h3>Edit Type of Artifact</h3>
+            <button type="button" class="adm-quick-close" onclick="closeEditDeptModal()" aria-label="Close edit type of artifact form">&times;</button>
+          </div>
+          <form method="POST" enctype="multipart/form-data" action="departments.php">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
+            <div class="fg2">
+              <div><label class="al">Name *</label><input type="text" name="name" class="ai" value="<?= htmlspecialchars($editRow['name']) ?>" required></div>
+              <div><label class="al">Upload New Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+              <?php if ($editRow['image_path']): ?>
+                <div><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:70px;border-radius:6px;margin-top:4px"></div>
+              <?php endif; ?>
+              <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path']) ?>"></div>
+              <div class="full"><label class="al">Description</label><textarea name="description" class="ai"><?= htmlspecialchars($editRow['description'] ?? '') ?></textarea></div>
+            </div>
+            <div class="adm-quick-form-actions">
+              <button type="submit" class="btn-save">Update</button>
+              <button type="button" class="btn-cancel-f" onclick="closeEditDeptModal()"><img class="auto-btn-icon" src="../assets/Icon/reset.png" data-png="../assets/Icon/reset.png" data-gif="../assets/Icon/reset.gif" alt="" aria-hidden="true">Cancel</button>
+            </div>
+          </form>
         </div>
-        <button type="submit" class="btn-save">Update</button>
-        <a href="departments.php" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
-      </form>
+      </div>
     </div>
     <?php endif; ?>
 
@@ -184,7 +179,7 @@ require_once 'admin_header.php';
         <thead><tr><th>Image</th><th>Name</th><th>Description</th><th>Artifacts</th><th>Actions</th></tr></thead>
         <tbody>
           <?php if (empty($cats)): ?>
-            <tr><td colspan="5" style="text-align:center;padding:20px;color:#888">No departments found.</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:20px;color:#888">No types of artifacts found.</td></tr>
           <?php else: foreach ($cats as $c): ?>
             <tr>
               <td>
@@ -197,9 +192,11 @@ require_once 'admin_header.php';
               <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
               <td style="font-size:.82rem;color:#888"><?= htmlspecialchars(mb_substr($c['description']??'',0,60)) ?><?= strlen($c['description']??'')>60?'...':'' ?></td>
               <td><span class="vi2"><?= $c['artifact_count'] ?> artifact<?= $c['artifact_count']!=1?'s':'' ?></span></td>
-              <td>
+              <td class="adm-row-actions">
+                <div class="adm-row-actions-wrap">
                 <a href="departments.php?edit=<?= $c['id'] ?>" class="btn-edit">&#9999; Edit</a>
-                <a href="departments.php?delete=<?= $c['id'] ?>" class="btn-del" onclick="return confirm('Delete this department?')">&#128465;</a>
+                <a href="departments.php?delete=<?= $c['id'] ?>" class="btn-del" onclick="return handleDeleteWithToast(<?= $c['id'] ?>, 'departments.php?delete=<?= $c['id'] ?>', '<?= htmlspecialchars(addslashes($c['name'])) ?>')">&#128465;</a>
+                </div>
               </td>
             </tr>
           <?php endforeach; endif; ?>
@@ -210,6 +207,10 @@ require_once 'admin_header.php';
 </div>
 
 <script>
+function closeEditDeptModal() {
+  window.location.href = 'departments.php';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var searchInput = document.getElementById('depQ');
   if (searchInput && searchInput.value) {

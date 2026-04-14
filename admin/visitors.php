@@ -235,10 +235,12 @@ require_once 'admin_header.php';
               <td><?= htmlspecialchars($g['residence']) ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($g['purpose']) ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($g['contact_no']) ?></td>
-              <td>
+              <td class="adm-row-actions">
+                <div class="adm-row-actions-wrap">
                 <a href="visitors.php?edit=<?= (int)$g['id'] ?>" class="btn-edit" title="Edit visitor" aria-label="Edit visitor">&#9999; Edit</a>
-                <a href="visitors.php?delete=<?= $g['id'] ?>" class="btn-del"
-                   onclick="return confirm('Delete this visitor record?')">&#128465;</a>
+                 <a href="visitors.php?delete=<?= (int)$g['id'] ?>" class="btn-del"
+                   onclick="return handleDeleteWithToast(<?= (int)$g['id'] ?>, 'visitors.php?delete=<?= (int)$g['id'] ?>', '<?= htmlspecialchars(addslashes($g['guest_name'])) ?>')">&#128465;</a>
+                </div>
               </td>
             </tr>
           <?php endforeach; endif; ?>

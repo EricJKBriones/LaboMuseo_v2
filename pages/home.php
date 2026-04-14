@@ -72,7 +72,7 @@ function newsCard(array $n, string $imgBase, string $now): string {
       </div>
       <div class="hero-stats">
         <div><div class="stat-n"><?= $totalArtifacts ?></div><div class="stat-l">Artifacts</div></div>
-        <div><div class="stat-n"><?= $totalDepts ?></div><div class="stat-l">Departments</div></div>
+        <div><div class="stat-n"><?= $totalDepts ?></div><div class="stat-l">Types of Artifacts</div></div>
         <div><div class="stat-n"><?= $totalVisitors ?></div><div class="stat-l">Today's Visitors</div></div>
       </div>
     </div>

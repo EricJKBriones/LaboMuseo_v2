@@ -2557,6 +2557,117 @@ function initAdminDashboardTableScroll() {
   });
 }
 
+/* ── ADMIN ACTION TOASTS ───────────────────────────────────── */
+
+/**
+ * Handle Archive action with toast notification
+ * @param {number} id - News/Item ID to archive
+ * @param {string} redirectUrl - URL to redirect after action
+ * @returns {boolean} false to prevent default link behavior
+ */
+function handleArchiveWithToast(id, redirectUrl) {
+  if (!id || !redirectUrl) return false;
+
+  if (!window.sileo || typeof window.sileo.action !== 'function') {
+    if (window.confirm('Move this item to archive?')) {
+      window.location.href = redirectUrl;
+    }
+    return false;
+  }
+
+  window.sileo.action({
+    title: 'Confirm Archive',
+    message: 'Move this item to archive?',
+    duration: 0,
+    persistent: true,
+    actions: [
+      {
+        label: 'Cancel',
+        dismiss: true
+      },
+      {
+        label: 'Archive',
+        href: redirectUrl
+      }
+    ]
+  });
+
+  return false;
+}
+
+/**
+ * Handle Delete action with toast confirmation and notification
+ * @param {number} id - Item ID to delete
+ * @param {string} redirectUrl - URL to redirect after action
+ * @param {string} itemName - Name/title of item being deleted (optional)
+ * @returns {boolean} false to prevent default link behavior
+ */
+function handleDeleteWithToast(id, redirectUrl, itemName) {
+  if (!id || !redirectUrl) return false;
+
+  var confirmMsg = itemName ? ('Delete "' + itemName + '"?') : 'Permanently delete this item?';
+
+  if (!window.sileo || typeof window.sileo.action !== 'function') {
+    if (window.confirm(confirmMsg)) {
+      window.location.href = redirectUrl;
+    }
+    return false;
+  }
+
+  window.sileo.action({
+    title: 'Confirm Delete',
+    message: confirmMsg,
+    duration: 0,
+    persistent: true,
+    actions: [
+      {
+        label: 'Cancel',
+        dismiss: true
+      },
+      {
+        label: 'Delete',
+        href: redirectUrl
+      }
+    ]
+  });
+
+  return false;
+}
+
+/**
+ * Handle Restore/Unarchive action with toast notification
+ * @param {number} id - Item ID to restore
+ * @param {string} redirectUrl - URL to redirect after action
+ * @returns {boolean} false to prevent default link behavior
+ */
+function handleRestoreWithToast(id, redirectUrl) {
+  if (!id || !redirectUrl) return false;
+
+  if (!window.sileo || typeof window.sileo.action !== 'function') {
+    if (window.confirm('Restore this item to active?')) {
+      window.location.href = redirectUrl;
+    }
+    return false;
+  }
+
+  window.sileo.action({
+    title: 'Confirm Restore',
+    message: 'Restore this item to active?',
+    actions: [
+      {
+        label: 'Cancel',
+        dismiss: true
+      },
+      {
+        label: 'Restore',
+        href: redirectUrl
+      }
+    ]
+  });
+
+  return false;
+}
+
 function initAdminPullToRefresh() {
   if (!document.querySelector('.adm-layout')) return;
   if (window.innerWidth > 900) return;
@@ -2595,7 +2706,7 @@ function initAdminPullToRefresh() {
     if (e.touches[0].clientY > 36) return;
 
     var target = e.target;
-    if (target && target.closest('input, textarea, select, button, .adm-dashboard-table-wrap, .showcase-stage, .showcase-stage-wrap')) {
+    if (target && target.closest('input, textarea, select, button, a, [role="button"], .tbl-wrap, .tbl-wrap-mobile-fix, .adm-dashboard-table-wrap, .showcase-stage, .showcase-stage-wrap')) {
       return;
     }
 
@@ -2702,7 +2813,7 @@ function initPublicPullToRefresh() {
     if (e.touches[0].clientY > 36) return;
 
     var target = e.target;
-    if (target && target.closest('input, textarea, select, button, .pdf-page-wrap, .showcase-stage, .teaser-scrollport')) {
+    if (target && target.closest('input, textarea, select, button, a, [role="button"], .pdf-page-wrap, .showcase-stage, .teaser-scrollport')) {
       return;
     }
 
@@ -2802,7 +2913,7 @@ function initPublicSwipeFade() {
   document.addEventListener('touchstart', function(e) {
     if (!e.touches || !e.touches.length) return;
     var t = e.target;
-    if (t && t.closest('input, textarea, select, button, .teaser-scrollport, .pdf-page-wrap')) {
+    if (t && t.closest('input, textarea, select, button, a, [role="button"], .tbl-wrap, .tbl-wrap-mobile-fix, .teaser-scrollport, .pdf-page-wrap')) {
       active = false;
       return;
     }
@@ -2908,8 +3019,199 @@ function initAdminAccountChangeConfirm() {
   });
 }
 
+function initAdminImageUploadPreview() {
+  if (!document.querySelector('.adm-layout')) return;
+
+  var INPUT_SELECTOR = 'input[type="file"][accept*="image"]';
+
+  function getTargetInput() {
+    var active = document.activeElement;
+    if (active && active.matches && active.matches(INPUT_SELECTOR) && !active.disabled) {
+      return active;
+    }
+
+    var openOverlayInput = document.querySelector('.adm-quick-form-overlay.is-form-open .adm-form.is-open ' + INPUT_SELECTOR + ':not([disabled])');
+    if (openOverlayInput) return openOverlayInput;
+
+    return document.querySelector('.adm-main ' + INPUT_SELECTOR + ':not([disabled])');
+  }
+
+  function ensurePreviewUI(input) {
+    if (!input) return null;
+    if (input.dataset.previewBound === '1') {
+      return input._previewUi || null;
+    }
+
+    input.dataset.previewBound = '1';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'adm-image-preview';
+    wrap.hidden = true;
+
+    var img = document.createElement('img');
+    img.className = 'adm-image-preview__img';
+    img.alt = 'Selected image preview';
+
+    var meta = document.createElement('div');
+    meta.className = 'adm-image-preview__meta';
+
+    var name = document.createElement('strong');
+    name.className = 'adm-image-preview__name';
+
+    var size = document.createElement('span');
+    size.className = 'adm-image-preview__size';
+
+    var clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'adm-image-preview__clear';
+    clearBtn.textContent = 'Remove';
+
+    meta.appendChild(name);
+    meta.appendChild(size);
+    wrap.appendChild(img);
+    wrap.appendChild(meta);
+    wrap.appendChild(clearBtn);
+
+    var revokeUrl = null;
+
+    function clearPreview() {
+      if (revokeUrl) {
+        URL.revokeObjectURL(revokeUrl);
+        revokeUrl = null;
+      }
+      img.removeAttribute('src');
+      name.textContent = '';
+      size.textContent = '';
+      wrap.hidden = true;
+    }
+
+    function bytesToLabel(bytes) {
+      if (!bytes || bytes < 1024) return (bytes || 0) + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function renderFile(file) {
+      if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+        clearPreview();
+        return;
+      }
+
+      if (revokeUrl) {
+        URL.revokeObjectURL(revokeUrl);
+      }
+      revokeUrl = URL.createObjectURL(file);
+
+      img.src = revokeUrl;
+      name.textContent = file.name || 'Pasted image';
+      size.textContent = bytesToLabel(file.size);
+      wrap.hidden = false;
+    }
+
+    input.addEventListener('change', function() {
+      var f = input.files && input.files[0] ? input.files[0] : null;
+      renderFile(f);
+    });
+
+    clearBtn.addEventListener('click', function() {
+      input.value = '';
+      clearPreview();
+      input.focus();
+    });
+
+    input.insertAdjacentElement('afterend', wrap);
+
+    input._previewUi = {
+      renderFile: renderFile,
+      clearPreview: clearPreview
+    };
+
+    var initialFile = input.files && input.files[0] ? input.files[0] : null;
+    if (initialFile) renderFile(initialFile);
+
+    return input._previewUi;
+  }
+
+  document.querySelectorAll(INPUT_SELECTOR).forEach(function(input) {
+    ensurePreviewUI(input);
+  });
+
+  document.addEventListener('paste', function(e) {
+    var items = e.clipboardData && e.clipboardData.items ? e.clipboardData.items : null;
+    if (!items || !items.length) return;
+
+    var imageFile = null;
+    for (var i = 0; i < items.length; i += 1) {
+      var it = items[i];
+      if (it && it.kind === 'file' && it.type && it.type.indexOf('image/') === 0) {
+        imageFile = it.getAsFile();
+        break;
+      }
+    }
+    if (!imageFile) return;
+
+    var input = getTargetInput();
+    if (!input) return;
+
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(imageFile);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      if (window.sileo && typeof window.sileo.info === 'function') {
+        window.sileo.info({ title: 'Image Pasted', message: 'Preview updated from clipboard.' });
+      }
+      e.preventDefault();
+    } catch (err) {
+      var ui = ensurePreviewUI(input);
+      if (ui && typeof ui.renderFile === 'function') {
+        ui.renderFile(imageFile);
+      }
+    }
+  });
+}
+
 /* ── INIT ───────────────────────────────────────────────────── */
+function initDisableImageDrag() {
+  function disableDragForImage(img) {
+    if (!img) return;
+    img.setAttribute('draggable', 'false');
+  }
+
+  document.querySelectorAll('img').forEach(disableDragForImage);
+
+  document.addEventListener('dragstart', function(e) {
+    var target = e.target;
+    if (target && target.tagName === 'IMG') {
+      e.preventDefault();
+    }
+  });
+
+  if (!('MutationObserver' in window) || !document.body) return;
+
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      mutation.addedNodes.forEach(function(node) {
+        if (!node || node.nodeType !== 1) return;
+        if (node.tagName === 'IMG') {
+          disableDragForImage(node);
+          return;
+        }
+        if (node.querySelectorAll) {
+          node.querySelectorAll('img').forEach(disableDragForImage);
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  initDisableImageDrag();
   initMobileMenuAutoCollapse();
   initCalendar();
   initAutoSubmitFilters();
@@ -2937,6 +3239,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initArtifactFilterModal();
   initComboSkinSelects();
   initAdminAccountChangeConfirm();
+  initAdminImageUploadPreview();
 
   // Hide all non-active tab panels on load
   document.querySelectorAll('.tab-panel').forEach(function(p, i) {

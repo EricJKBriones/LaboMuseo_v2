@@ -120,7 +120,7 @@ require_once 'admin_header.php';
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
       <h3 class="adm-sec-title" style="margin:0">&#128240; Manage News &amp; Events</h3>
       <?php if ($view === 'active'): ?>
-        <button class="toggle-btn bg-orange" data-icon-name="post_news" onclick="togglePanel('addNewsForm')">&#10133; Post News</button>
+        <button class="toggle-btn bg-orange" data-icon-name="post_news" onclick="togglePanel('quickAddNewsForm')">&#10133; Post News</button>
       <?php endif; ?>
     </div>
 
@@ -134,58 +134,43 @@ require_once 'admin_header.php';
       </a>
     </div>
 
-    <!-- ADD FORM (active view only) -->
-    <?php if ($view === 'active'): ?>
-    <div class="adm-form" id="addNewsForm">
-      <h3>New Post</h3>
-      <form method="POST" enctype="multipart/form-data" action="news.php">
-        <input type="hidden" name="action" value="insert">
-        <div class="fg2">
-          <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" required></div>
-          <div>
-            <label class="al">Type</label>
-            <select name="type" class="ai" id="addType" onchange="toggleEvDate('addEvDate',this.value)">
-              <option value="news">Museum News</option>
-              <option value="event">Upcoming Event</option>
-            </select>
-          </div>
-          <div><label class="al">Event Date <small style="color:#aaa">(for events only)</small></label><input type="date" name="event_date" id="addEvDate" class="ai"></div>
-          <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-          <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required></textarea></div>
-        </div>
-        <button type="submit" class="btn-save" data-icon-name="post_news">Publish</button>
-        <button type="button" class="btn-cancel-f" onclick="togglePanel('addNewsForm')">Cancel</button>
-      </form>
-    </div>
-    <?php endif; ?>
-
-    <!-- EDIT FORM -->
+    <!-- EDIT FORM MODAL -->
     <?php if ($editRow): ?>
-    <div class="adm-form is-open" id="editNewsForm">
-      <h3>Edit Post</h3>
-      <form method="POST" enctype="multipart/form-data" action="news.php">
-        <input type="hidden" name="action" value="update">
-        <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
-        <div class="fg2">
-          <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" value="<?= htmlspecialchars($editRow['title']) ?>" required></div>
-          <div>
-            <label class="al">Type</label>
-            <select name="type" class="ai">
-              <option value="news"  <?= $editRow['type']==='news' ?'selected':'' ?>>Museum News</option>
-              <option value="event" <?= $editRow['type']==='event'?'selected':'' ?>>Upcoming Event</option>
-            </select>
+    <div class="adm-quick-form-overlay adm-edit-modal is-open is-form-open" id="editNewsOverlay" aria-hidden="false">
+      <button type="button" class="adm-quick-backdrop" onclick="closeEditNewsModal()" aria-label="Close edit post form"></button>
+      <div class="adm-quick-form-shell">
+        <div class="adm-form adm-quick-form-panel is-open" id="editNewsForm">
+          <div class="adm-quick-form-head">
+            <h3>Edit Post</h3>
+            <button type="button" class="adm-quick-close" onclick="closeEditNewsModal()" aria-label="Close edit post form">&times;</button>
           </div>
-          <div><label class="al">Event Date</label><input type="date" name="event_date" class="ai" value="<?= htmlspecialchars($editRow['event_date'] ?? '') ?>"></div>
-          <?php if ($editRow['image_path'] && file_exists('../uploads/'.$editRow['image_path'])): ?>
-            <div class="full"><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:70px;border-radius:6px;margin-top:4px"></div>
-          <?php endif; ?>
-          <div class="full"><label class="al">Upload New Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-          <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path'] ?? '') ?>"></div>
-          <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required><?= htmlspecialchars($editRow['content']) ?></textarea></div>
+          <form method="POST" enctype="multipart/form-data" action="news.php">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
+            <div class="fg2">
+              <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" value="<?= htmlspecialchars($editRow['title']) ?>" required></div>
+              <div>
+                <label class="al">Type</label>
+                <select name="type" class="ai">
+                  <option value="news"  <?= $editRow['type']==='news' ?'selected':'' ?>>Museum News</option>
+                  <option value="event" <?= $editRow['type']==='event'?'selected':'' ?>>Upcoming Event</option>
+                </select>
+              </div>
+              <div><label class="al">Event Date</label><input type="date" name="event_date" class="ai" value="<?= htmlspecialchars($editRow['event_date'] ?? '') ?>"></div>
+              <?php if ($editRow['image_path'] && file_exists('../uploads/'.$editRow['image_path'])): ?>
+                <div class="full"><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:70px;border-radius:6px;margin-top:4px"></div>
+              <?php endif; ?>
+              <div class="full"><label class="al">Upload New Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+              <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path'] ?? '') ?>"></div>
+              <div class="full"><label class="al">Content *</label><textarea name="content" class="ai" rows="5" required><?= htmlspecialchars($editRow['content']) ?></textarea></div>
+            </div>
+            <div class="adm-quick-form-actions">
+              <button type="submit" class="btn-save">Update</button>
+              <button type="button" class="btn-cancel-f" onclick="closeEditNewsModal()"><img class="auto-btn-icon" src="../assets/Icon/reset.png" data-png="../assets/Icon/reset.png" data-gif="../assets/Icon/reset.gif" alt="" aria-hidden="true">Cancel</button>
+            </div>
+          </form>
         </div>
-        <button type="submit" class="btn-save">Update</button>
-        <a href="news.php?view=<?= $view ?>" class="btn-cancel-f" style="text-decoration:none;display:inline-block;margin-left:7px">Cancel</a>
-      </form>
+      </div>
     </div>
     <?php endif; ?>
 
@@ -261,19 +246,21 @@ require_once 'admin_header.php';
               </td>
               <td style="font-size:.8rem;color:#888"><?= date('M j, Y', strtotime($n['date_posted'])) ?></td>
               <td style="font-size:.8rem;color:#888"><?= $n['event_date'] ? date('M j, Y', strtotime($n['event_date'])) : '—' ?></td>
-              <td style="white-space:nowrap">
-                <?php if ($view === 'active'): ?>
+                <td class="adm-row-actions">
+                 <div class="adm-row-actions-wrap">
+                 <?php if ($view === 'active'): ?>
                   <a href="news.php?edit=<?= $n['id'] ?>&view=active" class="btn-edit">&#9999; Edit</a>
                   <a href="news.php?archive=<?= $n['id'] ?>" class="btn-del btn-archive" data-icon-name="folder" style="background:#e67e22"
-                     onclick="return confirm('Move this post to Archive?')" title="Move to Archive">&#128193; Archive</a>
+                    onclick="return handleArchiveWithToast(<?= $n['id'] ?>, 'news.php?archive=<?= $n['id'] ?>')" title="Move to Archive">&#128193; Archive</a>
                   <a href="news.php?delete=<?= $n['id'] ?>&view=active" class="btn-del"
-                     onclick="return confirm('Permanently delete this post?')" title="Delete permanently">&#128465;</a>
-                <?php else: ?>
+                    onclick="return handleDeleteWithToast(<?= $n['id'] ?>, 'news.php?delete=<?= $n['id'] ?>&view=active', '<?= htmlspecialchars(addslashes($n['title'])) ?>')" title="Delete permanently">&#128465;</a>
+                 <?php else: ?>
                   <a href="news.php?unarchive=<?= $n['id'] ?>" class="btn-edit" style="background:#27ae60"
-                     onclick="return confirm('Restore this post to Active?')" title="Restore">&#9654; Restore</a>
+                    onclick="return handleRestoreWithToast(<?= $n['id'] ?>, 'news.php?unarchive=<?= $n['id'] ?>')" title="Restore">&#9654; Restore</a>
                   <a href="news.php?delete=<?= $n['id'] ?>&view=archive" class="btn-del"
-                     onclick="return confirm('Permanently delete this post?')" title="Delete permanently">&#128465; Delete</a>
+                    onclick="return handleDeleteWithToast(<?= $n['id'] ?>, 'news.php?delete=<?= $n['id'] ?>&view=archive', '<?= htmlspecialchars(addslashes($n['title'])) ?>')" title="Delete permanently">&#128465; Delete</a>
                 <?php endif; ?>
+                 </div>
               </td>
             </tr>
           <?php endforeach; endif; ?>
@@ -285,6 +272,10 @@ require_once 'admin_header.php';
 </div>
 
 <script>
+function closeEditNewsModal() {
+  window.location.href = 'news.php?view=<?= $view ?>';
+}
+
 function toggleEvDate(id, type) {
   var el = document.getElementById(id);
   if (el) el.style.opacity = type==='event' ? '1' : '0.4';

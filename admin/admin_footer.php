@@ -26,7 +26,7 @@ $base = ($dir === '' ? '/' : $dir . '/');
     </button>
     <button type="button" class="adm-quick-item" data-quick-target="quickAddDeptForm">
       <img src="<?= $base ?>assets/Icon/add_department.png?rev=<?= time() ?>" data-png="<?= $base ?>assets/Icon/add_department.png?rev=<?= time() ?>" data-gif="<?= $base ?>assets/Icon/add_department.gif?rev=<?= time() ?>" alt="" aria-hidden="true">
-      <span>Add Department</span>
+      <span>Add Type of Artifact</span>
     </button>
     <button type="button" class="adm-quick-item" data-quick-target="quickAddNewsForm">
       <img src="<?= $base ?>assets/Icon/post_news.png?rev=<?= time() ?>" data-png="<?= $base ?>assets/Icon/post_news.png?rev=<?= time() ?>" data-gif="<?= $base ?>assets/Icon/post_news.gif?rev=<?= time() ?>" alt="" aria-hidden="true">
@@ -51,7 +51,7 @@ $base = ($dir === '' ? '/' : $dir . '/');
         <div class="fg2">
           <div class="full"><label class="al">Title *</label><input type="text" name="title" class="ai" required></div>
           <div>
-            <label class="al">Department</label>
+            <label class="al">Type of Artifact</label>
             <select name="category_id" class="ai">
               <option value="">-- Select --</option>
               <?php if (!empty($quickArtifactCategories)): foreach ($quickArtifactCategories as $c): ?>
@@ -67,15 +67,15 @@ $base = ($dir === '' ? '/' : $dir . '/');
         </div>
         <div class="adm-quick-form-actions">
           <button type="submit" class="btn-save">Save Artifact</button>
-          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddArtifactForm')">Cancel</button>
+          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddArtifactForm')"><img class="auto-btn-icon" src="<?= $base ?>assets/Icon/reset.png" data-png="<?= $base ?>assets/Icon/reset.png" data-gif="<?= $base ?>assets/Icon/reset.gif" alt="" aria-hidden="true">Cancel</button>
         </div>
       </form>
     </div>
 
     <div class="adm-form adm-quick-form-panel" id="quickAddDeptForm">
       <div class="adm-quick-form-head">
-        <h3>New Department</h3>
-        <button type="button" class="adm-quick-close" onclick="togglePanel('quickAddDeptForm')" aria-label="Close department form">&times;</button>
+        <h3>New Type of Artifact</h3>
+        <button type="button" class="adm-quick-close" onclick="togglePanel('quickAddDeptForm')" aria-label="Close type of artifact form">&times;</button>
       </div>
       <form method="POST" enctype="multipart/form-data" action="<?= $base ?>admin/departments.php">
         <input type="hidden" name="action" value="insert">
@@ -85,8 +85,8 @@ $base = ($dir === '' ? '/' : $dir . '/');
           <div class="full"><label class="al">Description</label><textarea name="description" class="ai"></textarea></div>
         </div>
         <div class="adm-quick-form-actions">
-          <button type="submit" class="btn-save">Save Department</button>
-          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddDeptForm')">Cancel</button>
+          <button type="submit" class="btn-save">Save Type of Artifact</button>
+          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddDeptForm')"><img class="auto-btn-icon" src="<?= $base ?>assets/Icon/reset.png" data-png="<?= $base ?>assets/Icon/reset.png" data-gif="<?= $base ?>assets/Icon/reset.gif" alt="" aria-hidden="true">Cancel</button>
         </div>
       </form>
     </div>
@@ -113,7 +113,7 @@ $base = ($dir === '' ? '/' : $dir . '/');
         </div>
         <div class="adm-quick-form-actions">
           <button type="submit" class="btn-save" data-icon-name="post_news">Publish</button>
-          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddNewsForm')">Cancel</button>
+          <button type="button" class="btn-cancel-f" onclick="togglePanel('quickAddNewsForm')"><img class="auto-btn-icon" src="<?= $base ?>assets/Icon/reset.png" data-png="<?= $base ?>assets/Icon/reset.png" data-gif="<?= $base ?>assets/Icon/reset.gif" alt="" aria-hidden="true">Cancel</button>
         </div>
       </form>
     </div>
