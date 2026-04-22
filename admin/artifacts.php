@@ -27,12 +27,41 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['action']) && $_POST['ac
     $year     = trim($_POST['artifact_year'] ?? '');
     $origin   = trim($_POST['origin'] ?? '');
     $donor    = trim($_POST['donated_by'] ?? '');
-  $postToNews = isset($_POST['post_to_news']) && $_POST['post_to_news'] === '1';
+    $remarks  = trim($_POST['remarks'] ?? '');
+    $quantity = (int)($_POST['quantity'] ?? 1);
+    $date_received = trim($_POST['date_received'] ?? '');
+    $postToNews = isset($_POST['post_to_news']) && $_POST['post_to_news'] === '1';
     $imgPath  = handleUpload('image_file');
     if (!$imgPath && !empty($_POST['image_path'])) $imgPath = trim($_POST['image_path']);
-    if ($title && $desc) {
-        dbExec("INSERT INTO exhibits (title,description,category_id,image_path,donated_by,artifact_year,origin) VALUES (?,?,?,?,?,?,?)",
-            [$title,$desc,$catId?:null,$imgPath,$donor,$year,$origin]);
+
+    // Debug output if insert fails
+    if (!$title || !$desc) {
+        echo '<pre style="background:#fffbe6;color:#c0392b;padding:24px;font-size:1.1em">';
+        echo "DEBUG: Artifact Insert Failed\n";
+        echo "POST Data:\n";
+        print_r($_POST);
+        echo "\nFILES Data:\n";
+        print_r($_FILES);
+        echo "\nImage Upload Result: ".$imgPath."\n";
+        echo "</pre>";
+        exit;
+    }
+
+    dbExec(
+      "INSERT INTO exhibits (title,description,category_id,image_path,donated_by,artifact_year,origin,remarks,quantity,date_received) VALUES (?,?,?,?,?,?,?,?,?,?)",
+      [
+        $title,
+        $desc,
+        $catId ?: null,
+        $imgPath,
+        $donor,
+        $year,
+        $origin,
+        $remarks,
+        $quantity,
+        $date_received !== '' ? $date_received : date('Y-m-d')
+      ]
+    );
 
     if ($postToNews) {
       $catName = '';
@@ -59,10 +88,8 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['action']) && $_POST['ac
       exit;
     }
 
-        header('Location: artifacts.php?msg=added');
-        exit;
-    }
-    $msg = 'Title and description are required.';
+    header('Location: artifacts.php?msg=added');
+    exit;
 }
 
 // UPDATE
@@ -74,11 +101,28 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['action']) && $_POST['ac
     $year     = trim($_POST['artifact_year'] ?? '');
     $origin   = trim($_POST['origin'] ?? '');
     $donor    = trim($_POST['donated_by'] ?? '');
+    $remarks  = trim($_POST['remarks'] ?? '');
+    $quantity = (int)($_POST['quantity'] ?? 1);
+    $date_received = trim($_POST['date_received'] ?? '');
     $ex       = dbOne("SELECT image_path FROM exhibits WHERE id=?", [$id]);
     $imgPath  = handleUpload('image_file') ?: ($ex['image_path'] ?? null);
     if (!$imgPath && !empty($_POST['image_path'])) $imgPath = trim($_POST['image_path']);
-    dbExec("UPDATE exhibits SET title=?,description=?,category_id=?,image_path=?,donated_by=?,artifact_year=?,origin=? WHERE id=?",
-        [$title,$desc,$catId?:null,$imgPath,$donor,$year,$origin,$id]);
+    dbExec(
+      "UPDATE exhibits SET title=?,description=?,category_id=?,image_path=?,donated_by=?,artifact_year=?,origin=?,remarks=?,quantity=?,date_received=? WHERE id=?",
+      [
+        $title,
+        $desc,
+        $catId ?: null,
+        $imgPath,
+        $donor,
+        $year,
+        $origin,
+        $remarks,
+        $quantity,
+        $date_received !== '' ? $date_received : date('Y-m-d'),
+        $id
+      ]
+    );
     header('Location: artifacts.php?msg=updated');
     exit;
 }
@@ -86,6 +130,8 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['action']) && $_POST['ac
 $search = trim($_GET['q'] ?? '');
 $deptId = (int)($_GET['dept'] ?? 0);
 $sort   = $_GET['sort'] ?? 'newest';
+$page   = max(1, (int)($_GET['page'] ?? 1));
+$perPage = 50;
 
 $sortMap = [
   'newest'    => 'e.id DESC',
@@ -99,25 +145,38 @@ $sortMap = [
 if (!isset($sortMap[$sort])) $sort = 'newest';
 
 $params = [];
-$sql = "SELECT e.*,c.name as cat_name FROM exhibits e LEFT JOIN categories c ON e.category_id=c.id WHERE 1=1";
+$whereSql = " WHERE 1=1";
 if ($search !== '') {
-  $sql .= " AND e.title LIKE ?";
+  $whereSql .= " AND e.title LIKE ?";
   $like = "%$search%";
   $params[] = $like;
 }
 if ($deptId > 0) {
-  $sql .= " AND e.category_id=?";
+  $whereSql .= " AND e.category_id=?";
   $params[] = $deptId;
 }
-$sql .= " ORDER BY " . $sortMap[$sort];
+
+$countSql = "SELECT COUNT(*) FROM exhibits e" . $whereSql;
+$resultCount = dbCount($countSql, $params);
+$totalPages = max(1, (int)ceil($resultCount / $perPage));
+if ($page > $totalPages) {
+  $page = $totalPages;
+}
+$offset = ($page - 1) * $perPage;
+
+$sql = "SELECT e.*,c.name as cat_name
+        FROM exhibits e
+        LEFT JOIN categories c ON e.category_id=c.id" . $whereSql . "
+        ORDER BY " . $sortMap[$sort] . "
+        LIMIT $perPage OFFSET $offset";
 
 $exhibits = dbQuery($sql, $params);
-$resultCount = count($exhibits);
 $isFiltered = ($search !== '' || $deptId > 0);
 $categories = dbQuery("SELECT * FROM categories ORDER BY name");
 $editRow = $editId ? dbOne("SELECT * FROM exhibits WHERE id=?", [$editId]) : null;
 
 $pageTitle = 'Manage Artifacts — ' . SITE_NAME;
+$bodyClass = 'admin-artifacts-page';
 require_once 'admin_header.php';
 ?>
 
@@ -145,7 +204,7 @@ require_once 'admin_header.php';
       <h3 class="adm-sec-title" style="margin:0">&#128444; Manage Artifacts</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" class="btn-exp" id="artifactExportToggleBtn" aria-expanded="false">&#128229; Export Artifacts</button>
-        <button class="toggle-btn bg-green" onclick="togglePanel('quickAddArtifactForm')">&#10133; Add New Artifact</button>
+        <button type="button" class="toggle-btn bg-green" onclick="if (typeof openAdminQuickPanel === 'function') { openAdminQuickPanel('quickAddArtifactForm'); } else { togglePanel('quickAddArtifactForm'); }">&#10133; Add New Artifact</button>
       </div>
     </div>
 
@@ -177,6 +236,12 @@ require_once 'admin_header.php';
 
     <div class="result-meta">
       Showing <strong><?= $resultCount ?></strong> artifact<?= $resultCount!==1?'s':'' ?><?= $isFiltered ? ' (filtered)' : '' ?>
+      <?php if ($resultCount > 0): ?>
+        <span style="margin-left:8px;color:#6b7280">
+          Page <?= $page ?> of <?= $totalPages ?>,
+          rows <?= $offset + 1 ?>-<?= min($offset + count($exhibits), $resultCount) ?>
+        </span>
+      <?php endif; ?>
     </div>
 
     <form method="POST" action="export_artifacts.php" class="mbar artifact-export-bar" id="artifactExportForm">
@@ -228,12 +293,24 @@ require_once 'admin_header.php';
               <div><label class="al">Year / Period</label><input type="text" name="artifact_year" class="ai" value="<?= htmlspecialchars($editRow['artifact_year']) ?>"></div>
               <div><label class="al">Origin</label><input type="text" name="origin" class="ai" value="<?= htmlspecialchars($editRow['origin']) ?>"></div>
               <div class="full"><label class="al">Donated By</label><input type="text" name="donated_by" class="ai" value="<?= htmlspecialchars($editRow['donated_by']) ?>"></div>
-              <?php if ($editRow['image_path']): ?>
-                <div class="full"><label class="al">Current Image</label><br><img src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>" style="height:80px;border-radius:6px;margin-top:4px"></div>
-              <?php endif; ?>
-              <div class="full"><label class="al">Upload New Image (optional)</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
-              <div class="full"><label class="al">OR Image Filename</label><input type="text" name="image_path" class="ai" value="<?= htmlspecialchars($editRow['image_path']) ?>"></div>
+              <div class="full">
+                <label class="al">Choose Image</label>
+                <input
+                  type="file"
+                  name="image_file"
+                  class="ai"
+                  accept="image/*"
+                  <?php if (!empty($editRow['image_path'])): ?>
+                    data-preview-src="../uploads/<?= htmlspecialchars($editRow['image_path']) ?>"
+                    data-preview-name="<?= htmlspecialchars($editRow['image_path']) ?>"
+                    data-preview-size="Current image"
+                  <?php endif; ?>
+                >
+              </div>
               <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required><?= htmlspecialchars($editRow['description']) ?></textarea></div>
+              <div><label class="al">Remarks</label><textarea name="remarks" class="ai"><?= htmlspecialchars($editRow['remarks'] ?? '') ?></textarea></div>
+              <div><label class="al">Quantity</label><input type="number" name="quantity" class="ai" min="1" value="<?= htmlspecialchars($editRow['quantity'] ?? 1) ?>"></div>
+              <div><label class="al">Date Received</label><input type="date" name="date_received" class="ai" value="<?= htmlspecialchars($editRow['date_received'] ?? date('Y-m-d')) ?>"></div>
             </div>
             <div class="adm-quick-form-actions">
               <button type="submit" class="btn-save">Update Artifact</button>
@@ -256,7 +333,20 @@ require_once 'admin_header.php';
 
     <div class="tbl-wrap tbl-wrap-mobile-fix">
       <table class="adm-tbl">
-        <thead><tr><th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th><th>Image</th><th>Title</th><th>Type of Artifact</th><th>Year</th><th>Origin</th><th>Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th class="art-select-col"><input type="checkbox" id="selectAllArtifacts" aria-label="Select all artifacts"></th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Type of Artifact</th>
+            <th>Year</th>
+            <th>Origin</th>
+            <th>Quantity</th>
+            <th>Date Received</th>
+            <th>Remarks</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
           <?php if (empty($exhibits)): ?>
             <tr><td colspan="7" style="text-align:center;padding:20px;color:#888">No artifacts found.</td></tr>
@@ -274,6 +364,9 @@ require_once 'admin_header.php';
               <td><?= htmlspecialchars($ex['cat_name'] ?? '—') ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['artifact_year'] ?? '—') ?></td>
               <td style="font-size:.82rem"><?= htmlspecialchars($ex['origin'] ?? '—') ?></td>
+              <td style="text-align:center; font-size:.95rem;"><?= htmlspecialchars($ex['quantity'] ?? '—') ?></td>
+              <td style="font-size:.82rem; white-space:nowrap;"><?= htmlspecialchars($ex['date_received'] ?? '—') ?></td>
+              <td style="font-size:.82rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<?= htmlspecialchars($ex['remarks'] ?? '') ?>"><?= htmlspecialchars($ex['remarks'] ?? '—') ?></td>
               <td class="adm-row-actions">
                 <div class="adm-row-actions-wrap">
                 <a href="artifacts.php?edit=<?= $ex['id'] ?>" class="btn-edit btn-icon" title="Edit artifact" aria-label="Edit artifact">&#9999;</a>
@@ -286,6 +379,19 @@ require_once 'admin_header.php';
       </table>
     </div>
     </form>
+
+    <?php if ($totalPages > 1): ?>
+      <div class="result-meta" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <?php
+          $pageBase = 'artifacts.php?q=' . urlencode($search) . '&dept=' . (int)$deptId . '&sort=' . urlencode($sort) . '&page=';
+          $prevPage = max(1, $page - 1);
+          $nextPage = min($totalPages, $page + 1);
+        ?>
+        <a href="<?= $pageBase . $prevPage ?>" class="btn-clf" data-no-auto-icon="1" style="text-decoration:none;display:inline-flex;align-items:center;<?= $page <= 1 ? 'pointer-events:none;opacity:.5;' : '' ?>">Previous</a>
+        <span>Page <strong><?= $page ?></strong> of <strong><?= $totalPages ?></strong></span>
+        <a href="<?= $pageBase . $nextPage ?>" class="btn-clf" data-no-auto-icon="1" style="text-decoration:none;display:inline-flex;align-items:center;<?= $page >= $totalPages ? 'pointer-events:none;opacity:.5;' : '' ?>">Next</a>
+      </div>
+    <?php endif; ?>
   </main>
 </div>
 

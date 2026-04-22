@@ -62,8 +62,11 @@ $base = ($dir === '' ? '/' : $dir . '/');
           <div><label class="al">Year / Period</label><input type="text" name="artifact_year" class="ai" placeholder="e.g., 18th Century"></div>
           <div><label class="al">Origin</label><input type="text" name="origin" class="ai" placeholder="e.g., Labo"></div>
           <div class="full"><label class="al">Donated By</label><input type="text" name="donated_by" class="ai"></div>
-          <div class="full"><label class="al">Upload Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
+          <div class="full"><label class="al">Choose Image</label><input type="file" name="image_file" class="ai" accept="image/*"></div>
           <div class="full"><label class="al">Description *</label><textarea name="description" class="ai" required></textarea></div>
+          <div><label class="al">Remarks</label><textarea name="remarks" class="ai"></textarea></div>
+          <div><label class="al">Quantity</label><input type="number" name="quantity" class="ai" min="1" value="1"></div>
+          <div><label class="al">Date Received</label><input type="date" name="date_received" class="ai" value="<?= date('Y-m-d') ?>"></div>
         </div>
         <div class="adm-quick-form-actions">
           <button type="submit" class="btn-save">Save Artifact</button>

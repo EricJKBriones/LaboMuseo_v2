@@ -1537,6 +1537,7 @@ function initAdminButtonIcons() {
 
   function addIconToButtons(selector, iconName) {
     document.querySelectorAll(selector).forEach(function(btn) {
+      if (btn.getAttribute('data-no-auto-icon') === '1') return;
       if (btn.querySelector('img.auto-btn-icon')) return;
 
       stripLeadingButtonSymbol(btn);
@@ -3073,15 +3074,35 @@ function initAdminImageUploadPreview() {
     wrap.appendChild(clearBtn);
 
     var revokeUrl = null;
+    var existingPreview = null;
+
+    if (input.dataset.previewSrc) {
+      existingPreview = {
+        src: input.dataset.previewSrc,
+        name: input.dataset.previewName || 'Current image',
+        sizeLabel: input.dataset.previewSize || 'Current image'
+      };
+    }
 
     function clearPreview() {
       if (revokeUrl) {
         URL.revokeObjectURL(revokeUrl);
         revokeUrl = null;
       }
+      if (existingPreview) {
+        img.src = existingPreview.src;
+        img.hidden = false;
+        name.textContent = existingPreview.name;
+        size.textContent = existingPreview.sizeLabel;
+        clearBtn.hidden = true;
+        wrap.hidden = false;
+        return;
+      }
       img.removeAttribute('src');
+      img.hidden = true;
       name.textContent = '';
       size.textContent = '';
+      clearBtn.hidden = true;
       wrap.hidden = true;
     }
 
@@ -3103,8 +3124,10 @@ function initAdminImageUploadPreview() {
       revokeUrl = URL.createObjectURL(file);
 
       img.src = revokeUrl;
+      img.hidden = false;
       name.textContent = file.name || 'Pasted image';
       size.textContent = bytesToLabel(file.size);
+      clearBtn.hidden = false;
       wrap.hidden = false;
     }
 
@@ -3127,7 +3150,11 @@ function initAdminImageUploadPreview() {
     };
 
     var initialFile = input.files && input.files[0] ? input.files[0] : null;
-    if (initialFile) renderFile(initialFile);
+    if (initialFile) {
+      renderFile(initialFile);
+    } else {
+      clearPreview();
+    }
 
     return input._previewUi;
   }
